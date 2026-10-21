@@ -222,7 +222,22 @@ Durum: PASS · FAIL · BLOCKED · NOT RUN. **Cihaz ve derleme yok → hepsi NOT 
 | `flutter test` | ✓ **98/98** (Görev 8'de 96; yaşam döngüsü ve iPad paylaşımı için +2) |
 | `flutter build ipa --release` | ✗ **Çalıştırılamadı:** Windows'ta `build ipa` komutu yok ("Could not find an option named --release"). macOS + Xcode gerekir; Codemagic `ios-ipa` bunu yapar |
 
-## 12. Senden beklenen kararlar
+## 12. Hesap kurulumu (22 Ekim 2026)
+
+Senin onayınla tarayıcı panelinde yapıldı (giriş bilgilerini sen girdin):
+
+| Adım | Sonuç |
+|---|---|
+| Bundle ID | `com.burakhamzali.istanbulFlight` kaydedildi (Team MF9WSY29TD) |
+| App Store Connect | "İstanbul Flight" oluşturuldu: Apple ID **6825523571**, SKU `istanbulflight001`, birincil dil Türkçe |
+| Provisioning profile | `istanbulflight_appstore` (App Store, mevcut Distribution sertifikası); Codemagic'e çekildi |
+| API anahtarı | Yeni anahtar oluşturulmadı; Codemagic'teki mevcut "Zar ASC Key" kullanılıyor |
+| Depo | Özel `github.com/burakhamzalidev/istanbul_flight`; Codemagic GitHub uygulamasına bu depo eklendi; Codemagic'te uygulama oluşturuldu |
+| `codemagic.yaml` | Entegrasyon adı `Zar ASC Key`; `APP_STORE_APPLE_ID` doğrudan `vars` içinde (gizli değil); `marti_ios` grubuna gerek kalmadı |
+
+Not: `verify` iş akışı her push'ta Linux makinede çalışır (yükleme yapmaz).
+
+## 13. Senden beklenen kararlar
 
 1. ~~Bundle ID~~: kesinleşti, `com.burakhamzali.istanbulFlight`.
 2. **TestFlight yüklemesi:** §4.4 ve §6 hazır olduktan sonra `ios-testflight`'ı başlatmak (ya da benim başlatmam) için açık onay. Codemagic çalıştırmalarını şu an ben başlatamıyorum; hesap ve depo yok.

@@ -38,15 +38,16 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 - [x] Beta materyalleri: sürüm notları, What to Test (TR/EN), beta açıklaması, test rehberi, hata şablonu, bilinen sorunlar
 - [x] 20 senaryoluk iPhone test planı
 
-## 3. Apple ve Codemagic hesapları (SEN)
+## 3. Apple ve Codemagic hesapları (22 Ekim 2026, senin onayınla tarayıcıda yapıldı)
 
-- [ ] **(SEN)** Apple Developer Program üyeliği
-- [ ] **(SEN)** Bundle ID kaydı (Identifiers)
-- [ ] **(SEN)** App Store Connect'te uygulama kaydı; Apple ID → `APP_STORE_APPLE_ID`
-- [ ] **(SEN)** App Store Connect API anahtarı (App Manager) → Codemagic `marti_asc`
-- [ ] **(SEN)** Apple Distribution sertifikası + App Store provisioning profile → Codemagic
-- [ ] **(SEN)** Projeyi git deposuna koy ve Codemagic'e bağla; `marti_ios` grubu
-- [ ] **(SEN)** Dahili test grubu (Internal Testing)
+- [x] Apple Developer Program üyeliği (Individual, Team MF9WSY29TD; mevcuttu)
+- [x] Bundle ID kaydı: `com.burakhamzali.istanbulFlight` (ek yetenek yok)
+- [x] App Store Connect uygulama kaydı: "İstanbul Flight", Türkçe, SKU `istanbulflight001`, Apple ID `6825523571` (`codemagic.yaml` içinde)
+- [x] App Store Connect API anahtarı: mevcut "Zar ASC Key" Codemagic'te bağlı; `codemagic.yaml` bunu kullanıyor
+- [x] Apple Distribution sertifikası (mevcut; Codemagic'te `zar_dist`) + App Store profili `istanbulflight_appstore` (oluşturuldu, Codemagic'e çekildi)
+- [x] Özel GitHub deposu `burakhamzalidev/istanbul_flight`; Codemagic GitHub uygulamasına erişim verildi; Codemagic'e Flutter uygulaması olarak eklendi
+- [ ] **(SEN)** Dahili test grubu (TestFlight → Internal Testing); ilk derleme işlendikten sonra
+- [ ] **(SEN)** App Privacy ve yaş derecelendirmesi formları (TestFlight dahili test için zorunlu değil)
 
 ## 4. Gerçekten derlendi
 
