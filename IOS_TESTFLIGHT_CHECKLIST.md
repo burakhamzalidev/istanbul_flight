@@ -67,3 +67,9 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 - [ ] 20 senaryo (docs/11 §8): hepsi **NOT RUN**
 - [ ] FPS ve bellek ölçümü: **ölçülmedi**
 - [ ] Ana ekranda adın kesilip kesilmediği
+
+## 7. Sonraki sürümler
+
+- [x] **1.1.0 (2)** (Phase 2.1): Codemagic `ios-testflight` hatasız, App Store Connect "Ready to Submit", "Ekip" grubuna dağıtıldı, What to Test girildi (22 Ekim 2026)
+- [ ] 1.1.0 (2) gerçek iPhone'da 1.0.0'dan güncelleme testi (kullanıcı)
+- [ ] **1.2.0 (3)** (Phase 2.2, mağaza): hazır, **yüklenmedi** (onay bekliyor)

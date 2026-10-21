@@ -96,7 +96,7 @@ class SimitBird extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final sheet = art.simitSheet;
+    final sheet = game.birdSheet; // seçili görünüm; yoksa klasik
     if (sheet == null) {
       _renderPlaceholder(canvas);
       return;

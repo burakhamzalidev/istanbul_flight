@@ -217,7 +217,7 @@ class Postcard extends StatelessWidget {
                         height: 42 * k,
                         child: SimitFrameView(
                           key: const Key('postcardSimit'),
-                          image: game.art.simitSheet,
+                          image: game.birdSheet,
                           frame: SimitAnimator.landed,
                         ),
                       ),

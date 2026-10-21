@@ -62,3 +62,5 @@ iOS TestFlight beta: [docs/11_ios_testflight_beta.md](docs/11_ios_testflight_bet
 Uygulama ikonları ve açılış görselleri: `node art/_source/pixel/app_icons.js`
 
 Phase 2.1 (oyuncu ilerlemesi, görevler, başarımlar): [docs/12_phase2_player_progression.md](docs/12_phase2_player_progression.md) · beta 1.1.0: [docs/testflight/beta_1_1_0.md](docs/testflight/beta_1_1_0.md)
+
+Phase 2.2 (Simit Mağazası, görünümler): [docs/13_phase2_cosmetics_shop.md](docs/13_phase2_cosmetics_shop.md) · beta 1.2.0: [docs/testflight/beta_1_2_0.md](docs/testflight/beta_1_2_0.md)

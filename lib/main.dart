@@ -18,6 +18,7 @@ import 'ui/overlays/hud_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
 import 'ui/overlays/postcard_overlay.dart';
 import 'ui/overlays/progression_overlays.dart';
+import 'ui/overlays/shop_overlays.dart';
 import 'ui/pixel.dart';
 import 'ui/simit_frame_view.dart';
 
@@ -161,6 +162,8 @@ class GameScreen extends StatelessWidget {
                   Overlays.profile: (_, g) => ProfileOverlay(game: g),
                   Overlays.missions: (_, g) => MissionsOverlay(game: g),
                   Overlays.achievements: (_, g) => AchievementsOverlay(game: g),
+                  Overlays.shop: (_, g) => ShopOverlay(game: g),
+                  Overlays.wardrobe: (_, g) => WardrobeOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

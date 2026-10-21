@@ -10,6 +10,7 @@ import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
 import 'progression_overlays.dart';
+import 'shop_overlays.dart';
 
 /// Logo pulu: kartpostal pulu biçiminde, hafifçe süzülür (azaltılmış harekette sabit).
 class LogoStamp extends StatefulWidget {
@@ -158,22 +159,8 @@ class MainMenuOverlay extends StatelessWidget {
                           ),
                         ),
                       ),
-                      ValueListenableBuilder(
-                        valueListenable: game.services.progress,
-                        builder: (_, p, _) => InfoChip(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SimitIcon(size: 18),
-                              const SizedBox(width: 6),
-                              Text(
-                                '${p.simitBalance}',
-                                key: const Key('totalSimits'),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // Simit bakiyesi = mağaza girişi
+                      ShopChip(game: game),
                     ],
                   ),
                   const SizedBox(height: 8),

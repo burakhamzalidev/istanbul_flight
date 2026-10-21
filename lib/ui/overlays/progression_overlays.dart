@@ -270,6 +270,16 @@ class ProfileOverlay extends StatelessWidget {
             _ZoneTrail(discovered: p.discoveredZones),
             const SizedBox(height: 12),
             MartiButton(
+              key: const Key('openWardrobe'),
+              game: game,
+              label: 'Martı görünümü',
+              icon: Icons.flight_takeoff_rounded,
+              style: MartiButtonStyle.secondary,
+              height: 52,
+              onPressed: () => game.openModal(Overlays.wardrobe),
+            ),
+            const SizedBox(height: 8),
+            MartiButton(
               key: const Key('openAchievements'),
               game: game,
               label:

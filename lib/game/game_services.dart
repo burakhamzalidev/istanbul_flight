@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
+import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../progression/run_settlement.dart';
 import '../services/audio_service.dart';
@@ -57,6 +60,45 @@ class ProgressController extends ValueNotifier<PlayerProgress>
     if (identical(next, value)) return;
     value = next;
     _persist();
+  }
+
+  final Set<String> _purchasing = {};
+
+  /// Kozmetik satın alma: tek tutarlı işlem. Yeni durum önce diske yazılır, ancak yazma başarılıysa
+  /// ekrana yansır; yazılamazsa hiçbir şey değişmez (simit düşülmez). Aynı ürün için eşzamanlı
+  /// ikinci istek (çift dokunma) [PurchaseResult.busy] döner.
+  Future<PurchaseResult> purchase(String id) async {
+    if (!_purchasing.add(id)) return PurchaseResult.busy;
+    try {
+      final done = Completer<PurchaseResult>();
+      _saving = _saving.then((_) async {
+        // Sıradaki yazmalar bittikten sonra güncel profilden hesaplanır
+        final (next, result) = purchaseCosmetic(value, id);
+        if (result != PurchaseResult.purchased) return done.complete(result);
+        try {
+          await _repo.save(next);
+        } catch (e) {
+          debugPrint('Satın alma kaydedilemedi: $e');
+          return done.complete(PurchaseResult.saveFailed);
+        }
+        value = next;
+        done.complete(PurchaseResult.purchased);
+      });
+      return await done.future;
+    } finally {
+      _purchasing.remove(id);
+    }
+  }
+
+  /// Görünüm seçimi; sahip olunmayan ya da bilinmeyen görünümde false. Seçim bir sonraki uçuşta geçerli.
+  bool equip(String id) {
+    final next = equipCosmetic(value, id);
+    if (next == null) return false;
+    if (!identical(next, value)) {
+      value = next;
+      _persist();
+    }
+    return true;
   }
 
   /// Kayıtlar sırayla yazılır (eski bir yazma yenisinin üstüne geçemez).

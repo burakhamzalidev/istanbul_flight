@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flame/cache.dart';
 import 'package:flutter/foundation.dart';
 
+import '../progression/cosmetics.dart';
 import 'day_cycle.dart';
 
 /// Pixel art ölçeği: 1 piksel = 4 dünya birimi (karakter, engel, arka plan, efekt hepsi aynı yoğunlukta).
@@ -63,7 +64,9 @@ class GameArt {
     Map<ObstacleKitId, Image>? kits,
     this.fx,
     this.icons,
-  }) : zones = zones ?? const {},
+    Map<String, Image>? skins,
+  }) : skins = skins ?? const {},
+       zones = zones ?? const {},
        landmarks = landmarks ?? const {},
        kits = kits ?? const {};
 
@@ -71,6 +74,13 @@ class GameArt {
 
   /// 12 kare, 6 sütun × 2 satır. Kare 48×42 px (= 192×168 dünya birimi), pivot (22,22).
   final Image? simitSheet;
+
+  /// Kozmetik görünümler (kimlik → sheet). Klasik sheet ile aynı kare düzeni ve pivot.
+  /// Yüklenemeyen görünüm burada yoktur → oyun klasik sheet'e döner ([sheetFor]).
+  final Map<String, Image> skins;
+
+  /// Görünümün sheet'i; yoksa klasik.
+  Image? sheetFor(String cosmeticId) => skins[cosmeticId] ?? simitSheet;
 
   /// Bölge anahtarı (= [ObstacleKitId.name]) → katmanlar.
   final Map<String, ZoneArt> zones;
@@ -158,9 +168,16 @@ class GameArt {
   static const fxPath = '$_root/effects/fx.png';
   static const iconsPath = '$_root/ui/icons.png';
 
+  /// Kozmetik sheet yolları (katalogdan).
+  static Map<String, String> get skinPaths => {
+    for (final c in cosmeticCatalog)
+      if (c.sheetAsset != null) c.id: c.sheetAsset!,
+  };
+
   /// Bütün asset yolları (test: dosyaların varlığı kontrol edilir).
   static List<String> get allPaths => [
     simitPath,
+    ...skinPaths.values,
     fxPath,
     iconsPath,
     for (final k in ObstacleKitId.values)
@@ -206,7 +223,10 @@ class GameArt {
       Future.wait(ObstacleKitId.values.map((k) => get(kitPath(k)))),
       get(fxPath),
       get(iconsPath),
+      Future.wait(skinPaths.values.map(get)),
     ]);
+    final skinIds = skinPaths.keys.toList();
+    final skinImages = results[6]! as List<Image?>;
     final zoneList = results[1]! as List<ZoneArt>;
     final lm = results[2]! as List<Image?>;
     final kits = results[3]! as List<Image?>;
@@ -225,6 +245,10 @@ class GameArt {
       },
       fx: results[4] as Image?,
       icons: results[5] as Image?,
+      skins: {
+        for (var i = 0; i < skinIds.length; i++)
+          if (skinImages[i] != null) skinIds[i]: skinImages[i]!,
+      },
     );
   }
 }

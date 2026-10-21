@@ -1,6 +1,6 @@
 # TestFlight beta: İstanbul Flight 1.1.0 (Phase 2.1)
 
-> **Durum: hazır, YÜKLENMEDİ.** Yükleme için onayın gerekiyor (Codemagic `ios-testflight`; derleme numarası otomatik olarak TestFlight son + 1 = 2 olur).
+> **Durum: TestFlight'a YÜKLENDİ (22 Ekim 2026, onayınla).** 1.1.0 (2): Codemagic `ios-testflight` hatasız; App Store Connect işledi ("Ready to Submit"); yalnızca dahili "Ekip" grubuna dağıtıldı; What to Test (TR) girildi. Harici test / App Store yok.
 > Bundle ID ve Codemagic iş akışları değişmedi. Teknik ayrıntı: [../12_phase2_player_progression.md](../12_phase2_player_progression.md)
 
 ## 1. Sürüm notları

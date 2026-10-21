@@ -8,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 
 import '../data/score_repository.dart';
+import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../services/audio_service.dart';
 import 'components/background.dart';
@@ -40,6 +41,8 @@ abstract final class Overlays {
   static const profile = 'profile';
   static const missions = 'missions';
   static const achievements = 'achievements';
+  static const shop = 'shop';
+  static const wardrobe = 'wardrobe';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -92,6 +95,13 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Bu turda önceki rekor geçildi mi (HUD'da bir kez rozet).
   final recordPassed = ValueNotifier(false);
+
+  /// Simit'in uygulanan görünümü (kozmetik kimliği). Yalnızca çizimi etkiler; uçuş sırasında değişmez:
+  /// seçim menüde hemen, uçuş içinde yapılırsa bir sonraki turda uygulanır.
+  final cosmetic = ValueNotifier(classicCosmeticId);
+
+  /// Simit sprite sheet'i: seçili görünüm, yüklenemediyse klasik.
+  Image? get birdSheet => art.sheetFor(cosmetic.value);
 
   // ---- Dünya ----
   GameArt art = GameArt.none();
@@ -205,6 +215,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     ]);
     services.settings.addListener(_applySettings);
     _applySettings();
+    services.progress.addListener(_onProgressChanged);
+    _applyCosmetic();
     services.audio.setAmbience(ambienceForZone(0));
     _syncBird(idle: true);
     _applyOverlays();
@@ -218,6 +230,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   @override
   void onRemove() {
     services.settings.removeListener(_applySettings);
+    services.progress.removeListener(_onProgressChanged);
     super.onRemove();
   }
 
@@ -225,6 +238,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     final s = services.settings.value;
     services.audio.setVolumes(music: s.effectiveMusic, sfx: s.effectiveSfx);
     services.haptics.enabled = s.haptics;
+  }
+
+  void _onProgressChanged() {
+    if (phase.value == GamePhase.ready) _applyCosmetic();
+  }
+
+  /// Seçili görünümü uygular (bilinmeyen / sahip olunmayan görünüm → klasik).
+  void _applyCosmetic() {
+    cosmetic.value = effectiveCosmetic(services.progress.value).id;
   }
 
   /// Bölgenin ortam döngüsü: limanlı bölgelerde dalga, açık Boğaz'da rüzgâr.
@@ -714,6 +736,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     menuOpen.value = false;
     services.audio.setAmbience(ambienceForZone(0));
     _setPhase(GamePhase.ready);
+    _applyCosmetic();
   }
 
   @override
