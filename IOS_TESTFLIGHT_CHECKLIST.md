@@ -46,7 +46,7 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 - [x] App Store Connect API anahtarı: mevcut "Zar ASC Key" Codemagic'te bağlı; `codemagic.yaml` bunu kullanıyor
 - [x] Apple Distribution sertifikası (mevcut; Codemagic'te `zar_dist`) + App Store profili `istanbulflight_appstore` (oluşturuldu, Codemagic'e çekildi)
 - [x] Özel GitHub deposu `burakhamzalidev/istanbul_flight`; Codemagic GitHub uygulamasına erişim verildi; Codemagic'e Flutter uygulaması olarak eklendi
-- [ ] **(SEN)** Dahili test grubu (TestFlight → Internal Testing); ilk derleme işlendikten sonra
+- [x] Dahili test grubu "Ekip" (otomatik dağıtım açık); testçi: yalnızca hesap sahibi
 - [ ] **(SEN)** App Privacy ve yaş derecelendirmesi formları (TestFlight dahili test için zorunlu değil)
 
 ## 4. Gerçekten derlendi
@@ -58,8 +58,8 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 ## 5. TestFlight'a yüklendi
 
 - [x] `ios-testflight` çalıştırması (kullanıcı onayıyla, 22 Ekim 2026, Codemagic derleme #2): IPA yüklendi (altool "UPLOAD SUCCEEDED", delivery 5be36caf…). Apple son durum çağrısında geçici **500** döndürdüğü için Codemagic derlemeyi "failed" gösteriyor; derleme yine de App Store Connect'e ulaştı
-- [~] Derleme App Store Connect'te: **1.0.0 (1), "Processing"** (işleme tamamlanınca işaretlenecek)
-- [ ] Dahili gruba dağıtıldı; What to Test girildi
+- [x] Derleme App Store Connect'te işlendi: **1.0.0 (1), "Ready to Submit"**, 90 gün geçerli; export compliance sorusu çıkmadı
+- [x] 1.0.0 (1) "Ekip" grubuna dağıtıldı, davet gönderildi (22 Ekim 2026); What to Test (TR, 1064 karakter) girildi
 - [ ] Harici test / herkese açık bağlantı: **bilinçli olarak yok**
 
 ## 6. Cihazda test edildi
