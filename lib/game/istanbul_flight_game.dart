@@ -8,6 +8,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 
 import '../data/score_repository.dart';
+import '../progression/game_events.dart';
 import '../services/audio_service.dart';
 import 'components/background.dart';
 import 'components/fx_layer.dart';
@@ -36,6 +37,9 @@ abstract final class Overlays {
   static const settings = 'settings';
   static const howTo = 'howTo';
   static const stats = 'stats';
+  static const profile = 'profile';
+  static const missions = 'missions';
+  static const achievements = 'achievements';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -137,6 +141,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   double _gameOverTime = 0;
   double _nextSpawnX = 0;
   int _spawnCount = 0;
+
+  // ---- Uçuş kaydı (ilerleme sistemi: lib/progression) ----
+  int _runCounter = 0;
+  String _runId = '';
+  double _runTime = 0;
+  int _runObstacles = 0;
 
   /// Test ve demo modu: çarpışmaları kapatır (uzun oturum testi, MARTI_DEMO).
   bool debugInvincible = false;
@@ -260,6 +270,10 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       score.value = debugStartScore - 1;
       _addPoint();
     }
+    _runId = '${DateTime.now().microsecondsSinceEpoch}-${_runCounter++}';
+    _runTime = 0;
+    _runObstacles = 0;
+    services.emit(RunStarted(_runId));
     _flap();
   }
 
@@ -389,6 +403,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Bir sabit fizik adımı (sadece PLAYING).
   void _stepPlaying(double dt) {
     if (autopilot) _autopilotStep();
+    _runTime += dt;
     final speed = currentSpeed;
     final dx = speed * dt;
     scrollDistance += dx;
@@ -433,7 +448,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       }
       if (!o.scored && o.right < bx) {
         o.scored = true;
+        _runObstacles++;
         _addPoint();
+        services.emit(ObstaclePassed(score.value));
       }
       // Kuş engelin tamamen ötesine geçince bir kez değerlendir
       if (!o.nearMissChecked && bx - r > o.right) {
@@ -450,6 +467,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     fx.collect(x, y);
     services.audio.playSfx(Sfx.collect);
     services.haptics.light();
+    services.emit(SimitCollected(runSimits.value));
   }
 
   void _nearMiss() {
@@ -457,6 +475,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     fx.nearMiss(birdX, physics.y);
     services.audio.playSfx(Sfx.nearMiss);
     services.haptics.medium();
+    services.emit(NearMissAchieved(nearMisses.value));
   }
 
   void _autopilotStep() {
@@ -530,6 +549,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       zoneIndex.value = dayCycle.zoneIndex;
       services.audio.playSfx(Sfx.zone);
       services.audio.setAmbience(ambienceForZone(dayCycle.zoneIndex));
+      services.emit(ZoneReached(dayCycle.zoneIndex));
     }
   }
 
@@ -550,7 +570,20 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       isNewRecord.value = true;
       unawaited(_saveBest(s));
     }
-    unawaited(services.progress.addRun(simits: runSimits.value));
+    // Uçuşun tek hesap noktası: ilerleme sistemi aynı runId'yi ikinci kez saymaz.
+    services.emit(
+      RunFinished(
+        RunResult(
+          runId: _runId,
+          score: s,
+          obstaclesPassed: _runObstacles,
+          simits: runSimits.value,
+          nearMisses: nearMisses.value,
+          maxZone: zoneIndex.value,
+          flightMs: (_runTime * 1000).round(),
+        ),
+      ),
+    );
     services.audio.stopMusic();
     services.audio.playSfx(Sfx.crash);
     services.haptics.heavy();

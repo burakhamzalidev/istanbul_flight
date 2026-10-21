@@ -17,6 +17,7 @@ import 'services/share_service.dart';
 import 'ui/overlays/hud_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
 import 'ui/overlays/postcard_overlay.dart';
+import 'ui/overlays/progression_overlays.dart';
 import 'ui/pixel.dart';
 import 'ui/simit_frame_view.dart';
 
@@ -38,7 +39,8 @@ Future<void> main() async {
   await configureAudioSession();
 
   // Kalıcı kayıtlar: en iyi skor (best_score_v1, önceki sürümlerle aynı anahtar),
-  // ayarlar (settings_v1), ilerleme (progress_v1). Erişilemezse bellek içi sürüme düşülür.
+  // ayarlar (settings_v1), ilerleme (progress_v2; ilk açılışta progress_v1'den geçilir, v1 silinmez).
+  // Erişilemezse bellek içi sürüme düşülür.
   ScoreRepository scores;
   SettingsRepository settingsRepo;
   ProgressRepository progressRepo;
@@ -69,6 +71,7 @@ Future<void> main() async {
     progress: ProgressController(progressRepo, progress),
     share: PlatformShareService(),
   );
+  services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
 
   // Geliştirme bayrakları (normal derlemede kapalı):
   //   MARTI_AUTOPILOT=true  → Simit kendi uçar
@@ -155,6 +158,9 @@ class GameScreen extends StatelessWidget {
                   Overlays.settings: (_, g) => SettingsOverlay(game: g),
                   Overlays.howTo: (_, g) => HowToOverlay(game: g),
                   Overlays.stats: (_, g) => StatsOverlay(game: g),
+                  Overlays.profile: (_, g) => ProfileOverlay(game: g),
+                  Overlays.missions: (_, g) => MissionsOverlay(game: g),
+                  Overlays.achievements: (_, g) => AchievementsOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

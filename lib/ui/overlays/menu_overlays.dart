@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
+import 'progression_overlays.dart';
 
 /// Logo pulu: kartpostal pulu biçiminde, hafifçe süzülür (azaltılmış harekette sabit).
 class LogoStamp extends StatefulWidget {
@@ -166,7 +167,7 @@ class MainMenuOverlay extends StatelessWidget {
                               const SimitIcon(size: 18),
                               const SizedBox(width: 6),
                               Text(
-                                '${p.totalSimits}',
+                                '${p.simitBalance}',
                                 key: const Key('totalSimits'),
                               ),
                             ],
@@ -175,6 +176,8 @@ class MainMenuOverlay extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  MenuProgressStrip(game: game),
                   const Spacer(),
                   MartiButton(
                     key: const Key('startButton'),
@@ -524,10 +527,11 @@ class _PauseOverlayState extends State<PauseOverlay> {
   }
 }
 
-/// Modal kart iskeleti (ayarlar, nasıl oynanır). Başlık ve "Tamam" her zaman görünür;
+/// Modal kart iskeleti (ayarlar, nasıl oynanır, profil, görevler, başarımlar). Başlık ve "Tamam" her zaman görünür;
 /// küçük ekranlarda sadece içerik kayar.
-class _ModalCard extends StatelessWidget {
-  const _ModalCard({
+class ModalCard extends StatelessWidget {
+  const ModalCard({
+    super.key,
     required this.game,
     required this.title,
     required this.child,
@@ -598,7 +602,7 @@ class SettingsOverlay extends StatelessWidget {
   final IstanbulFlightGame game;
 
   @override
-  Widget build(BuildContext context) => _ModalCard(
+  Widget build(BuildContext context) => ModalCard(
     game: game,
     title: 'Ayarlar',
     child: ValueListenableBuilder<GameSettings>(
@@ -658,7 +662,7 @@ class HowToOverlay extends StatelessWidget {
   final IstanbulFlightGame game;
 
   @override
-  Widget build(BuildContext context) => _ModalCard(
+  Widget build(BuildContext context) => ModalCard(
     game: game,
     title: 'Nasıl oynanır',
     child: const Column(

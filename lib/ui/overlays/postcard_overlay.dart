@@ -15,6 +15,7 @@ import '../simit_frame_view.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
+import 'progression_overlays.dart';
 
 /// Oyun sonu: düşülen bölgenin kartpostalı (yolculuğun hatırası) + Tekrar uç / Paylaş / Ana menü.
 class GameOverOverlay extends StatefulWidget {
@@ -110,7 +111,10 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                             ),
                         ],
                       ),
-                      const SizedBox(height: 22),
+                      // Uçuş özeti paylaşılan kartpostalın dışında: kart kompozisyonu değişmez
+                      const SizedBox(height: 12),
+                      RunSummaryPanel(game: g),
+                      const SizedBox(height: 16),
                       ValueListenableBuilder<bool>(
                         valueListenable: g.canRestart,
                         builder: (_, ok, _) => MartiButton(

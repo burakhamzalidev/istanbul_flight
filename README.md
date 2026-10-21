@@ -60,3 +60,5 @@ Yayın hazırlığı: [docs/10_android_ios_release_readiness.md](docs/10_android
 iOS TestFlight beta: [docs/11_ios_testflight_beta.md](docs/11_ios_testflight_beta.md) · kontrol listesi: [IOS_TESTFLIGHT_CHECKLIST.md](IOS_TESTFLIGHT_CHECKLIST.md) · beta metinleri: [docs/testflight/](docs/testflight/beta_materials.md)
 
 Uygulama ikonları ve açılış görselleri: `node art/_source/pixel/app_icons.js`
+
+Phase 2.1 (oyuncu ilerlemesi, görevler, başarımlar): [docs/12_phase2_player_progression.md](docs/12_phase2_player_progression.md) · beta 1.1.0: [docs/testflight/beta_1_1_0.md](docs/testflight/beta_1_1_0.md)
