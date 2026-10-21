@@ -57,8 +57,8 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 
 ## 5. TestFlight'a yüklendi
 
-- [ ] **(SEN, onay)** `ios-testflight` çalıştırması: **yapılmadı**
-- [ ] Derleme App Store Connect'te işlendi
+- [x] `ios-testflight` çalıştırması (kullanıcı onayıyla, 22 Ekim 2026, Codemagic derleme #2): IPA yüklendi (altool "UPLOAD SUCCEEDED", delivery 5be36caf…). Apple son durum çağrısında geçici **500** döndürdüğü için Codemagic derlemeyi "failed" gösteriyor; derleme yine de App Store Connect'e ulaştı
+- [~] Derleme App Store Connect'te: **1.0.0 (1), "Processing"** (işleme tamamlanınca işaretlenecek)
 - [ ] Dahili gruba dağıtıldı; What to Test girildi
 - [ ] Harici test / herkese açık bağlantı: **bilinçli olarak yok**
 

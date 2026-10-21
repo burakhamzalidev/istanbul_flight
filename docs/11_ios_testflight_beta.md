@@ -9,7 +9,7 @@
 |---|---|
 | **Hazır** (kod, yapılandırma, belge) | **Evet.** iOS yapılandırması, Codemagic iş akışları, beta metinleri ve test planı hazır. Analiz temiz, 98/98 test geçiyor |
 | **Gerçekten derlendi** (iOS) | **Evet (22 Ekim 2026).** Codemagic `ios-ipa` derleme #1 başarılı: imzalı `Istanbul_Flight.ipa` (23,2 MB), 1.0.0 (1), `com.burakhamzali.istanbulFlight`, iOS 15.0. Yerelde derlenmedi (Windows) |
-| **TestFlight'a yüklendi** | **Hayır.** Apple Developer hesabı, imzalama ve onayın yok. Yükleme yapılmadı |
+| **TestFlight'a yüklendi** | **Evet (22 Ekim 2026, onayınla).** Codemagic `ios-testflight` derleme #2: 1.0.0 (1) App Store Connect'e ulaştı, "Processing". Apple'ın son durum çağrısındaki geçici 500 yüzünden Codemagic "failed" gösteriyor. Yalnızca dahili test; henüz test grubu yok |
 | **Cihazda test edildi** | **Hayır.** 20 senaryonun hepsi NOT RUN. FPS ve bellek **ölçülmedi** |
 
 App Store dağıtım imzalı IPA Codemagic'te **oluşturuldu**; App Store Connect'e **yüklenmedi**.
