@@ -72,4 +72,5 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 
 - [x] **1.1.0 (2)** (Phase 2.1): Codemagic `ios-testflight` hatasız, App Store Connect "Ready to Submit", "Ekip" grubuna dağıtıldı, What to Test girildi (22 Ekim 2026)
 - [ ] 1.1.0 (2) gerçek iPhone'da 1.0.0'dan güncelleme testi (kullanıcı)
-- [ ] **1.2.0 (3)** (Phase 2.2, mağaza): hazır, **yüklenmedi** (onay bekliyor)
+- [x] **1.2.0 (3)** (Phase 2.2, mağaza): Codemagic hatasız, App Store Connect "Ready to Submit", "Ekip" grubunda, What to Test girildi (22 Ekim 2026)
+- [ ] 1.2.0 (3) gerçek iPhone'da test (kullanıcı)

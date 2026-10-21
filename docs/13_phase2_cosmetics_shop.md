@@ -1,7 +1,7 @@
 # Phase 2.2: Simit Mağazası ve Martı Görünümleri
 
 > Not: `13_rumeli_gercek_referans.md` ile aynı numara; dosya adı görevde istendiği gibi bırakıldı.
-> Sürüm: **1.2.0 (3)**. TestFlight'a **yüklenmedi** (onay bekliyor). Beta notları: [testflight/beta_1_2_0.md](testflight/beta_1_2_0.md)
+> Sürüm: **1.2.0 (3)**. TestFlight'a **yüklendi** (22 Ekim 2026, onayınla; yalnızca dahili "Ekip"). Beta notları: [testflight/beta_1_2_0.md](testflight/beta_1_2_0.md)
 
 ## Özet
 
@@ -16,7 +16,7 @@
 | Kayıt | Yeni şema **gerekmedi** (`progress_v2` alanları yeterli) |
 | `flutter analyze` | Temiz |
 | `flutter test` | **166/166** (136 eski + 30 yeni) |
-| TestFlight / gerçek iPhone | Yüklenmedi / test edilmedi |
+| TestFlight / gerçek iPhone | Yüklendi, "Ekip" grubunda / henüz test edilmedi |
 
 Reklam, abonelik ya da uygulama içi ödeme yok. Simit yalnızca oyunda kazanılıyor. Görünümler yalnızca görsel.
 

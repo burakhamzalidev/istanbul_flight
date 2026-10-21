@@ -1,6 +1,6 @@
 # TestFlight beta: İstanbul Flight 1.2.0 (Phase 2.2)
 
-> **Durum: hazır, YÜKLENMEDİ.** Yükleme için onayın gerekiyor.
+> **Durum: TestFlight'a YÜKLENDİ (22 Ekim 2026, onayınla).** 1.2.0 (3): Codemagic `ios-testflight` hatasız (commit bba3e50); App Store Connect işledi ("Ready to Submit"); yalnızca dahili "Ekip" grubunda; What to Test (TR) girildi. Harici test / App Store yok.
 > Derleme numarası: App Store Connect'te son derleme **1.1.0 (2)**; Codemagic `ios-testflight` sıradakini otomatik olarak **3** yapar (`pubspec.yaml`: `1.2.0+3`, tutarlı).
 > Bundle ID ve Codemagic iş akışları değişmedi. Ayrıntı: [../13_phase2_cosmetics_shop.md](../13_phase2_cosmetics_shop.md)
 
