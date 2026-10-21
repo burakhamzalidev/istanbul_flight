@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1180" viewBox="0 0 1800 1180"><defs>
+  <filter id="grain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.12  0 0 0 1.6 -0.55"/>
+  </filter>
+  <radialGradient id="vig" cx="50%" cy="48%" r="75%">
+    <stop offset="62%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity="0.28"/>
+  </radialGradient>
+  </defs><rect width="1800" height="1180" fill="#F2E6D0"/><text x="60" y="96" font-family="'Segoe UI Black','Arial Black',sans-serif" font-size="60" fill="#1F3A5F">Renk senaryosu ve paletler</text>
+    <text x="60" y="136" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="22" fill="#4C6280">Martı: Istanbul Flight · Modern Kartpostal · arka plan katmanları gri tonlamalı teslim edilir, bu renkler kodda uygulanır</text><text x="60" y="214" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">ŞAFAK · Haliç</text><rect x="60" y="230" width="196" height="70" rx="8" fill="#3E4A7A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#3E4A7A</text>
+        <text x="144" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök üst</text><rect x="272" y="230" width="196" height="70" rx="8" fill="#F4A9A0" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F4A9A0</text>
+        <text x="356" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök orta</text><rect x="484" y="230" width="196" height="70" rx="8" fill="#FCD9B8" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FCD9B8</text>
+        <text x="568" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Ufuk</text><rect x="696" y="230" width="196" height="70" rx="8" fill="#5C6E9A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#5C6E9A</text>
+        <text x="780" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Su</text><rect x="908" y="230" width="196" height="70" rx="8" fill="#8C7192" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#8C7192</text>
+        <text x="992" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Uzak silüet</text><rect x="1120" y="230" width="196" height="70" rx="8" fill="#4A3F63" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#4A3F63</text>
+        <text x="1204" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Simge</text><rect x="1332" y="230" width="196" height="70" rx="8" fill="#FFD3A1" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1332" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FFD3A1</text>
+        <text x="1416" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Işık / kenar</text><rect x="1544" y="230" width="196" height="70" rx="8" fill="#3A2E48" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1544" y="324" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#3A2E48</text>
+        <text x="1628" y="324" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Engel taban</text><text x="60" y="374" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">ÖĞLE · Galata</text><rect x="60" y="390" width="196" height="70" rx="8" fill="#4FA3C7" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#4FA3C7</text>
+        <text x="144" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök üst</text><rect x="272" y="390" width="196" height="70" rx="8" fill="#BFE3EC" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#BFE3EC</text>
+        <text x="356" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Ufuk</text><rect x="484" y="390" width="196" height="70" rx="8" fill="#2E8B99" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#2E8B99</text>
+        <text x="568" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Su</text><rect x="696" y="390" width="196" height="70" rx="8" fill="#6E8FA3" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#6E8FA3</text>
+        <text x="780" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Uzak silüet</text><rect x="908" y="390" width="196" height="70" rx="8" fill="#3B4F63" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#3B4F63</text>
+        <text x="992" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Simge</text><rect x="1120" y="390" width="196" height="70" rx="8" fill="#FFF6DA" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FFF6DA</text>
+        <text x="1204" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Işık / kenar</text><rect x="1332" y="390" width="196" height="70" rx="8" fill="#3B2F2F" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1332" y="484" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#3B2F2F</text>
+        <text x="1416" y="484" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Engel taban</text><text x="60" y="534" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">GÜN BATIMI · Kız Kulesi</text><rect x="60" y="550" width="196" height="70" rx="8" fill="#5B3A6E" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#5B3A6E</text>
+        <text x="144" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök üst</text><rect x="272" y="550" width="196" height="70" rx="8" fill="#E3684A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#E3684A</text>
+        <text x="356" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök orta</text><rect x="484" y="550" width="196" height="70" rx="8" fill="#F7C35F" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F7C35F</text>
+        <text x="568" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Ufuk</text><rect x="696" y="550" width="196" height="70" rx="8" fill="#7A4A63" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#7A4A63</text>
+        <text x="780" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Su</text><rect x="908" y="550" width="196" height="70" rx="8" fill="#B0636A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#B0636A</text>
+        <text x="992" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Uzak silüet</text><rect x="1120" y="550" width="196" height="70" rx="8" fill="#3A2340" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#3A2340</text>
+        <text x="1204" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Simge</text><rect x="1332" y="550" width="196" height="70" rx="8" fill="#FFB25B" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1332" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FFB25B</text>
+        <text x="1416" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Işık / kenar</text><rect x="1544" y="550" width="196" height="70" rx="8" fill="#2A1A2E" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1544" y="644" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#2A1A2E</text>
+        <text x="1628" y="644" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Engel taban</text><text x="60" y="694" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">GECE · Boğaz Köprüsü</text><rect x="60" y="710" width="196" height="70" rx="8" fill="#0E1433" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#0E1433</text>
+        <text x="144" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gök üst</text><rect x="272" y="710" width="196" height="70" rx="8" fill="#26305E" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#26305E</text>
+        <text x="356" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Ufuk</text><rect x="484" y="710" width="196" height="70" rx="8" fill="#141C40" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#141C40</text>
+        <text x="568" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Su</text><rect x="696" y="710" width="196" height="70" rx="8" fill="#0A0E24" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#0A0E24</text>
+        <text x="780" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Silüet</text><rect x="908" y="710" width="196" height="70" rx="8" fill="#FFC857" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FFC857</text>
+        <text x="992" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Sodyum ışık</text><rect x="1120" y="710" width="196" height="70" rx="8" fill="#FF3E7F" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FF3E7F</text>
+        <text x="1204" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Neon · sadece ışık</text><rect x="1332" y="710" width="196" height="70" rx="8" fill="#00E5FF" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1332" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#00E5FF</text>
+        <text x="1416" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Neon · sadece ışık</text><rect x="1544" y="710" width="196" height="70" rx="8" fill="#0A0D1F" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1544" y="804" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#0A0D1F</text>
+        <text x="1628" y="804" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Engel taban</text><text x="60" y="854" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">ARAYÜZ</text><rect x="60" y="870" width="196" height="70" rx="8" fill="#F2E6D0" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F2E6D0</text>
+        <text x="144" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Kartpostal kremi</text><rect x="272" y="870" width="196" height="70" rx="8" fill="#1F3A5F" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#1F3A5F</text>
+        <text x="356" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Boğaz laciverti</text><rect x="484" y="870" width="196" height="70" rx="8" fill="#D9643A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#D9643A</text>
+        <text x="568" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Kiremit · aksiyon</text><rect x="696" y="870" width="196" height="70" rx="8" fill="#E8B04B" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#E8B04B</text>
+        <text x="780" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Hardal · ödül</text><rect x="908" y="870" width="196" height="70" rx="8" fill="#2E8B99" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#2E8B99</text>
+        <text x="992" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Turkuaz</text><rect x="1120" y="870" width="196" height="70" rx="8" fill="#FBF7EE" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="964" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FBF7EE</text>
+        <text x="1204" y="964" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Skor rakamı</text><text x="60" y="1014" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="22" letter-spacing="2" fill="#D9643A">SİMİT</text><rect x="60" y="1030" width="196" height="70" rx="8" fill="#F7F3EA" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="60" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F7F3EA</text>
+        <text x="144" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Tüy</text><rect x="272" y="1030" width="196" height="70" rx="8" fill="#9AACBF" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="272" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#9AACBF</text>
+        <text x="356" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Sırt</text><rect x="484" y="1030" width="196" height="70" rx="8" fill="#2B2B3A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="484" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#2B2B3A</text>
+        <text x="568" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Kontur</text><rect x="696" y="1030" width="196" height="70" rx="8" fill="#F2C23B" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="696" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F2C23B</text>
+        <text x="780" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Gaga</text><rect x="908" y="1030" width="196" height="70" rx="8" fill="#D9643A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="908" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#D9643A</text>
+        <text x="992" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Benek</text><rect x="1120" y="1030" width="196" height="70" rx="8" fill="#F2B33B" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1120" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#F2B33B</text>
+        <text x="1204" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Bacak</text><rect x="1332" y="1030" width="196" height="70" rx="8" fill="#C8803A" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1332" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#C8803A</text>
+        <text x="1416" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Simit</text><rect x="1544" y="1030" width="196" height="70" rx="8" fill="#FBF2D0" stroke="#2B2B3A" stroke-opacity=".25"/>
+        <text x="1544" y="1124" font-family="'Segoe UI Semibold','Segoe UI',Arial,sans-serif" font-size="17" fill="#1F3A5F">#FBF2D0</text>
+        <text x="1628" y="1124" font-family="'Segoe UI','Segoe UI Variable',Arial,sans-serif" font-size="15" fill="#4C6280">Susam</text><rect width="1800" height="1180" filter="url(#grain)" opacity=".3"/></svg>

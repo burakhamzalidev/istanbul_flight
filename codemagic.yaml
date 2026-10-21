@@ -1,0 +1,169 @@
+# Martı: Istanbul Flight — Codemagic CI/CD (Görev 8)
+#
+# DURUM: Yapılandırma hazır, HENÜZ ÇALIŞTIRILMADI. Proje bir git deposuna konup Codemagic'e bağlanınca
+# çalışır. Gizli bilgi bu dosyada yok; imzalama Codemagic arayüzünde tanımlanır (aşağıdaki "Kurulum").
+#
+# İş akışları:
+#   verify          her push / PR: bağımlılık, analiz, test, web derlemesi (imza gerekmez)
+#   android-release Google Play için imzalı AAB + APK (yükleme KAPALI; elle onay)
+#   ios-check       Mac üzerinde imzasız iOS derlemesi (Apple hesabı gerekmez; derlenebilirlik kontrolü)
+#   ios-ipa         imzalı IPA, yükleme YOK (Apple Developer hesabı gerekir)
+#   ios-testflight  imzalı IPA + TestFlight dahili test yüklemesi; YALNIZCA elle başlatılır (= yükleme onayı)
+#
+# Kurulum (Codemagic → Team settings):
+#   1. Code signing identities → Android keystores: yükleme anahtarını "marti_upload_keystore" referansıyla ekleyin.
+#      Codemagic bu anahtar için CM_KEYSTORE_PATH, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS, CM_KEY_PASSWORD
+#      değişkenlerini verir; android/app/build.gradle.kts bunları okur.
+#   2. Integrations → Developer Portal: mevcut "Zar ASC Key" anahtarı kullanılıyor (Team MF9WSY29TD).
+#   3. Code signing identities → iOS: dağıtım sertifikası ve App Store provisioning profile
+#      (bundle id: com.burakhamzali.istanbulFlight — kesinleşti).
+
+definitions:
+  flutter_version: &flutter_version 3.47.7
+  scripts:
+    - &pub_get
+      name: Bağımlılıklar
+      script: flutter pub get
+    - &analyze
+      name: Statik analiz
+      script: flutter analyze
+    - &test
+      name: Birim ve widget testleri
+      script: |
+        mkdir -p test-results
+        flutter test --machine > test-results/flutter.json
+      test_report: test-results/flutter.json
+
+workflows:
+  verify:
+    name: Doğrulama (analiz + test + web)
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      flutter: *flutter_version
+    triggering:
+      events: [push, pull_request]
+      cancel_previous_builds: true
+    scripts:
+      - *pub_get
+      - *analyze
+      - *test
+      - name: Web release derlemesi
+        script: flutter build web --release
+    artifacts:
+      - build/web/**
+      - test-results/flutter.json
+
+  android-release:
+    name: Android release (AAB + APK)
+    instance_type: linux_x2
+    max_build_duration: 45
+    environment:
+      flutter: *flutter_version
+      java: 17
+      android_signing:
+        - marti_upload_keystore
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "v*"
+    scripts:
+      - *pub_get
+      - *analyze
+      - *test
+      - name: İmza anahtarı var mı
+        script: |
+          if [ -z "$CM_KEYSTORE_PATH" ]; then echo "Yayın anahtarı tanımlı değil (marti_upload_keystore)"; exit 1; fi
+      - name: AAB (Google Play)
+        script: flutter build appbundle --release --build-number=$BUILD_NUMBER
+      - name: APK (dahili test dağıtımı)
+        script: flutter build apk --release --build-number=$BUILD_NUMBER
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/mapping/release/mapping.txt
+    # Google Play'e otomatik yükleme bilinçli olarak KAPALI (yayın için açık kullanıcı onayı gerekir).
+    # Açmak için: Play Console servis hesabı JSON'unu GCLOUD_SERVICE_ACCOUNT_CREDENTIALS olarak ekleyip
+    # publishing: google_play: { credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS, track: internal, submit_as_draft: true }
+
+  ios-check:
+    name: iOS derlenebilirlik (imzasız)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      flutter: *flutter_version
+      xcode: latest # App Store şartı: Xcode 26 + iOS 26 SDK (28 Nisan 2026'dan beri)
+    triggering:
+      events: [pull_request]
+    scripts:
+      - *pub_get
+      - *test
+      - name: iOS release (imzasız)
+        script: flutter build ios --release --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+
+  # ---- iOS TestFlight beta (Görev 9, docs/11_ios_testflight_beta.md) ----
+  # APP_STORE_APPLE_ID aşağıda vars içinde (gizli bilgi değil). İmzalama: Developer Portal entegrasyonu + profil istanbulflight_appstore.
+  # Derleme numarası: TestFlight'taki son numara + 1 (aynı numarayla iki yükleme reddedilir).
+
+  ios-ipa:
+    name: iOS imzalı IPA (yükleme YOK)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Zar ASC Key # Codemagic Developer Portal entegrasyonundaki mevcut anahtar
+    environment:
+      flutter: *flutter_version
+      xcode: latest # App Store şartı: Xcode 26 + iOS 26 SDK
+      vars:
+        APP_STORE_APPLE_ID: 6825523571 # İstanbul Flight (App Store Connect → App Information → Apple ID; gizli değil)
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.burakhamzali.istanbulFlight # kesinleşti (Görev 9, 21 Ekim 2026)
+    triggering:
+      events: [tag]
+      tag_patterns:
+        - pattern: "v*"
+    scripts: &ios_signed_build
+      - *pub_get
+      - *analyze
+      - *test
+      - name: Provisioning profillerini uygula
+        script: xcode-project use-profiles
+      - name: IPA (derleme numarası = TestFlight son + 1)
+        script: |
+          LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
+          NEXT=$((LATEST + 1))
+          echo "Derleme numarası: $NEXT"
+          flutter build ipa --release --build-number=$NEXT --export-options-plist=/Users/builder/export_options.plist
+    artifacts: &ios_artifacts
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+  ios-testflight:
+    # DİKKAT: Bu iş akışı App Store Connect'e YÜKLER. Otomatik tetikleyicisi yoktur; yalnızca Codemagic'te
+    # elle "Start new build" ile çalışır. Başlatmak = TestFlight yüklemesine onay. Yalnızca DAHİLİ test:
+    # harici grup ve herkese açık bağlantı tanımlı değil.
+    name: iOS TestFlight (dahili test, elle başlatılır)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: Zar ASC Key # Codemagic Developer Portal entegrasyonundaki mevcut anahtar
+    environment:
+      flutter: *flutter_version
+      xcode: latest
+      vars:
+        APP_STORE_APPLE_ID: 6825523571 # İstanbul Flight (App Store Connect → App Information → Apple ID; gizli değil)
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.burakhamzali.istanbulFlight # kesinleşti (Görev 9, 21 Ekim 2026)
+    scripts: *ios_signed_build
+    artifacts: *ios_artifacts
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true # TestFlight işlemesi; dahili test grubu (otomatik dağıtım açıksa) alır
+        # beta_groups: harici gruplar BİLİNÇLİ OLARAK yok
+        submit_to_app_store: false

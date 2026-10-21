@@ -1,0 +1,860 @@
+<title>Martı: Istanbul Flight</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&family=Caveat:wght@600;700&display=swap">
+<style>
+/* Layout: kartpostal hero (posterize gökyüzü bantları + silüet), ardından tek kolon okunur gövde; renk senaryosu sayfanın görsel kalbi. */
+:root{
+  --bg:#EEF2F4;          /* öğle sisi */
+  --paper:#FBF7EE;       /* kartpostal kağıdı */
+  --ink:#1F3A5F;         /* Boğaz laciverti */
+  --ink-soft:#4C6280;
+  --line:#CFD8E0;
+  --sea:#2E8B99;         /* turkuaz su */
+  --tile:#D9643A;        /* kiremit */
+  --sun:#E8B04B;         /* hardal güneş */
+  --ok:#2F7D5B; --no:#B4412B;
+  --f-display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --f-body:"Nunito", "Segoe UI", system-ui, sans-serif;
+  --f-hand:"Caveat", "Segoe Print", cursive;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1433; --paper:#161E45; --ink:#E9EEF7; --ink-soft:#A9B5D0; --line:#2A3566;
+  --sea:#5CC3CF; --tile:#F08A5D; --sun:#FFC857; --ok:#6CCB9C; --no:#F08A72; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1433; --paper:#161E45; --ink:#E9EEF7; --ink-soft:#A9B5D0; --line:#2A3566;
+  --sea:#5CC3CF; --tile:#F08A5D; --sun:#FFC857; --ok:#6CCB9C; --no:#F08A72; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16.5px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;padding-block:20px 80px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h2{font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--f-body);font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tile)}
+.hand{font-family:var(--f-hand);font-weight:700}
+section{display:flex;flex-direction:column;gap:18px;scroll-margin-top:70px}
+.muted{color:var(--ink-soft)}
+code{font-size:.88em;background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:0 5px}
+ul.clean{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;max-width:72ch}
+
+/* HERO: kartpostal */
+.postcard{position:relative;border-radius:14px;overflow:hidden;background:var(--paper);border:1px solid var(--line);
+  box-shadow:0 1px 0 var(--line),0 18px 40px -24px rgba(15,25,60,.45)}
+.scene{position:relative;aspect-ratio:16/8;max-width:100%;
+  background:linear-gradient(#5B3A6E 0 18%,#8C4A6A 18% 32%,#E3684A 32% 46%,#F29A52 46% 54%,#F7C35F 54% 62%,#7A4A63 62% 100%)}
+.scene svg{position:absolute;inset:0;width:100%;height:100%}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.08;mix-blend-mode:multiply;
+  background-image:radial-gradient(#000 0.6px,transparent 0.7px);background-size:3px 3px}
+.stamp{position:absolute;top:14px;right:14px;background:#FBF7EE;color:#1F3A5F;padding:10px 12px;border:2px dashed #1F3A5F;
+  font-family:var(--f-display);font-weight:800;font-size:.8rem;line-height:1.1;text-align:center;transform:rotate(4deg)}
+.stamp b{display:block;font-size:1.25rem;color:#D9643A}
+.greet{position:absolute;left:18px;bottom:14px;color:#FBF7EE;font-family:var(--f-hand);font-size:clamp(1.4rem,4vw,2.3rem);
+  text-shadow:0 2px 0 rgba(42,26,46,.6)}
+.hero-text{padding:24px clamp(18px,4vw,36px) 28px;display:flex;flex-direction:column;gap:12px}
+.hero-text h1{font-size:clamp(2.3rem,7vw,4rem);font-weight:800;letter-spacing:-.01em}
+.hero-text h1 span{color:var(--tile)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.88rem;color:var(--ink-soft)}
+
+/* nav */
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;margin-block:-36px -30px;
+  display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+nav.toc a{flex:none;font-size:.85rem;font-weight:700;color:var(--ink);text-decoration:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--paper)}
+nav.toc a:hover,nav.toc a:focus-visible{border-color:var(--tile);color:var(--tile);outline:none}
+
+/* karar kartları */
+.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.dec{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.dec .k{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-soft)}
+.dec .v{font-family:var(--f-display);font-weight:700;font-size:1.15rem;line-height:1.25}
+.dec p{font-size:.92rem;color:var(--ink-soft)}
+
+.quote{font-family:var(--f-hand);font-size:clamp(1.5rem,3.6vw,2.1rem);line-height:1.25;color:var(--ink);border-left:4px solid var(--sun);padding-left:16px;max-width:40ch}
+
+/* rota */
+.route{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:0;overflow-x:auto;border-radius:var(--r);border:1px solid var(--line)}
+.stop{padding:14px 14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0;color:#1B2238}
+.stop .pts{font-family:var(--f-display);font-weight:800;font-size:1.3rem}
+.stop .t{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75}
+.stop h3{font-size:1.02rem}
+.stop p{font-size:.85rem;line-height:1.4}
+.stop.night{color:#E9EEF7}
+.scroll{overflow-x:auto;max-width:100%}
+
+/* tablolar */
+table{border-collapse:collapse;width:100%;font-size:.92rem;background:var(--paper);border-radius:var(--r);overflow:hidden}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;background:color-mix(in srgb,var(--line) 35%,var(--paper))}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.stars{color:var(--sun);letter-spacing:1px;white-space:nowrap}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;white-space:nowrap;border:1px solid currentColor}
+.pill.mvp{color:var(--ok)} .pill.later{color:var(--ink-soft)}
+
+/* stil kartları */
+.styles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.style{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.style.pick{border:2px solid var(--tile)}
+.style .bar{display:flex;height:54px}
+.style .bar i{flex:1}
+.style .body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.style .tag{align-self:flex-start;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--tile);color:#fff;padding:3px 9px;border-radius:4px}
+.style .tag.alt{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+.style dl{margin:0;display:grid;grid-template-columns:92px 1fr;gap:6px 10px;font-size:.88rem}
+.style dt{font-weight:700;color:var(--ink-soft)}
+.style dd{margin:0}
+.verdict{font-size:.88rem;border-top:1px dashed var(--line);padding-top:10px}
+
+/* karakter */
+.chars{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.char{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.char.pick{border:2px solid var(--tile)}
+.px{shape-rendering:crispEdges;display:block}
+.pxstage{border-radius:8px;aspect-ratio:4/3;max-width:100%;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.pxstage::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.07;
+  background-image:linear-gradient(#000 1px,transparent 1px),linear-gradient(90deg,#000 1px,transparent 1px);background-size:6px 6px}
+.pxstage .px{width:58%;height:auto;max-height:86%;filter:drop-shadow(0 3px 0 rgba(0,0,0,.18))}
+.frames{display:flex;flex-wrap:wrap;gap:10px}
+.frames figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.frames .sm{width:64px;height:auto}
+.frames figcaption{font-size:.72rem;color:var(--ink-soft)}
+.pal{display:flex;flex-wrap:wrap;gap:4px}
+.pal i{width:18px;height:18px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.char .role{font-size:.78rem;font-weight:700;color:var(--tile);text-transform:uppercase;letter-spacing:.08em}
+.char p{font-size:.92rem}
+.rejected{display:flex;flex-wrap:wrap;gap:8px}
+.rejected span{font-size:.85rem;padding:5px 10px;border-radius:6px;border:1px dashed var(--no);color:var(--no)}
+
+/* ekranlar */
+.screens{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.screen{display:flex;flex-direction:column;gap:12px;min-width:0}
+.phone{aspect-ratio:9/16;max-width:220px;width:100%;margin:0 auto;border-radius:22px;border:6px solid #1B2238;overflow:hidden;position:relative}
+.phone .ph-sky{position:absolute;inset:0}
+.phone .lbl{position:absolute;left:0;right:0;text-align:center;font-family:var(--f-display);font-weight:800;color:#FBF7EE}
+.screen ul{font-size:.9rem}
+
+/* roadmap */
+.road{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.lane{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.lane.mvp{border-top:5px solid var(--tile)}
+.lane h3{display:flex;align-items:baseline;gap:8px}
+.lane h3 small{font-family:var(--f-body);font-size:.75rem;color:var(--ink-soft);font-weight:700}
+.lane ul{margin:0;padding-left:1.05em;font-size:.88rem;display:flex;flex-direction:column;gap:4px}
+
+/* renk senaryosu */
+.script{display:flex;flex-direction:column;gap:12px}
+.phase{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:stretch;background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:12px;min-width:0}
+.phase .mini{border-radius:6px;min-height:92px;position:relative;overflow:hidden}
+.phase .mini svg{position:absolute;inset:0;width:100%;height:100%}
+.phase .info{display:flex;flex-direction:column;gap:8px;min-width:0}
+.phase .info h3{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.phase .info h3 small{font-family:var(--f-hand);font-size:1.15rem;color:var(--ink-soft);font-weight:600}
+.sw{display:flex;flex-wrap:wrap;gap:6px}
+.sw span{display:flex;align-items:center;gap:6px;font-size:.76rem;font-variant-numeric:tabular-nums;padding:3px 8px 3px 3px;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.sw span::before{content:"";width:18px;height:18px;border-radius:4px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+
+.principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;counter-reset:p}
+.principles div{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:6px}
+.principles b{font-family:var(--f-display);font-size:1.05rem}
+.principles p{font-size:.9rem;color:var(--ink-soft)}
+
+.twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.box ul{margin:0;padding-left:1.05em;font-size:.92rem;display:flex;flex-direction:column;gap:5px}
+
+.dodont{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.dodont ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:.92rem}
+.dodont li{display:flex;gap:10px}
+.dodont li::before{flex:none;font-weight:800;width:20px}
+.dont li::before{content:"✕";color:var(--no)}
+.do li::before{content:"✓";color:var(--ok)}
+
+/* sonraki görseller */
+.next{display:flex;flex-direction:column;gap:16px}
+.stage{display:grid;grid-template-columns:180px 1fr;gap:16px;border-top:1px solid var(--line);padding-top:16px}
+.stage .sh{display:flex;flex-direction:column;gap:4px}
+.stage .sh b{font-family:var(--f-display);font-size:1.15rem}
+.stage ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:8px;font-size:.94rem}
+.stage.crit .sh b{color:var(--tile)}
+.cta{background:var(--ink);color:var(--bg);border-radius:var(--r);padding:20px 22px;display:flex;flex-direction:column;gap:6px}
+.cta b{font-family:var(--f-display);font-size:1.2rem}
+footer{font-size:.82rem;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:16px}
+
+@media (max-width:640px){
+  .phase{grid-template-columns:1fr}
+  .stage{grid-template-columns:1fr;gap:8px}
+  .style dl{grid-template-columns:1fr}
+  .style dt{margin-top:4px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bird{animation:bob 2.4s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-6px)}}
+}
+</style>
+
+<div class="wrap">
+
+<header class="postcard">
+  <div class="scene" role="img" aria-label="Gün batımında Kız Kulesi ve Galata silüeti önünde uçan martı Simit">
+    <svg viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <circle cx="560" cy="205" r="46" fill="#FFD27A"/>
+      <!-- uzak yarımada silüeti -->
+      <g fill="#5A3355">
+        <path d="M0 250 L0 232 Q60 228 90 236 L120 236 Q150 200 180 236 L190 236 L190 180 L194 176 L198 180 L198 236 L240 236 Q275 196 310 236 L322 236 L322 186 L326 182 L330 186 L330 236 L380 238 Q420 230 470 240 L800 244 L800 250 Z"/>
+      </g>
+      <!-- Galata -->
+      <g fill="#3A2340">
+        <rect x="660" y="160" width="34" height="90"/>
+        <path d="M654 162 L677 112 L700 162 Z"/>
+        <rect x="620" y="215" width="120" height="35"/>
+      </g>
+      <!-- deniz -->
+      <rect x="0" y="248" width="800" height="152" fill="#7A4A63"/>
+      <g stroke="#F7C35F" stroke-width="3" stroke-linecap="round" opacity=".7">
+        <line x1="520" y1="270" x2="600" y2="270"/><line x1="540" y1="288" x2="585" y2="288"/><line x1="530" y1="306" x2="560" y2="306"/>
+        <line x1="90" y1="300" x2="130" y2="300"/><line x1="300" y1="330" x2="340" y2="330"/>
+      </g>
+      <!-- Kız Kulesi -->
+      <g fill="#2A1A2E">
+        <ellipse cx="410" cy="262" rx="58" ry="10"/>
+        <rect x="370" y="226" width="80" height="34"/>
+        <rect x="396" y="176" width="26" height="52"/>
+        <path d="M392 178 L409 140 L426 178 Z"/>
+        <rect x="407" y="128" width="4" height="14"/>
+      </g>
+      <!-- vapur -->
+      <g transform="translate(110 238)">
+        <path d="M0 20 L130 20 L118 36 L10 36 Z" fill="#2A1A2E"/>
+        <rect x="16" y="6" width="96" height="14" fill="#FBF7EE"/>
+        <rect x="58" y="-12" width="12" height="18" fill="#2A1A2E"/>
+        <rect x="58" y="-12" width="12" height="5" fill="#D9643A"/>
+      </g>
+      <!-- Simit -->
+      <g class="bird"><g id="heroBird" data-anim="simitA,simitB" transform="translate(190 52) scale(5)" shape-rendering="crispEdges"></g></g>
+    </svg>
+    <div class="grain"></div>
+    <div class="stamp">KIZ KULESİ<b>52</b>DURAK 3</div>
+    <div class="greet">Üsküdar'dan selamlar!</div>
+  </div>
+  <div class="hero-text">
+    <span class="eyebrow">Ürün konsepti ve Art Direction · v0.1</span>
+    <h1>Martı: <span>Istanbul Flight</span></h1>
+    <p>Bir martının gözünden İstanbul'da bir gün. Dokun, kanat çırp, simidini kap ve gün batmadan Boğaz'ı geç. Bu doküman oyunun konseptini, görsel yönünü, ilk sürüm kapsamını ve bir sonraki aşamada üretilecek görselleri tanımlıyor.</p>
+    <div class="meta"><span>21 Ekim 2026</span><span>Aşama: konsept (kod yok)</span><span>Platform: iOS + Android, dikey ekran</span></div>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Bölümler">
+  <a href="#ozet">Özet</a><a href="#konsept">Konsept</a><a href="#stiller">Stiller</a><a href="#karakter">Karakterler</a>
+  <a href="#ayrisma">Ayrışma</a><a href="#tekrar">Tekrar oynama</a><a href="#ekranlar">Ekranlar</a><a href="#kapsam">Kapsam</a>
+  <a href="#motor">Motor</a><a href="#art">Art Direction</a><a href="#sonraki">Sonraki görseller</a>
+</nav>
+
+<section id="ozet">
+  <span class="eyebrow">Yönetici özeti</span>
+  <h2>Alınan kararlar</h2>
+  <div class="decisions">
+    <div class="dec"><span class="k">Çekirdek fikir</span><span class="v">Her tur, İstanbul'da tek bir gün</span><p>Şafakta Haliç'ten kalkılır. Gidilen mesafe arttıkça gün ilerler ve gece Karadeniz ağzına varılır.</p></div>
+    <div class="dec"><span class="k">Kahraman</span><span class="v">Simit, İstanbul martısı</span><p>Simit çalmakla ünlü, tombul ve kendini beğenmiş bir martı.</p></div>
+    <div class="dec"><span class="k">Görsel yön</span><span class="v">Modern Kartpostal</span><p>1950–60'ların turizm afişlerinden beslenen, sınırlı paletli, baskı dokulu düz vektör. Arayüzde ölçülü çini detayları.</p></div>
+    <div class="dec"><span class="k">Ayırt edici mekanikler</span><span class="v">Gün döngüsü, rota, kartpostal</span><p>Simit toplama, kıl payı bonusu, günün rüzgârı (lodos/poyraz).</p></div>
+    <div class="dec"><span class="k">Motor</span><span class="v">Flutter + Flame</span><p>Ekibin iki Flutter projesi ve hazır Codemagic/fastlane hattı var.</p></div>
+    <div class="dec"><span class="k">İsim</span><span class="v">Martı: Istanbul Flight</span><p>"Martı" marka olur, "Istanbul Flight" mağaza aramalarında alt başlık olarak kalır.</p></div>
+  </div>
+</section>
+
+<section id="konsept">
+  <span class="eyebrow">01 · Özgün konsept</span>
+  <h2>Gün ilerledikçe şehir değişir</h2>
+  <p class="quote">"Bir martının gözünden İstanbul'da bir gün."</p>
+  <p>Flappy Bird türünün temel sorunu, 10. saniyede görülen ekranın 100. saniyedekiyle aynı olması. Mesafeye bağlı bir zaman ve rota ilerlemesi üç şey kazandırıyor:</p>
+  <ul class="clean">
+    <li><b>Görsel ödül:</b> İyi oynayan oyuncu yeni bir İstanbul görür. Gün batımını görmek başlı başına bir hedef olur.</li>
+    <li><b>Somut hedef:</b> "47 puan" soyut kalır, "Kız Kulesi'ne vardım" akılda kalır. Skor puan olarak tutulur ama yer adıyla anlatılır.</li>
+    <li><b>Tekrar oynama isteği:</b> "Bir dahakine köprüyü geçeceğim" düşüncesi, "bir puan daha"dan güçlüdür.</li>
+  </ul>
+
+  <h3>Rota: gün = Boğaz boyunca kuzeye</h3>
+  <div class="route" role="list">
+    <div class="stop" role="listitem" style="background:linear-gradient(#F4A9A0,#FCD9B8)"><span class="t">Şafak</span><span class="pts">0–15</span><h3>Haliç &amp; Tarihi Yarımada</h3><p>Cami silüetleri arka planda. Engeller: ahşap ev çatıları ve bacalar, çamaşır ipleri.</p></div>
+    <div class="stop" role="listitem" style="background:linear-gradient(#BFE3EC,#E6F3F6)"><span class="t">Sabah–öğle</span><span class="pts">15–35</span><h3>Galata &amp; Karaköy</h3><p>Galata Kulesi. Engeller: iskele direkleri, vinçler, tramvay kabloları, tenteler.</p></div>
+    <div class="stop" role="listitem" style="background:linear-gradient(#F7C35F,#F29A52)"><span class="t">İkindi → gün batımı</span><span class="pts">35–60</span><h3>Üsküdar &amp; Kız Kulesi</h3><p>Vapurlar. Engeller: hareketli vapur bacaları, martı sürüleri.</p></div>
+    <div class="stop" role="listitem" style="background:linear-gradient(#E3684A,#8C4A6A);color:#FBF7EE"><span class="t">Mavi saat</span><span class="pts">60–90</span><h3>Ortaköy &amp; Boğaz Köprüsü</h3><p>Yalılar. Engeller: köprü askı kabloları, yalı çatıları.</p></div>
+    <div class="stop night" role="listitem" style="background:linear-gradient(#26305E,#0E1433)"><span class="t">Gece</span><span class="pts">90+</span><h3>Rumeli Hisarı → Karadeniz</h3><p>Kuzey köprüleri, hisar. Engeller: ışıklı kablolar, balıkçı tekneleri, şamandıralar.</p></div>
+  </div>
+  <p class="muted">90 puandan sonra gece döngüsü sonsuza kadar sürer. Zorluk artmaya devam eder, ara sıra yıldız kayar ya da bir havai fişek atılır.</p>
+
+  <div class="twocol">
+    <div class="box">
+      <h3>Engel tasarımı: boru yok</h3>
+      <ul>
+        <li><b>Alttan yükselenler:</b> çatılar, bacalar, direkler, vapur bacaları.</li>
+        <li><b>Üstten sarkanlar:</b> çamaşır ipleri, tramvay ve köprü kabloları, tenteler.</li>
+        <li><b>Hitbox her zaman dikdörtgen.</b> Görsel detay bu dikdörtgenin içinde kalır. Adil oyun önce gelir.</li>
+        <li><b>Cami, minare ve kubbeler asla engel olmaz</b>, çarpışma alanına girmez. Sadece arka planda saygın bir silüet olarak durur.</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Çekirdek döngü</h3>
+      <ul>
+        <li>Dokun ve kanat çırp</li>
+        <li>Geçitten geç: +1 puan</li>
+        <li>Simit kap: para birimi</li>
+        <li>Kıl payı geç: bonus ve ekran parlaması</li>
+        <li>Bölge değişir: gün ilerler, durak damgası basılır</li>
+        <li>Çarp: kartpostal ekranı açılır, 1 saniyede yeniden denenir</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="stiller">
+  <span class="eyebrow">02–03 · Görsel stiller</span>
+  <h2>Üç yön, tek kimlik</h2>
+  <div class="styles">
+    <article class="style pick">
+      <div class="bar" aria-hidden="true"><i style="background:#1F3A5F"></i><i style="background:#2E8B99"></i><i style="background:#F2E6D0"></i><i style="background:#D9643A"></i><i style="background:#E8B04B"></i><i style="background:#3B2F2F"></i></div>
+      <div class="body">
+        <span class="tag">Önerilen ana stil</span>
+        <h3>A · Modern Kartpostal</h3>
+        <dl>
+          <dt>Referans</dt><dd>1950–60'ların Türk turizm afişleri, serigrafi baskı, mid-century illüstrasyon, Monument Valley'nin sade şekil dili.</dd>
+          <dt>Atmosfer</dt><dd>Nostaljik, sıcak, şiirsel ama modern. Albümdeki bir kartpostal, ama bugün çizilmiş.</dd>
+          <dt>Teknik</dt><dd>Düz renk alanları, 3–5 kademeli renk bantları, hafif baskı grain'i.</dd>
+          <dt>Hedef kitle</dt><dd>16–45 yaş arası, geniş kitle. Türkiye + İstanbul'u bilen ya da merak eden global oyuncu.</dd>
+          <dt>Avantaj</dt><dd>Özgün. Gün döngüsü sadece palet değişimiyle ucuza çıkar. Küçük dosya boyutu ve yüksek FPS. Paylaşım kartı olarak güçlü.</dd>
+          <dt>Risk</dt><dd>Fazla sakin kalabilir. Doygun karakter rengi, net kontrast ve canlı efektlerle dengelenecek.</dd>
+        </dl>
+      </div>
+    </article>
+    <article class="style">
+      <div class="bar" aria-hidden="true"><i style="background:#1D4E89"></i><i style="background:#3FA7A3"></i><i style="background:#C0392B"></i><i style="background:#D4AF37"></i><i style="background:#F5EEDC"></i><i style="background:#2C5F2D"></i></div>
+      <div class="body">
+        <span class="tag alt">Arayüz detayı olarak</span>
+        <h3>B · Çini &amp; Minyatür</h3>
+        <dl>
+          <dt>Referans</dt><dd>Matrakçı Nasuh'un İstanbul tasviri, İznik çinisi, ebru.</dd>
+          <dt>Atmosfer</dt><dd>Masalsı, zengin, altın varaklı. Müze havası.</dd>
+          <dt>Hedef kitle</dt><dd>Kültür meraklısı, biraz daha yetişkin kitle, eğitim kurumları.</dd>
+          <dt>Avantaj</dt><dd>Dünyada eşi yok, festivallerde ve basında dikkat çeker.</dd>
+          <dt>Dezavantaj</dt><dd>Minyatürün düz perspektifi parallax derinliğiyle çelişir. Yoğun desen hızlı oyunda okunabilirliği düşürür. Asset maliyeti yüksek.</dd>
+        </dl>
+        <p class="verdict">Karar: arayüz çerçeveleri, madalyalar ve kartpostal damgalarında kullanılacak.</p>
+      </div>
+    </article>
+    <article class="style">
+      <div class="bar" aria-hidden="true"><i style="background:#0B0F2B"></i><i style="background:#5B2A86"></i><i style="background:#FF3E7F"></i><i style="background:#00E5FF"></i><i style="background:#FFC857"></i></div>
+      <div class="body">
+        <span class="tag alt">Gece paletinde ölçülü</span>
+        <h3>C · Neon Boğaz</h3>
+        <dl>
+          <dt>Referans</dt><dd>Gece İstanbul fotoğrafları, köprü ışık şovları, synthwave.</dd>
+          <dt>Atmosfer</dt><dd>Enerjik, hızlı, "şehir hiç uyumaz".</dd>
+          <dt>Hedef kitle</dt><dd>13–25 yaş, hiper-casual ve kısa video kitlesi.</dd>
+          <dt>Avantaj</dt><dd>Kısa videolarda çekici, "juicy" bir his verir.</dd>
+          <dt>Dezavantaj</dt><dd>Jenerik riski çok yüksek, İstanbul'un özgünlüğünü siler. Bloom efektleri mobilde pil ve performans maliyeti getirir.</dd>
+        </dl>
+        <p class="verdict">Karar: Stil A'nın gece fazında köprü ışıkları ve sodyum lambalar olarak kullanılacak.</p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="karakter">
+  <span class="eyebrow">04 · Karakter konseptleri</span>
+  <h2>Kim uçuyor?</h2>
+  <div class="chars">
+    <article class="char pick">
+      <div class="pxstage" style="background:linear-gradient(#4FA3C7 0 58%,#BFE3EC 58% 72%,#2E8B99 72%)">
+        <svg class="px" data-anim="simitA,simitB" role="img" aria-label="Simit, pixel art martı, kanat çırpıyor"></svg>
+      </div>
+      <div class="frames" aria-label="Simit sprite kareleri">
+        <figure><svg class="px sm" data-sprite="simitA" aria-hidden="true"></svg><figcaption>Kare 1 · kanat aşağı</figcaption></figure>
+        <figure><svg class="px sm" data-sprite="simitB" aria-hidden="true"></svg><figcaption>Kare 2 · kanat yukarı</figcaption></figure>
+        <figure><svg class="px sm" data-sprite="simitHit" aria-hidden="true"></svg><figcaption>Çarpma</figcaption></figure>
+      </div>
+      <div class="pal" data-pal="simit" aria-label="Simit paleti"></div>
+      <span class="role">Kahraman · MVP</span>
+      <h3>Simit, İstanbul martısı</h3>
+      <p>Tombul, kendinden emin, hafif küstah ama sevimli. Vapurda yolcuların elinden simit kapan, herkesin tanıdığı martı. Boynundaki simit onun imza aksesuarı.</p>
+      <p class="muted">Gövdesi neredeyse daire, bu sayede hitbox adil. Sıcak gagası ve simidi soğuk Boğaz tonları üzerinde öne çıkıyor. Uçmak martının doğası, açıklama gerektirmiyor.</p>
+    </article>
+    <article class="char">
+      <div class="pxstage" style="background:linear-gradient(#3E4A7A 0 34%,#F4A9A0 34% 56%,#FCD9B8 56% 72%,#5C6E9A 72%)">
+        <svg class="px" data-anim="hezA,hezB" role="img" aria-label="Hezarfen, tahta kanatlı pixel art çocuk"></svg>
+      </div>
+      <div class="pal" data-pal="hez" aria-label="Hezarfen paleti"></div>
+      <span class="role">Efsanevi karakter · v1.2</span>
+      <h3>Hezarfen, küçük mucit</h3>
+      <p>Galata Kulesi'nden Üsküdar'a uçtuğu anlatılan Hezarfen Ahmed Çelebi'ye saygı duruşu. Tahta ve kumaş kanatlı, gözlüklü, meraklı bir çocuk.</p>
+      <p class="muted">Geniş kanatları hitbox'ı belirsizleştirdiği için ana karakter değil. Özel görevle açılacak: <i>Galata'dan Üsküdar'a</i>.</p>
+    </article>
+    <article class="char">
+      <div class="pxstage" style="background:linear-gradient(#5B3A6E 0 30%,#E3684A 30% 52%,#F7C35F 52% 72%,#7A4A63 72%)">
+        <svg class="px" data-anim="tombiA,tombiB" role="img" aria-label="Tombi, balonlara tutunan pixel art tekir kedi"></svg>
+      </div>
+      <div class="pal" data-pal="tombi" aria-label="Tombi paleti"></div>
+      <span class="role">İkinci karakter · v1.2</span>
+      <h3>Tombi, balonlu sokak kedisi</h3>
+      <p>İstanbul'un dünyaca ünlü sokak kedilerinden, turuncu tekir ve uykucu. Pazardan kaçırdığı bir demet balona tutunarak uçuyor.</p>
+      <p class="muted">Daha "yüzen" bir fizik, farklı bir oynanış hissi. Dikey silüeti dar geçitlerde zorladığı için ikinci planda kalıyor ama global pazarlamada çok değerli.</p>
+    </article>
+  </div>
+  <div class="box">
+    <h3>Pixel art karakter yönü</h3>
+    <ul>
+      <li><b>Grid:</b> Simit 24×20 piksel, oyunda tam sayı katlarla büyütülür (1080 px genişlikte ×5–6). Kenar yumuşatma kapalı (nearest-neighbor).</li>
+      <li><b>Kontur:</b> 1 piksel koyu <code>#2B2B3A</code>. Karakter yine sahnede konturu olan tek öğe olur.</li>
+      <li><b>Palet:</b> Karakter başına en fazla 10 renk, her ana renk için tek gölge tonu. Kartpostal paletinden türetildi.</li>
+      <li><b>Animasyon:</b> Pixel art'ta kare sayısı ucuzdur. Kanat çırpma 4–6 kare, çarpma ve süzülme ayrı kareler.</li>
+      <li><b>Karar gerekiyor:</b> Pixel karakter + düz vektör dünya bilinçli bir kontrast yaratır ve karakteri daha da öne çıkarır. Tüm dünyayı da pixel'e çevirmek mümkün ama tutarlılık için arka planların da aynı piksel ölçeğinde çizilmesi gerekir. Bu seçim Aşama A'daki stil karelerinde test edilecek.</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>Bilinçli olarak elenen fikirler</h3>
+    <div class="rejected"><span>Uçan halı: oryantalist klişe</span><span>Fesli ve bıyıklı figürler: eskimiş bir Türk karikatürü</span><span>Uçak: İstanbul ile duygusal bağı yok</span></div>
+  </div>
+</section>
+
+<section id="ayrisma">
+  <span class="eyebrow">05 · Benzerlerinden ayrışma</span>
+  <h2>Oyuncu sadece skor için değil, İstanbul'u görmek için de oynar</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>Benzer oyunlarda</th><th>Martı: Istanbul Flight'ta</th></tr></thead>
+    <tbody>
+      <tr><td>Sonsuz ve aynı arka plan</td><td>Mesafeye bağlı gün döngüsü ve gerçek bir rota</td></tr>
+      <tr><td>Sadece puan</td><td>Puan + yer adı: "Kız Kulesi'ne vardın"</td></tr>
+      <tr><td>Soyut engeller (boru)</td><td>Şehrin kendi dokusu: çatı, baca, kablo, vapur</td></tr>
+      <tr><td>Genel para toplama</td><td>Simit toplama, karakterin motivasyonuna bağlı</td></tr>
+      <tr><td>Sıradan "Game Over"</td><td>Düştüğün yerden paylaşılabilir bir kartpostal</td></tr>
+      <tr><td>Tek tip ses</td><td>Vapur düdüğü, martı çığlığı, simitçi nidası, dalga sesi</td></tr>
+      <tr><td>Her gün aynı</td><td>Günün rüzgârı: lodos geri iter, poyraz öne savurur</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="tekrar">
+  <span class="eyebrow">06 · Tekrar oynanabilirlik</span>
+  <h2>İlerleme hissi ve merak</h2>
+  <p>Tekrar oynatmanın en güçlü aracı ilerleme hissi ve merak. Zorlayıcı bildirimlere ihtiyaç yok.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Özellik</th><th>Etki</th><th>Maliyet</th><th>Karar</th></tr></thead>
+    <tbody>
+      <tr><td>Anında yeniden başlama (&lt;1 sn)</td><td class="stars">★★★★★</td><td>Düşük</td><td><span class="pill mvp">MVP</span></td></tr>
+      <tr><td>Gün döngüsü ve bölge ilerlemesi</td><td class="stars">★★★★★</td><td>Orta</td><td><span class="pill mvp">MVP</span></td></tr>
+      <tr><td>Kartpostal ve durak damgası koleksiyonu</td><td class="stars">★★★★</td><td>Düşük</td><td><span class="pill mvp">MVP</span></td></tr>
+      <tr><td>Kıl payı bonusu (risk/ödül)</td><td class="stars">★★★★</td><td>Düşük</td><td><span class="pill mvp">MVP</span></td></tr>
+      <tr><td>Paylaşılabilir kartpostal skor kartı</td><td class="stars">★★★★</td><td>Düşük</td><td><span class="pill mvp">MVP</span></td></tr>
+      <tr><td>Simit mağazası (karakter ve şapka açma)</td><td class="stars">★★★★</td><td>Orta</td><td><span class="pill later">v1.1</span></td></tr>
+      <tr><td>Günün rüzgârı</td><td class="stars">★★★</td><td>Düşük</td><td><span class="pill later">v1.1</span></td></tr>
+      <tr><td>Günlük görev ve günlük tohumlu tur</td><td class="stars">★★★★</td><td>Orta</td><td><span class="pill later">v1.1</span></td></tr>
+      <tr><td>Liderlik tablosu (Game Center / Play Games)</td><td class="stars">★★★</td><td>Orta</td><td><span class="pill later">v1.1</span></td></tr>
+      <tr><td>Hayalet martı (en iyi turun gölgesi)</td><td class="stars">★★★</td><td>Orta</td><td><span class="pill later">v1.2</span></td></tr>
+      <tr><td>Özel görevler (Hezarfen: Galata → Üsküdar)</td><td class="stars">★★★★</td><td>Orta</td><td><span class="pill later">v1.2</span></td></tr>
+      <tr><td>Mevsimsel İstanbul (Lale Festivali, kar, yılbaşı)</td><td class="stars">★★★</td><td>Yüksek</td><td><span class="pill later">v2</span></td></tr>
+      <tr><td>Anadolu yakası rotası (Kadıköy, Moda, Haydarpaşa)</td><td class="stars">★★★★</td><td>Yüksek</td><td><span class="pill later">v2</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="ekranlar">
+  <span class="eyebrow">07 · Ekran tasarımı</span>
+  <h2>Üç ekran, sıfır sürtünme</h2>
+  <div class="screens">
+    <div class="screen">
+      <div class="phone" aria-hidden="true">
+        <div class="ph-sky" style="background:linear-gradient(#3E4A7A 0 30%,#F4A9A0 30% 48%,#FCD9B8 48% 62%,#5C6E9A 62%)"></div>
+        <div class="lbl" style="top:16%;font-size:1.3rem;color:#1F3A5F"><span style="background:#FBF7EE;padding:6px 10px;border:2px dashed #1F3A5F">MARTI</span></div>
+        <div class="lbl" style="top:72%;font-size:.85rem">Uçmak için dokun</div>
+      </div>
+      <h3>Ana menü: canlı sahne</h3>
+      <ul class="clean">
+        <li>Ayrı bir menü sayfası yok, oyun sahnesi arkada akıyor (şafak, Haliç, geçen vapur).</li>
+        <li>Simit bir bacanın üstünde oturup kafasını sallıyor.</li>
+        <li>Logo bir kartpostal pulu: tırtıklı kenar, eskitilmiş mürekkep.</li>
+        <li>"Oyna" butonu yok, ekrana dokunmak oyunu başlatıyor.</li>
+        <li>Altta: Albüm, Martılar, Ayarlar. Rekor yer adıyla yazılıyor: "Kız Kulesi · 52".</li>
+      </ul>
+    </div>
+    <div class="screen">
+      <div class="phone" aria-hidden="true">
+        <div class="ph-sky" style="background:linear-gradient(#4FA3C7 0 40%,#BFE3EC 40% 62%,#2E8B99 62%)"></div>
+        <div style="position:absolute;top:5%;left:10%;right:10%;height:3px;background:#FBF7EE;opacity:.8"></div>
+        <div class="lbl" style="top:10%;font-size:2rem;text-shadow:0 2px 0 #1F3A5F">23</div>
+        <div style="position:absolute;left:34%;top:0;width:16%;height:30%;background:#3B2F2F"></div>
+        <div style="position:absolute;left:34%;bottom:0;width:16%;height:36%;background:#3B2F2F"></div>
+      </div>
+      <h3>Oyun ekranı: arayüz neredeyse yok</h3>
+      <ul class="clean">
+        <li>Skor üst ortada: büyük beyaz rakamlar, koyu gölgeli.</li>
+        <li>En üstte ince bir rota çubuğu, 5 durak ikonu ve ilerleyen martı. Hedef her zaman görünür.</li>
+        <li>Simit sayacı sağ üstte, duraklat sol üstte (safe-area'ya uygun).</li>
+        <li>Bölge geçişinde 1,5 saniyelik bir mürekkep damgası çıkar ("Galata"), oyunu durdurmaz.</li>
+        <li>Parmağın olduğu alt 1/3'te hiç arayüz öğesi yok.</li>
+      </ul>
+    </div>
+    <div class="screen">
+      <div class="phone" aria-hidden="true">
+        <div class="ph-sky" style="background:#2A1A2E"></div>
+        <div style="position:absolute;inset:16% 9% 30%;background:linear-gradient(#5B3A6E 0 30%,#E3684A 30% 55%,#7A4A63 55%);border:5px solid #FBF7EE;transform:rotate(-3deg)"></div>
+        <div class="lbl hand" style="top:50%;font-family:var(--f-hand);font-size:1.15rem;transform:rotate(-3deg)">Galata'dan selamlar!</div>
+        <div style="position:absolute;left:14%;right:14%;bottom:9%;height:11%;background:#D9643A;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#FBF7EE;font-family:var(--f-display);font-weight:800">Tekrar uç</div>
+      </div>
+      <h3>Oyun sonu: kartpostal</h3>
+      <ul class="clean">
+        <li>80 ms'lik hit-stop ve tüy efekti, sonra ekran düştüğün yerin kartpostalına dönüşür.</li>
+        <li>Kartın arkasında skor, rekor ve simit yazar. Yeni durak açıldıysa damga "küt" diye basılır.</li>
+        <li><b>Tekrar uç</b> butonu büyük ve başparmak bölgesinde. <b>Paylaş</b> butonu 1080×1350 bir görsel üretir.</li>
+        <li>Çarpmadan butona en fazla 0,8 saniye geçer, animasyon dokunuşla atlanabilir.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="kapsam">
+  <span class="eyebrow">08 · Kapsam</span>
+  <h2>İlk sürüm ve sonrası</h2>
+  <div class="road">
+    <div class="lane mvp"><h3>v1.0 <small>MVP</small></h3><ul>
+      <li>Tek karakter: Simit</li><li>5 bölge, 4 zaman fazı ve palet geçişleri</li><li>Her bölgede 2 engel varyantı, 35 puandan sonra hareketli vapur</li>
+      <li>Simit toplama (sayaç)</li><li>Kıl payı bonusu</li><li>Rota çubuğu, durak damgaları, kartpostal oyun sonu</li>
+      <li>Albüm: 5 kartpostal</li><li>Paylaşılabilir skor kartı</li><li>Müzik (ana tema + gece), SFX, titreşim</li>
+      <li>Yerel kayıt, offline çalışma</li><li>Türkçe + İngilizce</li><li>Reklam yok ya da sadece ödüllü reklam</li></ul></div>
+    <div class="lane"><h3>v1.1</h3><ul>
+      <li>Simit mağazası: şapkalar, kanat renkleri (takım renkleri yok)</li><li>Günün rüzgârı, günlük görevler</li><li>Liderlik tablosu, başarımlar</li><li>Ödüllü reklamla bir kez devam</li></ul></div>
+    <div class="lane"><h3>v1.2</h3><ul>
+      <li>Hezarfen ve "Galata'dan Üsküdar'a" görevi</li><li>Tombi ve farklı fizik</li><li>Hayalet martı</li></ul></div>
+    <div class="lane"><h3>v2</h3><ul>
+      <li>Anadolu yakası rotası</li><li>Mevsimsel temalar: kar, Lale Festivali, yılbaşı</li><li>Hava durumu: yağmur, sisli Boğaz</li></ul></div>
+  </div>
+</section>
+
+<section id="motor">
+  <span class="eyebrow">09 · Oyun motoru</span>
+  <h2>Öneri: Flutter + Flame</h2>
+  <p>İstanbul Flight için henüz bir proje yok. Ama ekibin iki Flutter uygulaması ve bunlardan birinde hazır bir Codemagic + fastlane yayın hattı var.</p>
+  <div class="scroll"><table>
+    <thead><tr><th>Kriter</th><th>Flutter + Flame</th><th>Godot 4</th><th>Unity</th><th>Defold</th></tr></thead>
+    <tbody>
+      <tr><td>Mevcut bilgi birikimine uyum</td><td class="stars">★★★★★</td><td class="stars">★★</td><td class="stars">★★</td><td class="stars">★</td></tr>
+      <tr><td>2D oyun yetenekleri</td><td class="stars">★★★★</td><td class="stars">★★★★★</td><td class="stars">★★★★★</td><td class="stars">★★★★</td></tr>
+      <tr><td>Menü / UI geliştirme</td><td class="stars">★★★★★</td><td class="stars">★★★</td><td class="stars">★★★</td><td class="stars">★★</td></tr>
+      <tr><td>Uygulama boyutu</td><td class="num">~15–25 MB</td><td class="num">~25–40 MB</td><td class="num">~40–60 MB</td><td class="num">~5–10 MB</td></tr>
+      <tr><td>Shader / renk efektleri</td><td class="stars">★★★</td><td class="stars">★★★★★</td><td class="stars">★★★★★</td><td class="stars">★★★★</td></tr>
+      <tr><td>Lisans</td><td>Ücretsiz, MIT</td><td>Ücretsiz, MIT</td><td>Ücretsiz katman + kısıtlar</td><td>Ücretsiz</td></tr>
+      <tr><td>CI/CD</td><td>Hazır</td><td>Yeniden kurulmalı</td><td>Yeniden kurulmalı</td><td>Yeniden kurulmalı</td></tr>
+    </tbody>
+  </table></div>
+  <div class="twocol">
+    <div class="box"><h3>Gerekçe</h3><ul>
+      <li>Teknik ihtiyaç mütevazı: parallax, sprite animasyonu, dikdörtgen çarpışma, palet geçişi. Flame hepsini rahatça karşılıyor.</li>
+      <li>Menü, albüm, mağaza ve paylaşım kartı Flutter'ın en güçlü olduğu alan. Flame overlay'leriyle oyunun üstüne konabiliyor.</li>
+      <li>Mevcut yayın hattı kopyalanarak ilk günden mağaza build'i alınabilir.</li></ul></div>
+    <div class="box"><h3>Riskler ve çözümler</h3><ul>
+      <li><b>Gün döngüsü:</b> Gri tonlamalı ya da maskeli katmanlar ve ColorFilter ya da tek bir palet shader'ı. İkisi de 60 FPS'e uygun.</li>
+      <li><b>Performans:</b> Katman başına tek texture atlas, yatay döşenebilir parallax.</li>
+      <li><b>B planı:</b> Daha ağır efekt gerekirse Godot 4. Bu ölçekte gerekmesi beklenmiyor.</li></ul></div>
+  </div>
+</section>
+
+<section id="art">
+  <span class="eyebrow">10 · Art Direction</span>
+  <h2>Görsel kuralların tamamı</h2>
+
+  <h3>Sanat ilkeleri</h3>
+  <div class="principles">
+    <div><b>Önce oynanış okunur</b><p>Karakter ve engel her zaman arka plandan daha yüksek kontrastta.</p></div>
+    <div><b>İstanbul bir karakterdir</b><p>Her ekranda en az bir İstanbul işareti olur, ama aynı anda en fazla bir kahraman simge görünür.</p></div>
+    <div><b>Az ama net</b><p>Katman başına en fazla 3–4 renk. Detay çizgi kalabalığıyla değil, şekil ve ışıkla verilir.</p></div>
+    <div><b>Sıcak kahraman, serin dünya</b><p>Simit'in sıcak gagası ve simidi soğuk Boğaz tonları üzerinde öne çıkar.</p></div>
+    <div><b>Saygı</b><p>Kutsal yapılar sadece arka planda, saygın silüetler olarak görünür. Asla engel ya da komik öğe olmaz.</p></div>
+  </div>
+
+  <div class="twocol">
+    <div class="box"><h3>Şekil dili</h3><ul>
+      <li><b>Canlılar:</b> yuvarlak, yumuşak, daire ve oval tabanlı.</li>
+      <li><b>Engeller:</b> dikdörtgen tabanlı, köşe yarıçapı genişliğin ≈%8'i.</li>
+      <li><b>Mimari:</b> arka planda kubbe ve minare ritmi, ortada Galata'nın konik formu, önde yalıların yatay saçakları.</li>
+      <li><b>Su:</b> yatay bantlar ve kesik beyaz yansıma çizgileri.</li></ul></div>
+    <div class="box"><h3>Kamera ve perspektif</h3><ul>
+      <li>Ortografik yan görünüş, dikey ekran.</li>
+      <li>Ufuk çizgisi ekran yüksekliğinin %62'sinde sabit. Altı deniz, üstü gökyüzü.</li>
+      <li>Atmosferik perspektif: uzaklaştıkça renk açılır, doygunluk ve detay azalır.</li></ul></div>
+  </div>
+
+  <h3>Katman yapısı (arkadan öne)</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Katman</th><th>İçerik</th><th>Parallax</th><th>Kontrast</th><th>Not</th></tr></thead>
+    <tbody>
+      <tr><td class="num">L0 Gökyüzü</td><td>Bantlı gradyan, güneş/ay, yıldızlar</td><td class="num">0</td><td>Çok düşük</td><td>Palet geçişiyle renklenir</td></tr>
+      <tr><td class="num">L1 Bulutlar</td><td>Düz, 2 tonlu kartpostal bulutları</td><td class="num">0,05</td><td>Düşük</td><td></td></tr>
+      <tr><td class="num">L2 Uzak silüet</td><td>Tarihi yarımada camileri, karşı kıyı tepeleri</td><td class="num">0,1</td><td>Düşük</td><td>Tek renk + tek ışık tonu</td></tr>
+      <tr><td class="num">L3 Kahraman simge</td><td>Galata, Kız Kulesi, köprüler</td><td class="num">0,2</td><td>Orta</td><td>Bölge başına bir tane</td></tr>
+      <tr><td class="num">L4 Orta plan</td><td>Kıyı binaları, yalılar, vapurlar, iskele</td><td class="num">0,4</td><td>Orta</td><td>Vapurlar kendi hızıyla da hareket eder</td></tr>
+      <tr><td class="num">L5 Su</td><td>Boğaz yüzeyi, yansımalar</td><td class="num">0,5</td><td>Orta</td><td>Basit dalga animasyonu</td></tr>
+      <tr><td class="num"><b>L6 Oynanış</b></td><td><b>Simit, engeller, toplanabilir simitler</b></td><td class="num"><b>1,0</b></td><td><b>En yüksek</b></td><td>Koyu taban + açık kenar ışığı</td></tr>
+      <tr><td class="num">L7 Ön plan</td><td>Bulanık martılar, vapur dumanı</td><td class="num">1,3</td><td>Düşük, bulanık</td><td>Seyrek, oynanışı asla kapatmaz</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Renk senaryosu: dört faz</h3>
+  <p class="muted">Her faz tek bir ana ışık rengiyle tanımlanır. Engellerin bir kenarında o fazın renginde ince bir kenar ışığı bulunur. Geçişler 3–4 saniyelik palet enterpolasyonuyla yapılır. Gece ışıkları önceden çizilir, gerçek bloom kullanılmaz.</p>
+  <div class="script">
+    <div class="phase">
+      <div class="mini" style="background:linear-gradient(#3E4A7A 0 26%,#9C7A9A 26% 42%,#F4A9A0 42% 54%,#FCD9B8 54% 64%,#5C6E9A 64%)"><svg viewBox="0 0 150 92" preserveAspectRatio="none" aria-hidden="true"><path d="M0 59 L0 52 L30 52 Q42 40 54 52 L62 52 L62 38 L65 36 L68 38 L68 52 L150 54 L150 59Z" fill="#4A3F63"/></svg></div>
+      <div class="info"><h3>Şafak <small>sessiz, umut</small></h3>
+        <div class="sw"><span style="--c:#3E4A7A">#3E4A7A gök</span><span style="--c:#F4A9A0">#F4A9A0 gök</span><span style="--c:#FCD9B8">#FCD9B8 ufuk</span><span style="--c:#5C6E9A">#5C6E9A su</span><span style="--c:#4A3F63">#4A3F63 silüet</span><span style="--c:#FFD3A1">#FFD3A1 ışık</span><span style="--c:#2E2A40">#2E2A40 engel</span></div></div>
+    </div>
+    <div class="phase">
+      <div class="mini" style="background:linear-gradient(#4FA3C7 0 34%,#86C4DA 34% 50%,#BFE3EC 50% 64%,#2E8B99 64%)"><svg viewBox="0 0 150 92" preserveAspectRatio="none" aria-hidden="true"><g fill="#6E8FA3"><rect x="96" y="30" width="10" height="29"/><path d="M93 31 L101 14 L109 31Z"/><rect x="80" y="48" width="44" height="11"/></g></svg></div>
+      <div class="info"><h3>Öğle <small>canlı, kalabalık</small></h3>
+        <div class="sw"><span style="--c:#4FA3C7">#4FA3C7 gök</span><span style="--c:#BFE3EC">#BFE3EC ufuk</span><span style="--c:#2E8B99">#2E8B99 su</span><span style="--c:#6E8FA3">#6E8FA3 silüet</span><span style="--c:#FFF6DA">#FFF6DA ışık</span><span style="--c:#3B2F2F">#3B2F2F engel</span></div></div>
+    </div>
+    <div class="phase">
+      <div class="mini" style="background:linear-gradient(#5B3A6E 0 22%,#A14E5E 22% 36%,#E3684A 36% 50%,#F7C35F 50% 62%,#7A4A63 62%)"><svg viewBox="0 0 150 92" preserveAspectRatio="none" aria-hidden="true"><g fill="#3A2340"><ellipse cx="75" cy="60" rx="18" ry="3"/><rect x="63" y="48" width="24" height="11"/><rect x="71" y="32" width="8" height="17"/><path d="M70 33 L75 20 L80 33Z"/></g></svg></div>
+      <div class="info"><h3>Gün batımı <small>altın saat, doruk</small></h3>
+        <div class="sw"><span style="--c:#5B3A6E">#5B3A6E gök</span><span style="--c:#E3684A">#E3684A gök</span><span style="--c:#F7C35F">#F7C35F ufuk</span><span style="--c:#7A4A63">#7A4A63 su</span><span style="--c:#3A2340">#3A2340 silüet</span><span style="--c:#FFB25B">#FFB25B ışık</span><span style="--c:#2A1A2E">#2A1A2E engel</span></div></div>
+    </div>
+    <div class="phase">
+      <div class="mini" style="background:linear-gradient(#0E1433 0 40%,#26305E 40% 62%,#141C40 62%)"><svg viewBox="0 0 150 92" preserveAspectRatio="none" aria-hidden="true"><path d="M0 56 L40 56 L40 30 L44 30 L44 56 L106 56 L106 30 L110 30 L110 56 L150 56" fill="none" stroke="#0A0E24" stroke-width="3"/><path d="M42 30 Q75 52 108 30" fill="none" stroke="#FFC857" stroke-width="1.5"/><g fill="#FFC857"><circle cx="20" cy="12" r="1"/><circle cx="128" cy="18" r="1"/><circle cx="90" cy="8" r="1"/></g></svg></div>
+      <div class="info"><h3>Gece <small>büyülü, sakin</small></h3>
+        <div class="sw"><span style="--c:#0E1433">#0E1433 gök</span><span style="--c:#26305E">#26305E ufuk</span><span style="--c:#141C40">#141C40 su</span><span style="--c:#0A0E24">#0A0E24 silüet</span><span style="--c:#FFC857">#FFC857 sodyum</span><span style="--c:#05070F">#05070F engel</span></div></div>
+    </div>
+  </div>
+
+  <div class="twocol">
+    <div class="box"><h3>Karakter kuralları (Simit)</h3><ul>
+      <li>Boyutu ekran genişliğinin %11–12'si (1080 px'te ≈128 px).</li>
+      <li>Hitbox görsel dairenin %80'i, tüy uçları oyuncu lehine dışarıda kalır.</li>
+      <li>Sahnede konturu olan tek öğe Simit: <code>#2B2B3A</code>, 4 px @1080.</li>
+      <li>Gecede hafif sıcak bir dolgu ışığı alır, rengini kaybetmez.</li>
+      <li>Renkler: gövde <code>#F7F3EA</code>, kanat <code>#8FA3B8</code>, gaga <code>#F2A93B</code>, simit <code>#C8803A</code>.</li></ul></div>
+    <div class="box"><h3>Engel kuralları</h3><ul>
+      <li>Geçit yüksekliği başlangıçta karakterin 3,2 katı, en dar hali 2,4 katı.</li>
+      <li>Engel genişliği sabit, ekranın ≈%18'i.</li>
+      <li>Her engel üç parça: dikey döşenebilir gövde + uç başlığı + bölgeye özel süs.</li>
+      <li>Uç başlıkları, geçidin sınırını net gösteren açık renkli bir kenarla biter.</li></ul></div>
+    <div class="box"><h3>Doku ve son işlem</h3><ul>
+      <li>Tüm sahnede %4–6 opaklıkta baskı grain'i (tek, döşenebilir doku).</li>
+      <li>Kenarlarda çok hafif vinyet.</li>
+      <li>Gradyanlar bantlı, yumuşak geçiş yok.</li></ul></div>
+    <div class="box"><h3>Arayüz dili</h3><ul>
+      <li>Malzeme metaforu: kartpostal, pul, mürekkep damgası, vapur bileti.</li>
+      <li>Köşe süslerinde ve madalyalarda tek renkli İznik motifleri (lale, karanfil, rumi).</li>
+      <li>Fontlar Türkçe glifleri tam desteklemeli. Başlık: Baloo 2 / Fredoka, kartpostal: Caveat, gövde: Nunito (OFL lisanslı).</li>
+      <li>Zemin <code>#F2E6D0</code>, metin <code>#1F3A5F</code>, ana aksiyon <code>#D9643A</code>, ödül <code>#E8B04B</code>.</li>
+      <li>Dokunma alanları en az 48 dp, ana aksiyon butonu en az 72 dp yüksekliğinde.</li></ul></div>
+    <div class="box"><h3>Efektler ve ses</h3><ul>
+      <li><b>Kanat çırpma:</b> 2–3 tüy partikülü, squash &amp; stretch.</li>
+      <li><b>Kıl payı:</b> 0,15 sn beyaz halka ve el yazısıyla "kıl payı!".</li>
+      <li><b>Simit toplama:</b> simit sayaca uçar, susamlar saçılır.</li>
+      <li><b>Çarpma:</b> 80 ms hit-stop, tüy patlaması, 6 px kamera sarsıntısı.</li>
+      <li><b>Ses:</b> puan sesi kısa bir vapur düdüğü notası, bölge geçişi uzun düdük, çarpma martı çığlığı.</li></ul></div>
+    <div class="box"><h3>Teknik asset standartları</h3><ul>
+      <li>Referans çözünürlük 1080×1920 (9:16). Uzun ekranlarda gökyüzü ve deniz uzar, tablette yanlara ekstra genişlik bırakılır.</li>
+      <li>Kaynak vektör, çıktı PNG @1x/@2x/@3x. Katman başına en fazla 2048² atlas.</li>
+      <li>Arka planlar 3–4 değer kademeli gri ya da maskeli teslim edilir, renkler koddan gelir.</li>
+      <li>Adlandırma: <code>zone2_L3_galata_v01.png</code></li>
+      <li>Animasyonlar 12 fps sprite sheet, kanat çırpma 6 kare.</li></ul></div>
+  </div>
+
+  <h3>Yapılmayacaklar ve yapılacaklar</h3>
+  <div class="dodont">
+    <div class="box dont"><ul>
+      <li>Cami ve minareyi engel ya da çarpışma objesi yapmak</li>
+      <li>Uçan halı, fes, oryantalist kostümler</li>
+      <li>Takım renkleri ve logoları, siyasi isimler. Köprüler tarafsız adlarla anılır: Boğaz, Fatih, Kuzey</li>
+      <li>Fotogerçekçi doku ya da fotoğraf kolajı</li>
+      <li>Aynı ekranda iki kahraman simge</li>
+      <li>Oynanış katmanında düşük kontrastlı renk</li></ul></div>
+    <div class="box do"><ul>
+      <li>Her ekranda su</li>
+      <li>Her bölgede tek bir kahraman simge</li>
+      <li>Her fazda net bir ışık rengi</li>
+      <li>Dikdörtgen hitbox'lar, görsel detay içeride</li>
+      <li>Az asset ile çok varyasyon: gövde + başlık + süs</li></ul></div>
+  </div>
+</section>
+
+<section id="sonraki">
+  <span class="eyebrow">Sonraki aşama</span>
+  <h2>Hazırlanacak görseller</h2>
+  <p>Öncelik sırasıyla listelendi. Aşama A onaylanmadan üretime geçilmez.</p>
+  <div class="next">
+    <div class="stage crit"><div class="sh"><b>A · Görsel yön onayı</b><span class="muted">En kritik aşama</span></div><ol>
+      <li><b>3 stil karesi, 1080×1920:</b> Arayüzüyle birlikte sahte oyun ekranı. (a) şafak, Haliç, bacalar; (b) gün batımı, Kız Kulesi, hareketli vapur; (c) gece, Boğaz Köprüsü, askı kabloları.</li>
+      <li><b>Renk senaryosu:</b> 4 fazın palet şeritleri ve tek bir sahnenin 4 fazdaki küçük versiyonları.</li>
+      <li><b>Simit karakter sayfası:</b> ön, yan ve 3/4 görünüş, 6 ifade, engel ve geçitle boyut karşılaştırması, fazlardaki görünüşü.</li></ol></div>
+    <div class="stage"><div class="sh"><b>B · MVP üretim asset'leri</b></div><ol start="4">
+      <li>Simit animasyonları: bekleme, kanat çırpma (6 kare), süzülme, düşüş, çarpma, suya düşme</li>
+      <li>Parallax kiti: 5 bölge × L0–L5, döşenebilir ve maskeli</li>
+      <li>Kahraman simgeler: yarımada silüeti, Galata, Kız Kulesi, Boğaz Köprüsü, Rumeli Hisarı ve kuzey köprüleri</li>
+      <li>Engel kiti: 5 bölge × 2 varyant, hareketli vapur bacası</li>
+      <li>Toplanabilir ve efekt sprite'ları: simit, susam, tüy, su sıçraması, kıl payı halkası, mürekkep damgası</li>
+      <li>Arayüz kiti: pul logo, butonlar, ikonlar, skor rakamları, rota çubuğu, çini köşe süsleri</li>
+      <li>Kartpostal şablonları: 5 durak ön yüzü, ortak arka yüz ve damga, 1080×1350 paylaşım kartı</li></ol></div>
+    <div class="stage"><div class="sh"><b>C · Mağaza ve tanıtım</b></div><ol start="11">
+      <li>Uygulama ikonu: Simit'in yüzü ve simidi, gün batımı zemin. 3 alternatif ve küçük boyut testi</li>
+      <li>Splash / açılış ekranı</li>
+      <li>5–6 mağaza ekran görüntüsü ve Google Play feature graphic (1024×500)</li></ol></div>
+    <div class="stage"><div class="sh"><b>D · Sonraki sürümler</b></div><ol start="14">
+      <li>Hezarfen ve Tombi karakter sayfaları</li>
+      <li>Şapka ve kostüm konsepti (simit mağazası)</li></ol></div>
+  </div>
+  <div class="cta"><b>Önerilen sonraki adım</b><span>Aşama A'daki üç teslimatı hazırlayıp onaylamak. Bunlar onaylanınca görsel kimlik kilitlenir, geri kalan tüm asset'ler bu referanslardan türetilir.</span></div>
+</section>
+
+<script>
+(function(){
+  var PAL={
+    simit:{K:'#2B2B3A',W:'#F7F3EA',w:'#D9D2C3',G:'#8FA3B8',g:'#62768E',O:'#F2A93B',o:'#C97F1E',H:'#FFFFFF',R:'#F4A9A0',S:'#C8803A',s:'#8E5524',Y:'#FBF2D0'},
+    hez:{K:'#2B2B3A',H:'#4A2E1E',F:'#E9C4A0',L:'#7FC6D6',B:'#7A4E2D',C:'#EADBB8',c:'#C9B58A',T:'#D9643A',t:'#A8482A',P:'#1F3A5F'},
+    tombi:{K:'#2B2B3A',R:'#D9643A',r:'#A8482A',Y:'#E8B04B',y:'#B98420',T:'#2E8B99',t:'#1F6B76',H:'#FBF7EE',O:'#E39A4C',o:'#B96A2A',M:'#F7E3C4',P:'#F4A9A0'}
+  };
+  var simitBottom=[
+    ".....KKKKKKKKKwwwwwK....",
+    "........KSYSSSKwwwK.....",
+    ".......KSsK.KSSKKKK.....",
+    ".......KSSK.KsSK.OO.....",
+    "........KsSYSsK..oo.....",
+    ".........KKKKK.........."];
+  var S={
+    simitA:{p:'simit',rows:[
+      "........................",
+      "..........KKKKKK........",
+      "........KKWWWWWWKK......",
+      ".......KWWWWWWWWWWK.....",
+      ".......KWWWWWWWKKKWK....",
+      "......KWWWWWWWWWHEWK....",
+      "......KWWWWWWWWWEEWKKK..",
+      "......KWWWWWWWWWWRWOOOK.",
+      ".....KGGWWWWWWWWWWWoooK.",
+      "....KGGGGWWWWWWWWWWKKK..",
+      "...KgGGGGGWWWWWWWWWWK...",
+      "...KggGGGGwWWWWWWWWWK...",
+      "....KggggKwwWWWWWWWK...."].concat(simitBottom)},
+    simitB:{p:'simit',rows:[
+      "..KKK...................",
+      "..KGGKK...KKKKKK........",
+      "..KgGGGKKKWWWWWWKK......",
+      "...KggGGGKWWWWWWWWK.....",
+      "....KggGGKWWWWWKKKWK....",
+      ".....KKggKWWWWWWHEWK....",
+      "......KKKWWWWWWWEEWKKK..",
+      "......KWWWWWWWWWWRWOOOK.",
+      ".....KWWWWWWWWWWWWWoooK.",
+      "....KWWWWWWWWWWWWWWKKK..",
+      "...KwWWWWWWWWWWWWWWWK...",
+      "...KwwWWWWWWWWWWWWWWK...",
+      "....KwwwwWWWWWWWWWWK...."].concat(simitBottom)},
+    simitHit:{p:'simit',rows:[
+      "...........K..K.........",
+      "..........KKKKKK........",
+      "........KKWWWWWWKK......",
+      ".......KWWWWWWWWWWK.....",
+      ".......KWWWWWWWWKWKWK...",
+      "......KWWWWWWWWWWKWWK...",
+      "......KWWWWWWWWWKWKWKK..",
+      "......KWWWWWWWWWWRWOOOK.",
+      ".....KGGWWWWWWWWWWWoooK.",
+      "....KGGGGWWWWWWWWWWKKK..",
+      "...KgGGGGGWWWWWWWWWWK...",
+      "...KggGGGGwWWWWWWWWWK...",
+      "....KggggKwwWWWWWWWK...."].concat(simitBottom)},
+    hezA:{p:'hez',rows:[
+      "..........KKKK..........",
+      ".........KHHHHK.........",
+      "........KHHHHHHK........",
+      "........KHKKKKKK........",
+      "........KFKLLKLLK.......",
+      "........KFKKKKKKK.......",
+      "........KFFFFFFK........",
+      "BBBBBBBBBKFFFFKBBBBBBBBB",
+      "KCCCCCCCKTTTTTTKCCCCCCCK",
+      ".KCCCCCcKTTTTTTKcCCCCCK.",
+      "..KCCCccKTtTTtTKccCCCK..",
+      "...KCccBKTTTTTTKBccCK...",
+      "....KcBBKTTTTTTKBBcK....",
+      ".....KB.KPPPPPPK.BK.....",
+      "........KPPKKPPK........",
+      "........KPPKKPPK........",
+      "........KKKKKKKK........"]},
+    hezB:{p:'hez',rows:[
+      "..........KKKK..........",
+      "K........KHHHHK........K",
+      "BK......KHHHHHHK......KB",
+      "BCK.....KHKKKKKK.....KCB",
+      "BCCK....KFKLLKLLK...KCCB",
+      "BCCCK...KFKKKKKKK..KCCCB",
+      "BCCccK..KFFFFFFK..KccCCB",
+      "BBBBBBBBBKFFFFKBBBBBBBBB",
+      ".KCCcccKKTTTTTTKKcccCCK.",
+      "..KKKKK.KTTTTTTK.KKKKK..",
+      "........KTtTTtTK........",
+      "........KTTTTTTK........",
+      "........KTTTTTTK........",
+      "........KPPPPPPK........",
+      "........KPPKKPPK........",
+      "........KPPKKPPK........",
+      "........KKKKKKKK........"]},
+    tombiA:{p:'tombi',rows:[
+      "........KKKK............",
+      "...KKK.KYYYYK..KKK......",
+      "..KRRRKYHYYYyKKTTTK.....",
+      ".KRHRRrKYYYYyKTHTTtK....",
+      ".KRRRRrKyYYyyKTTTTtK....",
+      ".KrRRrrK.KyyK.KTTttK....",
+      "..KrrrK...KK...KttK.....",
+      "...KKK.....K....KK......",
+      "......K....K....K.......",
+      "........K..K..K.........",
+      "..........KKK...........",
+      "..........KOOK..........",
+      ".....KK..KOOOOK..KK.....",
+      ".....KOKKKOOOOKKKOK.....",
+      ".....KOOOOoOOoOOOOK.....",
+      ".....KOKKOOOOOOKKOK.....",
+      ".....KOOOMMPPMMOOOK.....",
+      "......KOOMMMMMMOOK......",
+      ".......KKOoOOoOKK.......",
+      "......KOoOMMMMOoOK......",
+      "......KOOOMMMMOOOK......",
+      "......KoOOOOOOOOoK..KK..",
+      ".......KOOKKKKOOK..KoK..",
+      ".......KKK....KKKKKK...."]}
+  };
+  var b=S.tombiA.rows.slice();
+  b[21]="......KoOOOOOOOOoK......";
+  b[22]=".......KOOKKKKOOKKKK....";
+  b[23]=".......KKK....KKKoK.....";
+  S.tombiB={p:'tombi',rows:b};
+
+  function rects(name){
+    var sp=S[name],pal=PAL[sp.p],out='';
+    sp.rows.forEach(function(r,y){for(var x=0;x<r.length;x++){var c=pal[r[x]];if(c)out+='<rect x="'+x+'" y="'+y+'" width="1.04" height="1.04" fill="'+c+'"/>';}});
+    return out;
+  }
+  function size(name){var r=S[name].rows;return [Math.max.apply(null,r.map(function(s){return s.length})),r.length];}
+  function paint(el,name){
+    if(el.tagName.toLowerCase()==='svg'){var d=size(name);el.setAttribute('viewBox','0 0 '+d[0]+' '+d[1]);}
+    el.innerHTML=rects(name);
+  }
+  document.querySelectorAll('[data-sprite]').forEach(function(el){paint(el,el.getAttribute('data-sprite'))});
+  var anims=[].slice.call(document.querySelectorAll('[data-anim]')).map(function(el){
+    var f=el.getAttribute('data-anim').split(',');paint(el,f[0]);return {el:el,f:f,i:0};
+  });
+  document.querySelectorAll('[data-pal]').forEach(function(el){
+    var p=PAL[el.getAttribute('data-pal')];
+    el.innerHTML=Object.keys(p).filter(function(k,i,a){return a.map(function(x){return p[x]}).indexOf(p[k])===i}).map(function(k){return '<i style="background:'+p[k]+'" title="'+p[k]+'"></i>'}).join('');
+  });
+  var still=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!still)setInterval(function(){anims.forEach(function(a){a.i=(a.i+1)%a.f.length;paint(a.el,a.f[a.i]);});},260);
+})();
+</script>
+
+<footer>Martı: Istanbul Flight · Ürün konsepti ve Art Direction v0.1 · 21 Ekim 2026. Sayfadaki küçük çizimler yön gösteren eskizlerdir, final görsel değildir.</footer>
+</div>

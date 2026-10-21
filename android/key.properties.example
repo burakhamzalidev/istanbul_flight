@@ -1,0 +1,9 @@
+# Yayın imzası (yerel derleme). Bu dosyayı "key.properties" adıyla kopyalayıp doldurun.
+# key.properties ve *.jks dosyaları .gitignore'dadır; depoya EKLEMEYİN.
+# Anahtar oluşturma (JDK keytool):
+#   keytool -genkeypair -v -keystore ~/marti-upload.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+# Google Play App Signing kullanılırsa bu anahtar "yükleme anahtarı"dır; asıl imzayı Google tutar.
+storeFile=C:/Users/KULLANICI/marti-upload.jks
+storePassword=
+keyAlias=upload
+keyPassword=

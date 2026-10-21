@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Açılış (Android 11 ve öncesi): oyunun koyu arka planı, ortada Simit (pixel art, ölçeklenmeden) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:filter="false"
+            android:src="@drawable/splash_simit" />
+    </item>
+</layer-list>
