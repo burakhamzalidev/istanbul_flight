@@ -52,8 +52,8 @@ Gerçek duruma göre işaretli (21 Ekim 2026, Görev 9). Ayrıntılar: [docs/11_
 ## 4. Gerçekten derlendi
 
 - [ ] Yerel iOS derlemesi: **yok** (Windows; `flutter build ipa` yok)
-- [ ] Codemagic `ios-check` (imzasız): **hiç çalıştırılmadı**
-- [ ] Codemagic `ios-ipa` (imzalı IPA): **hiç çalıştırılmadı**. Dağıtılabilir IPA **yok**
+- [ ] Codemagic `ios-check` (imzasız): çalıştırılmadı (gerek kalmadı; `ios-ipa` imzalı derlemeyi yaptı)
+- [x] Codemagic `ios-ipa` (imzalı IPA): **başarılı** (22 Ekim 2026, derleme #1, 3 dk 51 sn). `Istanbul_Flight.ipa` 23,2 MB, sürüm 1.0.0 (1), Xcode arşivi 177,8 MB, dSYM'ler alındı. Analiz ve testler Mac'te de geçti. Yükleme yapılmadı
 
 ## 5. TestFlight'a yüklendi
 

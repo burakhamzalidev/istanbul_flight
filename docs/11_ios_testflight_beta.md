@@ -8,11 +8,11 @@
 | Durum | Sonuç |
 |---|---|
 | **Hazır** (kod, yapılandırma, belge) | **Evet.** iOS yapılandırması, Codemagic iş akışları, beta metinleri ve test planı hazır. Analiz temiz, 98/98 test geçiyor |
-| **Gerçekten derlendi** (iOS) | **Hayır.** Bu makine Windows; Xcode yok. `flutter build ipa` bu platformda yok. Codemagic iş akışı **hiç çalıştırılmadı** |
+| **Gerçekten derlendi** (iOS) | **Evet (22 Ekim 2026).** Codemagic `ios-ipa` derleme #1 başarılı: imzalı `Istanbul_Flight.ipa` (23,2 MB), 1.0.0 (1), `com.burakhamzali.istanbulFlight`, iOS 15.0. Yerelde derlenmedi (Windows) |
 | **TestFlight'a yüklendi** | **Hayır.** Apple Developer hesabı, imzalama ve onayın yok. Yükleme yapılmadı |
 | **Cihazda test edildi** | **Hayır.** 20 senaryonun hepsi NOT RUN. FPS ve bellek **ölçülmedi** |
 
-Dağıtılabilir (imzalı) bir IPA **oluşturulmadı**.
+App Store dağıtım imzalı IPA Codemagic'te **oluşturuldu**; App Store Connect'e **yüklenmedi**.
 
 ## 1. Ortam ve proje analizi
 
@@ -236,6 +236,10 @@ Senin onayınla tarayıcı panelinde yapıldı (giriş bilgilerini sen girdin):
 | `codemagic.yaml` | Entegrasyon adı `Zar ASC Key`; `APP_STORE_APPLE_ID` doğrudan `vars` içinde (gizli değil); `marti_ios` grubuna gerek kalmadı |
 
 Not: `verify` iş akışı her push'ta Linux makinede çalışır (yükleme yapmaz).
+
+### İlk imzalı derleme
+
+Codemagic `ios-ipa`, derleme #1 (commit 164afe6, Mac mini M2, Xcode latest, Flutter 3.47.7): toplam 3 dk 51 sn. Bağımlılıklar, analiz ve testler geçti; profil uygulandı; Xcode arşivi 48 sn (177,8 MB); IPA 23,2 MB. Flutter uygulama ayarları doğrulaması: 1.0.0 / 1 / "İstanbul Flight" / iOS 15.0 / `com.burakhamzali.istanbulFlight`. Çıktılar: IPA + 5 dSYM. Yükleme yok.
 
 ## 13. Senden beklenen kararlar
 
