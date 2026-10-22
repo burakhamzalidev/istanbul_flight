@@ -12,7 +12,7 @@
 | **C. Metadata ve gizlilik alanları** | ✓ App Store Connect'te tamam (§5a) |
 | **D. Yayın adayı build seçildi** | ✓ Sürüm 1.2.0, build 1.2.0 (3) eklendi, yayın **manuel** |
 | **E. App Review'a gönderilmeye hazır** | ✓ Gönderim için açık onay bekleniyor. Bilinen risk: iPad'de denenmedi |
-| **F. App Review'a gönderildi** | ✗ Yalnızca açık onayınla |
+| **F. App Review'a gönderildi** | ✓ 22 Ekim 2026, kullanıcının açık onayıyla. Durum: **Waiting for Review**. Yayın manuel |
 | **G. Apple incelemesi tamamlandı** | ✗ |
 | **H. Halka açık yayın** | ✗ Yalnızca açık onayınla; yayın tercihi **manuel** |
 
@@ -128,7 +128,7 @@ Tam metinler: `docs/store/app_store_metadata.json` (`tr`, `en`: name, subtitle, 
 |---|---|
 | App Information TR/EN: ad, alt başlık | ✓ |
 | Kategori | ✓ Games; Casual + Action |
-| İçerik hakları | ✓ "Üçüncü taraf içerik yok" |
+| İçerik hakları | ✓ "Üçüncü taraf içerik yok" (gönderimde eksik çıktı, yeniden kaydedildi) |
 | Yaş derecelendirmesi | ✓ Yeni anket (7 adım), bütün yanıtlar "Yok" → **4+**. "Made for Kids" seçilmedi (geri alınamıyor) |
 | Gizlilik politikası URL (TR/EN) | ✓ |
 | App Privacy | ✓ "Data Not Collected" yayımlandı (kullanıcı, 22 Ekim 2026) |

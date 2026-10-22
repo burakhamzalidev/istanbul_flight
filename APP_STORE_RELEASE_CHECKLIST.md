@@ -53,6 +53,6 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 ## E–H. Gönderim ve yayın
 
 - [x] E. App Review'a gönderilmeye hazır (bilinen risk: iPad'de denenmedi)
-- [ ] F. **(SEN, açık onay)** App Review'a gönderildi
+- [x] F. App Review'a gönderildi (22 Ekim 2026, açık onayla; Waiting for Review)
 - [ ] G. Apple incelemesi tamamlandı
 - [ ] H. **(SEN, açık onay)** Halka açık yayın (manuel)
