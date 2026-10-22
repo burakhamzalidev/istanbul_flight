@@ -230,7 +230,7 @@ Sıra (istenen düzen):
 
 ## 11. Senin tamamlaman gerekenler
 
-3. App Review iletişim bilgilerini (ad, +90 telefon, e-posta) gir.
-4. ~~App Privacy yayımlama~~: yapıldı.
-6. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
-7. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
+2. ~~App Review iletişim bilgileri~~: girildi.
+3. ~~App Privacy yayımlama~~: yapıldı.
+4. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
+5. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
