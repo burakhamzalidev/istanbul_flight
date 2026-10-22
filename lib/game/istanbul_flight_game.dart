@@ -44,6 +44,7 @@ abstract final class Overlays {
   static const shop = 'shop';
   static const wardrobe = 'wardrobe';
   static const discovery = 'discovery';
+  static const leaderboard = 'leaderboard';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -161,6 +162,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Uçuşun bölge bazlı sayaçları (keşif hedefleri, Phase 2.3). Fizik ve skor bunları okumaz.
   final Map<int, ZoneRunStats> _zoneStats = {};
+
+  /// Uçuş sırasında geliştirme yardımı açıldı mı (liderlik tablosu için; Phase 2.4).
+  bool _runAssisted = false;
 
   void _countInZone({int obstacles = 0, int simits = 0, int nearMisses = 0}) {
     final z = zoneIndex.value;
@@ -309,6 +313,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _runTime = 0;
     _runObstacles = 0;
     _zoneStats.clear();
+    _runAssisted = autopilot || debugInvincible || debugStartScore > 0;
     services.emit(RunStarted(_runId));
     _flap();
   }
@@ -438,6 +443,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Bir sabit fizik adımı (sadece PLAYING).
   void _stepPlaying(double dt) {
+    if (autopilot || debugInvincible) _runAssisted = true;
     if (autopilot) _autopilotStep();
     _runTime += dt;
     final speed = currentSpeed;
@@ -623,6 +629,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           maxZone: zoneIndex.value,
           flightMs: (_runTime * 1000).round(),
           zoneStats: Map.unmodifiable(_zoneStats),
+          assisted: _runAssisted,
         ),
       ),
     );

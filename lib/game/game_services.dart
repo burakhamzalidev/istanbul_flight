@@ -7,6 +7,7 @@ import '../progression/game_events.dart';
 import '../progression/run_settlement.dart';
 import '../services/audio_service.dart';
 import '../services/haptics_service.dart';
+import '../services/game_center/game_center_controller.dart';
 import '../services/progress.dart';
 import '../services/settings.dart';
 import '../services/share_service.dart';
@@ -132,7 +133,8 @@ class GameServices {
     required this.settings,
     required this.progress,
     required this.share,
-  });
+    GameCenterController? gameCenter,
+  }) : gameCenter = gameCenter ?? GameCenterController.disabled();
 
   /// Testler ve servislerin kurulamadığı durum: ses ve titreşim yok, kayıt bellekte.
   factory GameServices.silent({GameSettings settings = const GameSettings()}) =>
@@ -156,13 +158,17 @@ class GameServices {
   final ProgressController progress;
   final ShareService share;
 
+  /// Apple Game Center eşzamanlaması (Phase 2.4). İsteğe bağlı: yoksa devre dışı (Android, web, testler).
+  final GameCenterController gameCenter;
+
   /// Ek dinleyiciler (testler, ileride analitik olmayan yerel sistemler).
   final List<GameEventListener> listeners = [];
 
   /// Oyun olayını ilerleme sistemine ve ek dinleyicilere iletir. Bir dinleyicideki hata
   /// oyunu durdurmaz.
   void emit(GameEvent event) {
-    for (final l in [progress, ...listeners]) {
+    // Sıra önemli: önce ilerleme hesabı (başarımlar), sonra Game Center yansıması
+    for (final l in <GameEventListener>[progress, gameCenter, ...listeners]) {
       try {
         l.onGameEvent(event);
       } catch (e, st) {

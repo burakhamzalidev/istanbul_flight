@@ -10,12 +10,15 @@ import 'game/game_services.dart';
 import 'game/day_cycle.dart';
 import 'game/istanbul_flight_game.dart';
 import 'services/audio_service.dart';
+import 'services/game_center/game_center.dart';
+import 'services/game_center/game_center_controller.dart';
 import 'services/haptics_service.dart';
 import 'services/progress.dart';
 import 'services/settings.dart';
 import 'services/share_service.dart';
 import 'ui/overlays/discovery_overlays.dart';
 import 'ui/overlays/hud_overlay.dart';
+import 'ui/overlays/leaderboard_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
 import 'ui/overlays/postcard_overlay.dart';
 import 'ui/overlays/progression_overlays.dart';
@@ -46,16 +49,19 @@ Future<void> main() async {
   ScoreRepository scores;
   SettingsRepository settingsRepo;
   ProgressRepository progressRepo;
+  GameCenterStore gameCenterStore;
   try {
     final prefs = await SharedPreferences.getInstance();
     scores = SharedPrefsScoreRepository(prefs);
     settingsRepo = SharedPrefsSettingsRepository(prefs);
     progressRepo = SharedPrefsProgressRepository(prefs);
+    gameCenterStore = SharedPrefsGameCenterStore(prefs);
   } catch (e) {
     debugPrint('Kalıcı kayıt açılamadı, bellek içi kayıt kullanılıyor: $e');
     scores = InMemoryScoreRepository();
     settingsRepo = InMemorySettingsRepository();
     progressRepo = InMemoryProgressRepository();
+    gameCenterStore = InMemoryGameCenterStore();
   }
   await PixelIcons.load();
   final settings = await settingsRepo.load();
@@ -66,12 +72,21 @@ Future<void> main() async {
     audio.init(),
   ); // ses havuzları arka planda hazırlanır; açılışı bekletmez
 
+  final progressController = ProgressController(progressRepo, progress);
+  // Apple Game Center (Phase 2.4): yalnızca iOS'ta etkin; giriş yapılmasa da oyun aynen oynanır
+  final gameCenter = GameCenterController(
+    api: MethodChannelGameCenterApi(),
+    store: gameCenterStore,
+    progress: progressController,
+    scores: scores,
+  );
   final services = GameServices(
     audio: audio,
     haptics: PlatformHaptics(),
     settings: SettingsController(settingsRepo, settings),
-    progress: ProgressController(progressRepo, progress),
+    progress: progressController,
     share: PlatformShareService(),
+    gameCenter: gameCenter,
   );
   services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
 
@@ -95,6 +110,12 @@ Future<void> main() async {
     ..debugAutoStart = demo && Uri.base.queryParameters['play'] == '1'
     ..showStats = const bool.fromEnvironment('MARTI_STATS');
   runApp(MartiApp(game: game));
+  // GameKit girişi ilk kareden sonra (giriş ekranı uygulamanın üstünde açılır); bekleyen skorlar
+  // uygulama öne her geldiğinde tekrar denenir.
+  WidgetsBinding.instance.addPostFrameCallback(
+    (_) => unawaited(gameCenter.start()),
+  );
+  AppLifecycleListener(onResume: () => unawaited(gameCenter.flush()));
 }
 
 class MartiApp extends StatelessWidget {
@@ -166,6 +187,7 @@ class GameScreen extends StatelessWidget {
                   Overlays.shop: (_, g) => ShopOverlay(game: g),
                   Overlays.wardrobe: (_, g) => WardrobeOverlay(game: g),
                   Overlays.discovery: (_, g) => DiscoveryOverlay(game: g),
+                  Overlays.leaderboard: (_, g) => LeaderboardOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

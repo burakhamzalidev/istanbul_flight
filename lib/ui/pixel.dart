@@ -168,6 +168,7 @@ abstract final class PixelIcons {
     Icons.lock_rounded: 'lock',
     Icons.check_rounded: 'check',
     Icons.military_tech_rounded: 'badge',
+    Icons.emoji_events_rounded: 'trophy',
   };
 
   static String? nameFor(IconData icon) => _names[icon];

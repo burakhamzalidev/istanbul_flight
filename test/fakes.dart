@@ -3,6 +3,7 @@ import 'dart:ui' show Rect;
 import 'package:flutter/foundation.dart';
 import 'package:istanbul_flight/game/game_services.dart';
 import 'package:istanbul_flight/services/audio_service.dart';
+import 'package:istanbul_flight/services/game_center/game_center_controller.dart';
 import 'package:istanbul_flight/services/haptics_service.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:istanbul_flight/services/settings.dart';
@@ -83,14 +84,17 @@ class TestServices {
   TestServices({
     GameSettings settings = const GameSettings(),
     PlayerProgress progress = const PlayerProgress(),
+    GameCenterController Function(ProgressController progress)? gameCenter,
   }) : settingsRepo = InMemorySettingsRepository(settings),
        progressRepo = InMemoryProgressRepository(progress) {
+    final progressController = ProgressController(progressRepo, progress);
     services = GameServices(
       audio: audio,
       haptics: haptics,
       settings: SettingsController(settingsRepo, settings),
-      progress: ProgressController(progressRepo, progress),
+      progress: progressController,
       share: share,
+      gameCenter: gameCenter?.call(progressController),
     );
   }
 

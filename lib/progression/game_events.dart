@@ -52,6 +52,7 @@ class RunResult {
     required this.maxZone,
     required this.flightMs,
     this.zoneStats = const {},
+    this.assisted = false,
   });
 
   /// Uçuşun benzersiz kimliği: aynı uçuş iki kez hesaplanmaz.
@@ -72,6 +73,10 @@ class RunResult {
   /// Bölge sırası → o bölgede geçen engel / simit / kıl payı (Phase 2.3 keşif hedefleri).
   /// Toplamlar yukarıdaki sayaçlarla aynıdır; boş = bölge bazlı veri yok (ör. eski testler).
   final Map<int, ZoneRunStats> zoneStats;
+
+  /// Geliştirme yardımı açıktı (otomatik pilot, çarpışmasızlık ya da başlangıç skoru): skor liderlik
+  /// tablosuna gönderilmez (Phase 2.4). Normal derlemede hep false.
+  final bool assisted;
 }
 
 /// Bir uçuşun tek bölgedeki sayaçları.

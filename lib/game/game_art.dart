@@ -142,6 +142,8 @@ class GameArt {
     'lock',
     'check',
     'badge',
+    // Phase 2.4: Game Center sıralaması
+    'trophy',
   ];
   static Rect iconRect(String name) =>
       Rect.fromLTWH(iconNames.indexOf(name) * 16.0, 0, 16, 16);

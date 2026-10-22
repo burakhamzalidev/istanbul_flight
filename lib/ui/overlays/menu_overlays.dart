@@ -10,6 +10,7 @@ import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
 import 'discovery_overlays.dart';
+import 'leaderboard_overlay.dart';
 import 'progression_overlays.dart';
 import 'shop_overlays.dart';
 
@@ -176,7 +177,26 @@ class MainMenuOverlay extends StatelessWidget {
                   MenuProgressStrip(game: game),
                   const Spacer(),
                   // Phase 2.3: keşif albümüne tek giriş noktası (ana eylemin hemen üstünde)
-                  DiscoveryMenuButton(game: game),
+                  // Phase 2.4: Sıralama aynı satırda (menü yüksekliği değişmez)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: DiscoveryMenuButton(
+                            game: game,
+                            compact: c.maxWidth < 400,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        LeaderboardMenuButton(
+                          game: game,
+                          compact: c.maxWidth < 360,
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(height: compact ? 8 : 12),
                   MartiButton(
                     key: const Key('startButton'),

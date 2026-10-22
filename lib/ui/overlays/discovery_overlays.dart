@@ -22,9 +22,12 @@ import 'shop_overlays.dart';
 
 /// Ana menüdeki tek giriş noktası: "İstanbul'u Keşfet" + albüm ilerlemesi.
 class DiscoveryMenuButton extends StatelessWidget {
-  const DiscoveryMenuButton({super.key, required this.game});
+  const DiscoveryMenuButton({super.key, required this.game, this.compact});
 
   final IstanbulFlightGame game;
+
+  /// Kısa etiket ("Keşfet"). null: ekran genişliğinden karar verilir.
+  final bool? compact;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<PlayerProgress>(
@@ -32,8 +35,8 @@ class DiscoveryMenuButton extends StatelessWidget {
     builder: (context, p, _) {
       final cards = p.discoveredZones.length;
       final pct = (p.discovery.albumFraction * 100).floor();
-      // dar ekranda (iPhone SE, 320 pt) kısa etiket
-      final narrow = MediaQuery.sizeOf(context).width < 360;
+      // dar ekranda kısa etiket (yanında Sıralama düğmesi var, Phase 2.4)
+      final narrow = compact ?? MediaQuery.sizeOf(context).width < 400;
       return Pressable(
         key: const Key('discoveryButton'),
         game: game,
