@@ -8,7 +8,7 @@
 | Aşama | Durum |
 |---|---|
 | **A. Release Candidate hazırlandı** | ✓ **1.2.0 (3)**: TestFlight'ta, "Ekip" grubunda |
-| **B. TestFlight üzerinden gerçek cihaz testleri** | ✗ **Yapılmadı.** Hiçbir senaryo PASS değil (§4). **Yayın engeli** |
+| **B. TestFlight üzerinden gerçek cihaz testleri** | ◐ iPhone: kullanıcı bildirimiyle 17 PASS (bazıları kısmi), 3 NOT RUN (uçak modu, Instruments, iPad) (§4) |
 | **C. Metadata ve gizlilik alanları** | ◐ App Store Connect'e girildi (§5a). Eksik: ekran görüntülerinin yüklenmesi, App Review iletişim bilgisi (sen), App Privacy'nin yayımlanması (onayınla) |
 | **D. Yayın adayı build seçildi** | ✓ Sürüm 1.2.0, build 1.2.0 (3) eklendi, yayın **manuel** |
 | **E. App Review'a gönderilmeye hazır** | ✗ B, C ve D bitmeden hayır |
@@ -50,32 +50,32 @@
 | `flutter test` | ✓ **166/166** |
 | `flutter build ipa --release` | Bu makinede yapılamaz (Windows; komut yok). iOS derlemeleri Codemagic'te: 1.2.0 (3), commit `bba3e50`, hatasız; IPA + 5 dSYM Codemagic'te saklanıyor |
 
-## 4. Gerçek cihaz testleri: hepsi NOT RUN (yayın engeli)
+## 4. Gerçek cihaz testleri
 
-Gerçek iPhone erişimim yok ve henüz sonuç bildirilmedi. Bu yüzden hiçbir satır PASS değil. **App Review'a geçmeden önce senin yapman gerekiyor.**
+Kaynak: kullanıcının kendi iPhone'unda TestFlight 1.2.0 (3) ile yaptığı test. 22 Ekim 2026'da 15 maddelik kontrol listesinin tamamı için toplu olarak "geçti" bildirildi; madde madde ayrıntı ve iPhone modeli verilmedi. Kontrol listesinde sorulmayan alt maddeler aşağıda ayrıca belirtildi. Gerçek iPhone erişimim yok; aşağıdaki PASS'ler kullanıcı beyanıdır.
 
 | # | Senaryo | Durum |
 |---|---|---|
-| 1 | TestFlight'tan ilk kurulum (temiz) | NOT RUN |
-| 2 | 1.0.0 / 1.1.0'dan silmeden güncelleme | NOT RUN |
-| 3 | Kayıtların korunması (rekor, simit, ayarlar, XP, görevler, başarımlar) | NOT RUN |
-| 4 | İlk açılış (açılış ekranı, menü, çökme yok) | NOT RUN |
-| 5 | Beş bölge (Haliç → Rumeli Hisarı) | NOT RUN |
-| 6 | Uçuş fiziği ve çarpışmalar | NOT RUN |
-| 7 | Simit kazanma | NOT RUN |
-| 8 | Günlük görevler (ilerleme, ödül bir kez, gece yarısı yenilenme) | NOT RUN |
-| 9 | XP ve seviye | NOT RUN |
-| 10 | Başarımlar | NOT RUN |
-| 11 | Simit mağazası (onay, bakiye, tekrar satın alınamama) | NOT RUN |
-| 12 | Satın alınan kozmetiklerin kalıcılığı (zorla kapat / aç) | NOT RUN |
-| 13 | Seçili kozmetiğin uçuşta ve kartpostalda görünmesi | NOT RUN |
-| 14 | Arka plan / ön plan (ana ekran, kilit, arama, Kontrol Merkezi) | NOT RUN |
-| 15 | Ses (sessiz anahtar, başka uygulamanın müziği) ve titreşim | NOT RUN |
-| 16 | Kartpostal ve iOS paylaşımı ("Resmi Kaydet" izni dahil) | NOT RUN |
-| 17 | İnternetsiz kullanım (uçak modu) | NOT RUN |
-| 18 | Uzun süreli oyun (30 dk: ısınma, yavaşlama) | NOT RUN |
+| 1 | TestFlight'tan ilk kurulum (temiz) | PASS (TestFlight kurulumu; temiz kurulum mu güncelleme mi belirtilmedi) |
+| 2 | 1.0.0 / 1.1.0'dan silmeden güncelleme | PASS (önceki sürüm kuruluysa koşuluyla soruldu) |
+| 3 | Kayıtların korunması (rekor, simit, ayarlar, XP, görevler, başarımlar) | PASS |
+| 4 | İlk açılış (açılış ekranı, menü, çökme yok) | PASS |
+| 5 | Beş bölge (Haliç → Rumeli Hisarı) | PASS |
+| 6 | Uçuş fiziği ve çarpışmalar | PASS |
+| 7 | Simit kazanma | PASS |
+| 8 | Günlük görevler (ilerleme, ödül bir kez, gece yarısı yenilenme) | PASS (ilerleme ve tamamlama; gece yarısı yenilenme ayrıca sorulmadı) |
+| 9 | XP ve seviye | PASS (seviyenin korunması; XP kazanımı ayrıca sorulmadı) |
+| 10 | Başarımlar | PASS |
+| 11 | Simit mağazası (onay, bakiye, tekrar satın alınamama) | PASS (satın alma ve seçme; tekrar satın alınamama ayrıca sorulmadı) |
+| 12 | Satın alınan kozmetiklerin kalıcılığı (zorla kapat / aç) | PASS |
+| 13 | Seçili kozmetiğin uçuşta ve kartpostalda görünmesi | PASS (uçuşta; kartpostal ayrıca sorulmadı) |
+| 14 | Arka plan / ön plan (ana ekran, kilit, arama, Kontrol Merkezi) | PASS |
+| 15 | Ses (sessiz anahtar, başka uygulamanın müziği) ve titreşim | PASS |
+| 16 | Kartpostal ve iOS paylaşımı ("Resmi Kaydet" izni dahil) | PASS |
+| 17 | İnternetsiz kullanım (uçak modu) | NOT RUN (kodda ağ erişimi yok) |
+| 18 | Uzun süreli oyun (30 dk: ısınma, yavaşlama) | PASS (10–15 dk olarak soruldu) |
 | 19 | Bellek ve performans (Xcode Instruments / profile derlemesi; ölçülmedi) | NOT RUN |
-| 20 | iPad'de açılış ve temel akış (iPad desteği açık) | NOT RUN |
+| 20 | iPad'de açılış ve temel akış (iPad desteği açık) | NOT RUN (risk: App Review iPad'de de deneyebilir) |
 
 Otomatik testler bu akışların mantığını kapsıyor (166 test). Ama **cihaz testinin yerini tutmaz.**
 
@@ -221,7 +221,7 @@ Sıra (istenen düzen):
 
 ## 10. Yayın engelleri
 
-1. **Gerçek iPhone testleri yapılmadı (§4). Kritik engel.**
+1. ~~Gerçek iPhone testleri~~: kullanıcı bildirimiyle geçti (§4). iPad, uçak modu ve Instruments ölçümü NOT RUN.
 2. **App Store Connect'te eksikler (§5a):** ekran görüntüleri yüklenmedi; App Privacy kaydedildi ama yayımlanmadı.
 3. **App Review iletişim bilgisi** (senin girmen gerekiyor).
 4. ~~AB DSA trader beyanı~~: hesapta bu uygulama için zaten "trader değil" beyanı görünüyor.
@@ -230,7 +230,6 @@ Sıra (istenen düzen):
 
 ## 11. Senin tamamlaman gerekenler
 
-1. iPhone'da TestFlight 1.2.0 (3) ile §4'teki senaryoları dene, sonuçları bana yaz. Mümkünse 1.0.0 ya da 1.1.0'dan silmeden güncellemeyi de dene.
 2. 24 ekran görüntüsünü yükle (§5a; tarayıcı panelinde dosya yükleme aracım yok).
 3. App Review iletişim bilgilerini (ad, +90 telefon, e-posta) gir.
 4. App Privacy "Publish" onayı ver (beyan senin adına yapılıyor).

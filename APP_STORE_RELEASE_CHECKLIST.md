@@ -20,9 +20,9 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 
 ## B. Gerçek cihaz testleri (TestFlight)
 
-- [ ] **(SEN)** 20 senaryo (docs/14 §4): hepsi **NOT RUN**. **Yayın engeli**
-- [ ] **(SEN)** 1.0.0 / 1.1.0 → 1.2.0 silmeden güncelleme, kayıtların korunması
-- [ ] **(SEN)** Bellek / performans / uzun oturum
+- [x] iPhone senaryoları (docs/14 §4): kullanıcı bildirimiyle 17 PASS (bazıları kısmi kapsam), 3 NOT RUN
+- [x] Güncelleme ve kayıtların korunması (kullanıcı bildirimi)
+- [~] Uzun oturum 10–15 dk PASS; Instruments bellek ölçümü NOT RUN
 - [ ] **(SEN)** iPad'de açılış ve temel akış
 
 ## C. Metadata ve gizlilik
