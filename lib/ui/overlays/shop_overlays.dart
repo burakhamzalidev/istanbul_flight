@@ -206,6 +206,8 @@ class _ShopOverlayState extends State<ShopOverlay> {
         PurchaseResult.levelLocked =>
           'Bu görünüm ${c?.minLevel}. seviyede açılır.',
         PurchaseResult.unknownItem => 'Bu görünüm bulunamadı.',
+        PurchaseResult.notForSale =>
+          'Bu görünüm satılmaz: İstanbul keşif albümünü tamamlayınca açılır.',
         PurchaseResult.busy => 'Satın alma sürüyor…',
         PurchaseResult.saveFailed =>
           'Satın alma kaydedilemedi; simit düşülmedi. Lütfen tekrar dene.',
@@ -516,6 +518,7 @@ class _ShopCard extends StatelessWidget {
     final statusText = switch (status) {
       CosmeticStatus.equipped => 'Kullanılıyor',
       CosmeticStatus.owned => 'Sende',
+      CosmeticStatus.rewardLocked => 'Keşif albümünü tamamlayınca açılır',
       CosmeticStatus.levelLocked => '${item.minLevel}. seviyede açılır',
       CosmeticStatus.affordable => '${item.price} simit',
       CosmeticStatus.tooExpensive => '${item.price} simit · $missing eksik',
@@ -536,6 +539,14 @@ class _ShopCard extends StatelessWidget {
         style: MartiButtonStyle.secondary,
         height: 44,
         onPressed: busy ? null : onEquip,
+      ),
+      CosmeticStatus.rewardLocked => MartiButton(
+        key: Key('reward_${item.id}'),
+        game: game,
+        label: 'Albüm ödülü',
+        style: MartiButtonStyle.ghost,
+        height: 44,
+        onPressed: null,
       ),
       CosmeticStatus.levelLocked => MartiButton(
         key: Key('locked_${item.id}'),

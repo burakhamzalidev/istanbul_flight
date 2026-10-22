@@ -51,6 +51,7 @@ class RunResult {
     required this.nearMisses,
     required this.maxZone,
     required this.flightMs,
+    this.zoneStats = const {},
   });
 
   /// Uçuşun benzersiz kimliği: aynı uçuş iki kez hesaplanmaz.
@@ -67,4 +68,28 @@ class RunResult {
 
   /// Simülasyon süresi (ms): kare hızından bağımsız, duraklatma sayılmaz.
   final int flightMs;
+
+  /// Bölge sırası → o bölgede geçen engel / simit / kıl payı (Phase 2.3 keşif hedefleri).
+  /// Toplamlar yukarıdaki sayaçlarla aynıdır; boş = bölge bazlı veri yok (ör. eski testler).
+  final Map<int, ZoneRunStats> zoneStats;
+}
+
+/// Bir uçuşun tek bölgedeki sayaçları.
+class ZoneRunStats {
+  const ZoneRunStats({
+    this.obstacles = 0,
+    this.simits = 0,
+    this.nearMisses = 0,
+  });
+
+  final int obstacles;
+  final int simits;
+  final int nearMisses;
+
+  ZoneRunStats add({int obstacles = 0, int simits = 0, int nearMisses = 0}) =>
+      ZoneRunStats(
+        obstacles: this.obstacles + obstacles,
+        simits: this.simits + simits,
+        nearMisses: this.nearMisses + nearMisses,
+      );
 }

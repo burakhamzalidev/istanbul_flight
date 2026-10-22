@@ -14,6 +14,7 @@ import 'services/haptics_service.dart';
 import 'services/progress.dart';
 import 'services/settings.dart';
 import 'services/share_service.dart';
+import 'ui/overlays/discovery_overlays.dart';
 import 'ui/overlays/hud_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
 import 'ui/overlays/postcard_overlay.dart';
@@ -164,6 +165,7 @@ class GameScreen extends StatelessWidget {
                   Overlays.achievements: (_, g) => AchievementsOverlay(game: g),
                   Overlays.shop: (_, g) => ShopOverlay(game: g),
                   Overlays.wardrobe: (_, g) => WardrobeOverlay(game: g),
+                  Overlays.discovery: (_, g) => DiscoveryOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

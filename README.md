@@ -66,3 +66,5 @@ Phase 2.1 (oyuncu ilerlemesi, görevler, başarımlar): [docs/12_phase2_player_p
 Phase 2.2 (Simit Mağazası, görünümler): [docs/13_phase2_cosmetics_shop.md](docs/13_phase2_cosmetics_shop.md) · beta 1.2.0: [docs/testflight/beta_1_2_0.md](docs/testflight/beta_1_2_0.md)
 
 Phase 3 (App Store yayını): [docs/14_app_store_launch.md](docs/14_app_store_launch.md) · kontrol listesi: [APP_STORE_RELEASE_CHECKLIST.md](APP_STORE_RELEASE_CHECKLIST.md) · gizlilik: https://burakhamzalidev.github.io/istanbul_flight/privacy.html · destek: https://burakhamzalidev.github.io/istanbul_flight/support.html
+
+Phase 2.3 (İstanbul Keşif Albümü, `feature/phase2-3-istanbul-discovery`): [docs/15_phase2_3_istanbul_discovery.md](docs/15_phase2_3_istanbul_discovery.md) · beta 1.3.0 (hazır, yüklenmedi): [docs/testflight/beta_1_3_0.md](docs/testflight/beta_1_3_0.md)

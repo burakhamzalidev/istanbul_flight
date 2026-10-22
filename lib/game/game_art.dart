@@ -137,6 +137,11 @@ class GameArt {
     'bolt',
     'sunset',
     'back',
+    // Phase 2.3: keşif albümü
+    'map',
+    'lock',
+    'check',
+    'badge',
   ];
   static Rect iconRect(String name) =>
       Rect.fromLTWH(iconNames.indexOf(name) * 16.0, 0, 16, 16);
@@ -167,6 +172,9 @@ class GameArt {
   static const simitPath = '$_root/characters/simit_sheet.png';
   static const fxPath = '$_root/effects/fx.png';
   static const iconsPath = '$_root/ui/icons.png';
+
+  /// İstanbul keşif haritası (160×160). Oyun açılışında yüklenmez: yalnızca harita ekranı açılınca.
+  static const mapPath = 'assets/images/$_root/ui/istanbul_map.png';
 
   /// Kozmetik sheet yolları (katalogdan).
   static Map<String, String> get skinPaths => {

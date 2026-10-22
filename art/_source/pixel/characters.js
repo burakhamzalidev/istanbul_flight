@@ -174,6 +174,19 @@ const explorer = {
   },
 };
 
+/** İznik Martısı (Phase 2.3 keşif ödülü): başın arkasına iliştirilmiş kırmızı lale. */
+const tulip = {
+  head(cv, sway) {
+    // sap ve yaprak: başın arkasından yukarı, kanatla hafifçe salınır
+    const k = Math.round(sway);
+    cv.line(25, 9, 23 + k, 3, '#2f7a46'); cv.set(24, 7, '#4fa35e'); cv.set(25, 6, '#4fa35e'); cv.set(26, 6, '#2f7a46');
+    // lale çanağı: üç taç yaprak, soldan ışık
+    const tx = 23 + k, ty = 2;
+    cv.poly([[tx - 3, ty - 3], [tx - 2, ty + 1], [tx + 2, ty + 1], [tx + 3, ty - 3], [tx + 1, ty - 1], [tx, ty - 4], [tx - 1, ty - 1]], (x) => (x < tx - 1 ? '#f0645a' : x > tx + 1 ? '#9c1f2c' : '#d0343c'));
+    cv.set(tx, ty, '#7a1622');
+  },
+};
+
 const SKINS = {
   classic: { palette: C },
   denizci: { palette: C, acc: sailor },
@@ -199,6 +212,16 @@ const SKINS = {
     },
   },
   kasif: { palette: C, acc: explorer },
+  iznik: {
+    // İznik Martısı: çini mavisi kanatlar, firuze uçlar, kanatta beyaz çini çiçekleri + lale
+    palette: {
+      ...C,
+      g: ['#7fd3d6', '#2f8fb0', '#1d5f9e', '#163f73'],
+      tip: '#0f2a52', mirror: '#e9fbff',
+      glint: [[-6, 0], [-11, -2], [-3, -1]], glintColor: '#fbf7ee',
+    },
+    acc: tulip,
+  },
 };
 
 function frame(spec, skin = SKINS.classic) {

@@ -43,6 +43,7 @@ abstract final class Overlays {
   static const achievements = 'achievements';
   static const shop = 'shop';
   static const wardrobe = 'wardrobe';
+  static const discovery = 'discovery';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -157,6 +158,18 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   String _runId = '';
   double _runTime = 0;
   int _runObstacles = 0;
+
+  /// Uçuşun bölge bazlı sayaçları (keşif hedefleri, Phase 2.3). Fizik ve skor bunları okumaz.
+  final Map<int, ZoneRunStats> _zoneStats = {};
+
+  void _countInZone({int obstacles = 0, int simits = 0, int nearMisses = 0}) {
+    final z = zoneIndex.value;
+    _zoneStats[z] = (_zoneStats[z] ?? const ZoneRunStats()).add(
+      obstacles: obstacles,
+      simits: simits,
+      nearMisses: nearMisses,
+    );
+  }
 
   /// Test ve demo modu: çarpışmaları kapatır (uzun oturum testi, MARTI_DEMO).
   bool debugInvincible = false;
@@ -295,6 +308,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _runId = '${DateTime.now().microsecondsSinceEpoch}-${_runCounter++}';
     _runTime = 0;
     _runObstacles = 0;
+    _zoneStats.clear();
     services.emit(RunStarted(_runId));
     _flap();
   }
@@ -471,6 +485,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       if (!o.scored && o.right < bx) {
         o.scored = true;
         _runObstacles++;
+        _countInZone(
+          obstacles: 1,
+        ); // geçildiği bölgeye sayılır (bölge değişmeden önce)
         _addPoint();
         services.emit(ObstaclePassed(score.value));
       }
@@ -486,6 +503,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _collect(double x, double y) {
     runSimits.value++;
+    _countInZone(simits: 1);
     fx.collect(x, y);
     services.audio.playSfx(Sfx.collect);
     services.haptics.light();
@@ -494,6 +512,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _nearMiss() {
     nearMisses.value++;
+    _countInZone(nearMisses: 1);
     fx.nearMiss(birdX, physics.y);
     services.audio.playSfx(Sfx.nearMiss);
     services.haptics.medium();
@@ -603,6 +622,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           nearMisses: nearMisses.value,
           maxZone: zoneIndex.value,
           flightMs: (_runTime * 1000).round(),
+          zoneStats: Map.unmodifiable(_zoneStats),
         ),
       ),
     );

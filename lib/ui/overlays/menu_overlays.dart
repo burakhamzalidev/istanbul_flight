@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
+import 'discovery_overlays.dart';
 import 'progression_overlays.dart';
 import 'shop_overlays.dart';
 
@@ -138,11 +139,19 @@ class MainMenuOverlay extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, c) {
               final compact = c.maxHeight < 600;
+              // 4,7" ekran (iPhone SE 2/3, 667 pt): keşif düğmesine yer açmak için boşluklar biraz daralır
+              final tight = c.maxHeight < 720;
               return Column(
                 children: [
-                  SizedBox(height: compact ? 16 : 48),
-                  LogoStamp(reduceMotion: reduce, scale: compact ? 0.8 : 1),
-                  const SizedBox(height: 14),
+                  SizedBox(
+                    height: compact
+                        ? 8
+                        : tight
+                        ? 20
+                        : 48,
+                  ),
+                  LogoStamp(reduceMotion: reduce, scale: compact ? 0.7 : 1),
+                  SizedBox(height: compact ? 8 : 14),
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 8,
@@ -166,6 +175,9 @@ class MainMenuOverlay extends StatelessWidget {
                   const SizedBox(height: 8),
                   MenuProgressStrip(game: game),
                   const Spacer(),
+                  // Phase 2.3: keşif albümüne tek giriş noktası (ana eylemin hemen üstünde)
+                  DiscoveryMenuButton(game: game),
+                  SizedBox(height: compact ? 8 : 12),
                   MartiButton(
                     key: const Key('startButton'),
                     game: game,
@@ -175,7 +187,13 @@ class MainMenuOverlay extends StatelessWidget {
                     height: 72,
                     onPressed: game.startFromMenu,
                   ),
-                  SizedBox(height: compact ? 14 : 22),
+                  SizedBox(
+                    height: compact
+                        ? 10
+                        : tight
+                        ? 16
+                        : 22,
+                  ),
                   ValueListenableBuilder<GameSettings>(
                     valueListenable: game.services.settings,
                     builder: (_, s, _) => Row(
@@ -210,7 +228,13 @@ class MainMenuOverlay extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: compact ? 16 : 36),
+                  SizedBox(
+                    height: compact
+                        ? 10
+                        : tight
+                        ? 24
+                        : 36,
+                  ),
                 ],
               );
             },
