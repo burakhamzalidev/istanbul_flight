@@ -35,10 +35,10 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 - [x] Yaş derecelendirmesi: 4+ (App Store Connect)
 - [x] Kategori Games → Casual, Action
 - [x] Fiyat ücretsiz; 174 bölge, Çin anakarası hariç
-- [ ] **(SEN)** Mac / Apple Vision Pro dağıtımı (varsayılan açık) kararı
+- [x] Mac / Apple Vision Pro dağıtımı: açık kalıyor (kullanıcı kararı; bu cihazlarda test yok)
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = false` (plist)
 - [x] TR/EN metinler, URL'ler, telif "2026 Burak Hamzalı" App Store Connect'e girildi
-- [ ] **(SEN)** 24 ekran görüntüsünün yüklenmesi
+- [x] 24 ekran görüntüsü yüklendi (TR/EN, iPhone + iPad), sıra doğrulandı
 - [x] App Review iletişim bilgileri girildi (kullanıcının verdiği bilgilerle)
 - [x] AB DSA: hesapta "trader değil" görünüyor
 - [x] Review notu girildi
@@ -52,7 +52,7 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 
 ## E–H. Gönderim ve yayın
 
-- [ ] E. App Review'a gönderilmeye hazır (A–D tamamlanınca)
+- [x] E. App Review'a gönderilmeye hazır (bilinen risk: iPad'de denenmedi)
 - [ ] F. **(SEN, açık onay)** App Review'a gönderildi
 - [ ] G. Apple incelemesi tamamlandı
 - [ ] H. **(SEN, açık onay)** Halka açık yayın (manuel)

@@ -9,9 +9,9 @@
 |---|---|
 | **A. Release Candidate hazırlandı** | ✓ **1.2.0 (3)**: TestFlight'ta, "Ekip" grubunda |
 | **B. TestFlight üzerinden gerçek cihaz testleri** | ◐ iPhone: kullanıcı bildirimiyle 17 PASS (bazıları kısmi), 3 NOT RUN (uçak modu, Instruments, iPad) (§4) |
-| **C. Metadata ve gizlilik alanları** | ◐ App Store Connect'e girildi (§5a). Eksik: ekran görüntülerinin yüklenmesi, App Review iletişim bilgisi (sen), App Privacy'nin yayımlanması (onayınla) |
+| **C. Metadata ve gizlilik alanları** | ✓ App Store Connect'te tamam (§5a) |
 | **D. Yayın adayı build seçildi** | ✓ Sürüm 1.2.0, build 1.2.0 (3) eklendi, yayın **manuel** |
-| **E. App Review'a gönderilmeye hazır** | ✗ B, C ve D bitmeden hayır |
+| **E. App Review'a gönderilmeye hazır** | ✓ Gönderim için açık onay bekleniyor. Bilinen risk: iPad'de denenmedi |
 | **F. App Review'a gönderildi** | ✗ Yalnızca açık onayınla |
 | **G. Apple incelemesi tamamlandı** | ✗ |
 | **H. Halka açık yayın** | ✗ Yalnızca açık onayınla; yayın tercihi **manuel** |
@@ -141,9 +141,9 @@ Tam metinler: `docs/store/app_store_metadata.json` (`tr`, `en`: name, subtitle, 
 | Fiyat | ✓ 0,00 USD (ücretsiz) |
 | Bölgeler | ✓ 174 bölge, Çin anakarası hariç |
 | DSA | ✓ Hesapta "trader değil" görünüyor (önceden beyan edilmiş) |
-| Ekran görüntüleri | ✗ Yüklenmedi: "iPhone with Dynamic Island (medium display)" ve "iPad 13" display" alanlarına, TR ve EN için ayrı ayrı |
+| Ekran görüntüleri | ✓ TR ve EN, iPhone (Dynamic Island orta) ve iPad 13" için 6'şar; sıra 01→06 doğrulandı. iPhone Duo boş (zorunlu değil) |
 | App Review iletişim bilgisi | ✓ Girildi (kullanıcının verdiği bilgilerle) |
-| Değiştirilmeyen varsayılanlar | Apple Silicon Mac'te ve Apple Vision Pro'da dağıtım işaretli (Apple varsayılanı); bu cihazlarda test edilmedi. Karar senin |
+| Mac / Vision Pro | Apple Silicon Mac ve Apple Vision Pro dağıtımı açık (Apple varsayılanı; kullanıcı kararı: açık kalsın). Bu cihazlarda test edilmedi |
 
 ## 6. Mağaza görselleri
 
@@ -222,7 +222,7 @@ Sıra (istenen düzen):
 ## 10. Yayın engelleri
 
 1. ~~Gerçek iPhone testleri~~: kullanıcı bildirimiyle geçti (§4). iPad, uçak modu ve Instruments ölçümü NOT RUN.
-2. **App Store Connect'te eksikler (§5a):** ekran görüntüleri yüklenmedi; App Privacy kaydedildi ama yayımlanmadı.
+2. ~~App Store Connect eksikleri~~: tamamlandı (§5a).
 3. ~~App Review iletişim bilgisi~~: girildi.
 4. ~~AB DSA trader beyanı~~: hesapta bu uygulama için zaten "trader değil" beyanı görünüyor.
 5. **ITMS-91053 e-postası kontrolü** (gizlilik manifesti).
@@ -230,9 +230,7 @@ Sıra (istenen düzen):
 
 ## 11. Senin tamamlaman gerekenler
 
-2. 24 ekran görüntüsünü yükle (§5a; tarayıcı panelinde dosya yükleme aracım yok).
 3. App Review iletişim bilgilerini (ad, +90 telefon, e-posta) gir.
 4. ~~App Privacy yayımlama~~: yapıldı.
-5. Mac (Apple Silicon) ve Apple Vision Pro dağıtımı için karar ver (§5a).
 6. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
 7. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
