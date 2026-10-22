@@ -31,22 +31,24 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 - [x] Mağaza görselleri: iPhone 1179×2556 ve iPad 2064×2752, TR/EN, 6'şar, alfasız (`docs/store/app_store/`). Web derlemesinden; gerçek cihaz görüntüsü değil
 - [x] Gizlilik politikası yayında: https://burakhamzalidev.github.io/istanbul_flight/privacy.html
 - [x] Destek sayfası yayında (iletişim e-postası ile): https://burakhamzalidev.github.io/istanbul_flight/support.html
-- [~] App Privacy yanıtı hazır: "Data Not Collected", takip yok. App Store Connect'e girilmedi
-- [~] Yaş derecelendirmesi yanıtları hazır (beklenen 4+). Girilmedi
-- [~] Kategori Games → Arcade, Casual. Girilmedi
-- [~] Fiyat: ücretsiz; bölge: Çin anakarası hariç bütün ülkeler (kullanıcı kararı). Girilmedi
+- [~] App Privacy "Data Not Collected" kaydedildi. **(SEN)** Yayımlama (Publish) onayı
+- [x] Yaş derecelendirmesi: 4+ (App Store Connect)
+- [x] Kategori Games → Casual, Action
+- [x] Fiyat ücretsiz; 174 bölge, Çin anakarası hariç
+- [ ] **(SEN)** Mac / Apple Vision Pro dağıtımı (varsayılan açık) kararı
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = false` (plist)
-- [~] Telif "2026 Burak Hamzalı". Girilmedi
+- [x] TR/EN metinler, URL'ler, telif "2026 Burak Hamzalı" App Store Connect'e girildi
+- [ ] **(SEN)** 24 ekran görüntüsünün yüklenmesi
 - [ ] **(SEN)** App Review iletişim bilgileri (ad, telefon, e-posta)
-- [ ] **(SEN)** AB DSA trader beyanı
-- [~] Review notu hazır (docs/14 §5)
+- [x] AB DSA: hesapta "trader değil" görünüyor
+- [x] Review notu girildi
 - [x] Lisans denetimi: görseller, sesler ve font özgün; referans fotoğraflar yalnızca referans. ⚠ Boğaz Köprüsü tasviri için kesin hukuki görüş yok
 
 ## D. Build seçimi
 
-- [ ] App Store sürüm kaydı "1.0" → **1.2.0** (onayınla)
-- [ ] Build **1.2.0 (3)** sürüme eklendi
-- [ ] Yayın seçeneği **manuel**
+- [x] App Store sürüm kaydı **1.2.0**
+- [x] Build **1.2.0 (3)** sürüme eklendi
+- [x] Yayın seçeneği **manuel**
 
 ## E–H. Gönderim ve yayın
 

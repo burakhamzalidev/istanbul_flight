@@ -9,8 +9,8 @@
 |---|---|
 | **A. Release Candidate hazırlandı** | ✓ **1.2.0 (3)**: TestFlight'ta, "Ekip" grubunda |
 | **B. TestFlight üzerinden gerçek cihaz testleri** | ✗ **Yapılmadı.** Hiçbir senaryo PASS değil (§4). **Yayın engeli** |
-| **C. Metadata ve gizlilik alanları** | ◐ Metinler, görseller, gizlilik/destek sayfaları hazır ve yayında. App Store Connect'e girişi oturum açılınca yapılacak (§5) |
-| **D. Yayın adayı build seçildi** | ✗ App Store sürüm kaydı "1.0" → 1.2.0 yapılıp build 3 seçilecek |
+| **C. Metadata ve gizlilik alanları** | ◐ App Store Connect'e girildi (§5a). Eksik: ekran görüntülerinin yüklenmesi, App Review iletişim bilgisi (sen), App Privacy'nin yayımlanması (onayınla) |
+| **D. Yayın adayı build seçildi** | ✓ Sürüm 1.2.0, build 1.2.0 (3) eklendi, yayın **manuel** |
 | **E. App Review'a gönderilmeye hazır** | ✗ B, C ve D bitmeden hayır |
 | **F. App Review'a gönderildi** | ✗ Yalnızca açık onayınla |
 | **G. Apple incelemesi tamamlandı** | ✗ |
@@ -90,7 +90,7 @@ Kaynak: [store/app_store_metadata.json](store/app_store_metadata.json). Karakter
 | Promotional Text | 153 | 152 | 170 |
 | Açıklama | 1406 | ~1500 | 4000 |
 | Anahtar kelimeler | 96 bayt | 93 bayt | **100 bayt** (ad tekrarlanmadı, kelimeler > 2 karakter, marka adı yok) |
-| Birincil kategori | Games: Arcade + Casual | | |
+| Kategori | Games; alt kategoriler **Casual + Action** (App Store Connect'te "Arcade" alt kategorisi yok) | | |
 | Destek URL | https://burakhamzalidev.github.io/istanbul_flight/support.html (✓ yayında) | | |
 | Gizlilik URL | https://burakhamzalidev.github.io/istanbul_flight/privacy.html (✓ yayında) | | |
 | Pazarlama URL | https://burakhamzalidev.github.io/istanbul_flight/ (isteğe bağlı) | | |
@@ -121,6 +121,29 @@ Tam metinler: `docs/store/app_store_metadata.json` (`tr`, `en`: name, subtitle, 
 
 - **TR:** "Simit adlı martıyla Haliç'ten Rumeli Hisarı'na uç! Günlük görevleri tamamla, simit biriktir, mağazadan yeni görünümler aç. Reklam yok, internet gerekmez."
 - **EN:** "Fly Simit the seagull from the Golden Horn to Rumeli Fortress! Complete daily missions, collect simits and unlock new looks. No ads, no internet needed."
+
+## 5a. App Store Connect'te girilenler (22 Ekim 2026, sayfadan doğrulandı)
+
+| Alan | Durum |
+|---|---|
+| App Information TR/EN: ad, alt başlık | ✓ |
+| Kategori | ✓ Games; Casual + Action |
+| İçerik hakları | ✓ "Üçüncü taraf içerik yok" |
+| Yaş derecelendirmesi | ✓ Yeni anket (7 adım), bütün yanıtlar "Yok" → **4+**. "Made for Kids" seçilmedi (geri alınamıyor) |
+| Gizlilik politikası URL (TR/EN) | ✓ |
+| App Privacy | ◐ "Data Not Collected" kaydedildi, **yayımlanmadı** (beyan onayın gerekiyor) |
+| Sürüm 1.2.0 TR/EN: tanıtım metni, açıklama, anahtar kelimeler, destek ve pazarlama URL'si | ✓ |
+| Telif | ✓ 2026 Burak Hamzalı |
+| Build | ✓ 1.2.0 (3) |
+| Yayın | ✓ **Manuel** |
+| Giriş gerekli | ✓ İşaretsiz (giriş yok) |
+| Review notu | ✓ |
+| Fiyat | ✓ 0,00 USD (ücretsiz) |
+| Bölgeler | ✓ 174 bölge, Çin anakarası hariç |
+| DSA | ✓ Hesapta "trader değil" görünüyor (önceden beyan edilmiş) |
+| Ekran görüntüleri | ✗ Yüklenmedi: "iPhone with Dynamic Island (medium display)" ve "iPad 13" display" alanlarına, TR ve EN için ayrı ayrı |
+| App Review iletişim bilgisi | ✗ Senin girmen gerekiyor |
+| Değiştirilmeyen varsayılanlar | Apple Silicon Mac'te ve Apple Vision Pro'da dağıtım işaretli (Apple varsayılanı); bu cihazlarda test edilmedi. Karar senin |
 
 ## 6. Mağaza görselleri
 
@@ -199,22 +222,18 @@ Sıra (istenen düzen):
 ## 10. Yayın engelleri
 
 1. **Gerçek iPhone testleri yapılmadı (§4). Kritik engel.**
-2. **App Store Connect alanları henüz girilmedi:** metadata, görseller, yaş derecelendirmesi, App Privacy, fiyat, sürüm 1.2.0 ve build seçimi. Oturum açılınca ben girebilirim (§11).
+2. **App Store Connect'te eksikler (§5a):** ekran görüntüleri yüklenmedi; App Privacy kaydedildi ama yayımlanmadı.
 3. **App Review iletişim bilgisi** (senin girmen gerekiyor).
-4. **AB DSA trader beyanı** (senin kararın).
+4. ~~AB DSA trader beyanı~~: hesapta bu uygulama için zaten "trader değil" beyanı görünüyor.
 5. **ITMS-91053 e-postası kontrolü** (gizlilik manifesti).
 6. **iPad:** gerçek iPad'de denenmedi; arayüz küçük (bilinen; karar: olduğu gibi).
 
 ## 11. Senin tamamlaman gerekenler
 
 1. iPhone'da TestFlight 1.2.0 (3) ile §4'teki senaryoları dene, sonuçları bana yaz. Mümkünse 1.0.0 ya da 1.1.0'dan silmeden güncellemeyi de dene.
-2. App Store Connect'e tarayıcı panelinden giriş yap. Ardından (senin onayınla) şunları ben gireceğim:
-   - metadata (TR/EN), görseller, kategori
-   - URL'ler, telif
-   - yaş derecelendirmesi anketi, App Privacy ("Data Not Collected")
-   - fiyat ve bölge (ücretsiz, Çin anakarası hariç)
-   - sürüm numarası 1.2.0, build 3, manuel yayın
+2. 24 ekran görüntüsünü yükle (§5a; tarayıcı panelinde dosya yükleme aracım yok).
 3. App Review iletişim bilgilerini (ad, +90 telefon, e-posta) gir.
-4. AB DSA trader durumunu beyan et.
-5. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
-6. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
+4. App Privacy "Publish" onayı ver (beyan senin adına yapılıyor).
+5. Mac (Apple Silicon) ve Apple Vision Pro dağıtımı için karar ver (§5a).
+6. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
+7. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
