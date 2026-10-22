@@ -39,7 +39,7 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = false` (plist)
 - [x] TR/EN metinler, URL'ler, telif "2026 Burak Hamzalı" App Store Connect'e girildi
 - [ ] **(SEN)** 24 ekran görüntüsünün yüklenmesi
-- [ ] **(SEN)** App Review iletişim bilgileri (ad, telefon, e-posta)
+- [x] App Review iletişim bilgileri girildi (kullanıcının verdiği bilgilerle)
 - [x] AB DSA: hesapta "trader değil" görünüyor
 - [x] Review notu girildi
 - [x] Lisans denetimi: görseller, sesler ve font özgün; referans fotoğraflar yalnızca referans. ⚠ Boğaz Köprüsü tasviri için kesin hukuki görüş yok

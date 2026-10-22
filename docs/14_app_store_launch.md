@@ -142,7 +142,7 @@ Tam metinler: `docs/store/app_store_metadata.json` (`tr`, `en`: name, subtitle, 
 | Bölgeler | ✓ 174 bölge, Çin anakarası hariç |
 | DSA | ✓ Hesapta "trader değil" görünüyor (önceden beyan edilmiş) |
 | Ekran görüntüleri | ✗ Yüklenmedi: "iPhone with Dynamic Island (medium display)" ve "iPad 13" display" alanlarına, TR ve EN için ayrı ayrı |
-| App Review iletişim bilgisi | ✗ Senin girmen gerekiyor |
+| App Review iletişim bilgisi | ✓ Girildi (kullanıcının verdiği bilgilerle) |
 | Değiştirilmeyen varsayılanlar | Apple Silicon Mac'te ve Apple Vision Pro'da dağıtım işaretli (Apple varsayılanı); bu cihazlarda test edilmedi. Karar senin |
 
 ## 6. Mağaza görselleri
@@ -223,7 +223,7 @@ Sıra (istenen düzen):
 
 1. ~~Gerçek iPhone testleri~~: kullanıcı bildirimiyle geçti (§4). iPad, uçak modu ve Instruments ölçümü NOT RUN.
 2. **App Store Connect'te eksikler (§5a):** ekran görüntüleri yüklenmedi; App Privacy kaydedildi ama yayımlanmadı.
-3. **App Review iletişim bilgisi** (senin girmen gerekiyor).
+3. ~~App Review iletişim bilgisi~~: girildi.
 4. ~~AB DSA trader beyanı~~: hesapta bu uygulama için zaten "trader değil" beyanı görünüyor.
 5. **ITMS-91053 e-postası kontrolü** (gizlilik manifesti).
 6. **iPad:** gerçek iPad'de denenmedi; arayüz küçük (bilinen; karar: olduğu gibi).
