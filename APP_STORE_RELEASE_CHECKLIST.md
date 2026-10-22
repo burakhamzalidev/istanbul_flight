@@ -31,7 +31,7 @@ Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_lau
 - [x] Mağaza görselleri: iPhone 1179×2556 ve iPad 2064×2752, TR/EN, 6'şar, alfasız (`docs/store/app_store/`). Web derlemesinden; gerçek cihaz görüntüsü değil
 - [x] Gizlilik politikası yayında: https://burakhamzalidev.github.io/istanbul_flight/privacy.html
 - [x] Destek sayfası yayında (iletişim e-postası ile): https://burakhamzalidev.github.io/istanbul_flight/support.html
-- [~] App Privacy "Data Not Collected" kaydedildi. **(SEN)** Yayımlama (Publish) onayı
+- [x] App Privacy "Data Not Collected" yayımlandı (kullanıcı tarafından)
 - [x] Yaş derecelendirmesi: 4+ (App Store Connect)
 - [x] Kategori Games → Casual, Action
 - [x] Fiyat ücretsiz; 174 bölge, Çin anakarası hariç

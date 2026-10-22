@@ -131,7 +131,7 @@ Tam metinler: `docs/store/app_store_metadata.json` (`tr`, `en`: name, subtitle, 
 | İçerik hakları | ✓ "Üçüncü taraf içerik yok" |
 | Yaş derecelendirmesi | ✓ Yeni anket (7 adım), bütün yanıtlar "Yok" → **4+**. "Made for Kids" seçilmedi (geri alınamıyor) |
 | Gizlilik politikası URL (TR/EN) | ✓ |
-| App Privacy | ◐ "Data Not Collected" kaydedildi, **yayımlanmadı** (beyan onayın gerekiyor) |
+| App Privacy | ✓ "Data Not Collected" yayımlandı (kullanıcı, 22 Ekim 2026) |
 | Sürüm 1.2.0 TR/EN: tanıtım metni, açıklama, anahtar kelimeler, destek ve pazarlama URL'si | ✓ |
 | Telif | ✓ 2026 Burak Hamzalı |
 | Build | ✓ 1.2.0 (3) |
@@ -232,7 +232,7 @@ Sıra (istenen düzen):
 
 2. 24 ekran görüntüsünü yükle (§5a; tarayıcı panelinde dosya yükleme aracım yok).
 3. App Review iletişim bilgilerini (ad, +90 telefon, e-posta) gir.
-4. App Privacy "Publish" onayı ver (beyan senin adına yapılıyor).
+4. ~~App Privacy yayımlama~~: yapıldı.
 5. Mac (Apple Silicon) ve Apple Vision Pro dağıtımı için karar ver (§5a).
 6. Apple'dan uyarı e-postası (ITMS-91053 vb.) geldiyse bana ilet.
 7. Hepsi tamamlandığında **App Review'a gönderim için açık onay** ver (F). Onay sonrası **halka açık yayın için ayrıca onay** (H).
