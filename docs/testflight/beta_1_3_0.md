@@ -1,6 +1,6 @@
 # TestFlight beta: İstanbul Flight 1.3.0 (Phase 2.3)
 
-> **Durum: HAZIRLANDI, YÜKLENMEDİ.** TestFlight'a ya da App Review'a gönderim için açık onayın gerekiyor.
+> **Durum: TestFlight'a YÜKLENDİ (23 Ekim 2026, onayınla).** 1.3.0 (4): Codemagic `ios-testflight` (commit 8d022ee) hatasız; App Store Connect işledi ("Ready to Submit"); yalnızca dahili "Ekip" grubunda; What to Test (TR) girildi. Codemagic'in harici beta incelemesine gönderme denemesi test bilgileri eksik olduğu için reddedildi: harici dağıtım yok.
 > Kaynak dal: `feature/phase2-3-istanbul-discovery`. App Store incelemesindeki sürüm **1.2.0 (3)** (etiket `v1.2.0+3`, commit `bba3e50`) bu daldan etkilenmez.
 > Derleme numarası: TestFlight'taki son derleme **3**; Codemagic `ios-testflight` sıradakini otomatik olarak **4** yapar (`pubspec.yaml`: `1.3.0+4`, tutarlı).
 > Ayrıntı: [../15_phase2_3_istanbul_discovery.md](../15_phase2_3_istanbul_discovery.md)
