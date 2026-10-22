@@ -1,3 +1,5 @@
+> **App Store için güncel metinler:** [app_store_metadata.json](app_store_metadata.json) ve docs/14_app_store_launch.md (ad "İstanbul Flight", Phase 2.1–2.2 özellikleri dahil). Bu dosya Görev 8 taslağıdır (eski ad ve özellik listesi); Google Play bölümleri kapsam dışı.
+
 # Mağaza materyalleri: Google Play ve App Store
 
 **Durum:** Metinler ve görseller hazır, **hiçbir mağazaya yüklenmedi.** Yükleme ve gönderim açık kullanıcı onayı gerektirir.

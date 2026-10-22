@@ -64,3 +64,5 @@ Uygulama ikonları ve açılış görselleri: `node art/_source/pixel/app_icons.
 Phase 2.1 (oyuncu ilerlemesi, görevler, başarımlar): [docs/12_phase2_player_progression.md](docs/12_phase2_player_progression.md) · beta 1.1.0: [docs/testflight/beta_1_1_0.md](docs/testflight/beta_1_1_0.md)
 
 Phase 2.2 (Simit Mağazası, görünümler): [docs/13_phase2_cosmetics_shop.md](docs/13_phase2_cosmetics_shop.md) · beta 1.2.0: [docs/testflight/beta_1_2_0.md](docs/testflight/beta_1_2_0.md)
+
+Phase 3 (App Store yayını): [docs/14_app_store_launch.md](docs/14_app_store_launch.md) · kontrol listesi: [APP_STORE_RELEASE_CHECKLIST.md](APP_STORE_RELEASE_CHECKLIST.md) · gizlilik: https://burakhamzalidev.github.io/istanbul_flight/privacy.html · destek: https://burakhamzalidev.github.io/istanbul_flight/support.html

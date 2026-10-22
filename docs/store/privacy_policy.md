@@ -1,3 +1,5 @@
+> **Güncel ve yayında olan sürüm:** https://burakhamzalidev.github.io/istanbul_flight/privacy.html (22 Ekim 2026, `gh-pages` dalı). Aşağıdaki taslak Görev 8'den kalmıştır; XP, görev, başarım ve kozmetik kayıtlarını ve "Resmi Kaydet" iznini kapsayan güncel metin yayındaki sayfadır.
+
 # Gizlilik Politikası / Privacy Policy: Martı: Istanbul Flight
 
 > **TASLAK.** Bu metin uygulamanın gerçek kodu ve bağımlılıkları incelenerek hazırlandı (docs/10 §Gizlilik). Yayımlamadan önce:
