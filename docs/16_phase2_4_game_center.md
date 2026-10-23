@@ -133,7 +133,7 @@
 
 Hesap erişimim bu faz için kullanılmadı; aşağıdakilerin **hiçbiri yapılmadı**.
 
-1. **Developer → Identifiers → `com.burakhamzali.istanbulFlight`:** "Game Center" yeteneğinin işaretli olduğunu doğrula. Varsayılan olarak açıktır; profil `istanbulflight_appstore` bunu içermeli.
+1. ~~**Developer → Identifiers:** Game Center yeteneği~~: **yapıldı** (§8a). Varsayılan olarak açıktır; profil `istanbulflight_appstore` bunu içermeli.
    - Not: Codemagic'teki imzalı derleme bu noktayı doğrular (§8).
 2. **App Store Connect → İstanbul Flight → Features → Game Center:**
    - **Leaderboard ekle (Classic):**
@@ -189,7 +189,7 @@ Hesap erişimim bu faz için kullanılmadı; aşağıdakilerin **hiçbiri yapıl
 | `flutter analyze` | **Temiz** |
 | `flutter test` | **234 / 234 geçti**: Phase 2.3'ün 203 testi + 22 Game Center mantık testi (`test/game_center_test.dart`) + 9 arayüz testi (`test/leaderboard_ui_test.dart`) |
 | Mevcut testler | Hiçbiri değişmedi. `test/fakes.dart`'a isteğe bağlı Game Center parametresi eklendi |
-| iOS derlemesi | İmzasız derleme **başarılı**; imzalı derleme profil eksikliği yüzünden **başarısız** (§8a) |
+| iOS derlemesi | İmzasız ve imzalı (Game Center yetkili) derleme **başarılı** (§8a). Yükleme yok |
 | Gerçek Apple sunucusu | **NOT RUN.** Tablolar Apple'da yok; otomatik testler sahte GameKit (`test/game_center_fakes.dart`) kullanıyor |
 
 Sahte GameKit ile otomatik test edilen senaryolar:
@@ -215,12 +215,14 @@ Sahte GameKit ile otomatik test edilen senaryolar:
 | `ios-check` (imzasız, Xcode 26.6, iOS 26 SDK) | **Başarılı.** Swift `GameCenterPlugin` ve Dart kodu derlendi; testler CI'da da geçti |
 | `ios-ipa` (imzalı, yükleme yok) | **Başarısız: imzalama.** "Provisioning profile istanbulflight_appstore doesn't include the Game Center capability / com.apple.developer.game-center entitlement" |
 
-**Çözüm** (Apple hesabında; onayınla):
-1. Developer → Identifiers → `com.burakhamzali.istanbulFlight`: **Game Center**'ı etkinleştir.
-2. App Store profilini (`istanbulflight_appstore`) yeniden oluştur.
-3. Codemagic'te güncel profili kullan.
+**Çözüm (23 Ekim 2026, kullanıcı onayıyla uygulandı):**
+1. Developer → Identifiers → `com.burakhamzali.istanbulFlight`: **Game Center etkinleştirildi.** Apple uyarısı: bu kimliği içeren profiller geçersiz olur.
+2. `istanbulflight_appstore` profili yeniden oluşturuldu. Etkin yetenekler: Game Center, In-App Purchase; geçerlilik 19 Ekim 2027.
+3. Codemagic → Code signing identities: yeni profil Apple'dan çekildi (`istanbulflight_appstore_gc`).
+   - Eski, artık geçersiz kopya (`istanbulflight_appstore`) Codemagic'te duruyor; silinmesi önerilir (kullanıcı kararı).
+4. `ios-ipa` (imzalı, **yükleme yok**) tekrar çalıştırıldı: **başarılı**, `Istanbul_Flight.ipa` (22,25 MB) + dSYM'ler. Codemagic yeni profili seçti; Game Center yetkisi imzada.
 
-Mevcut 1.2.0 (3) ve 1.3.0 (4) derlemeleri bundan etkilenmez.
+App Store ve TestFlight'taki 1.2.0 (3) / 1.3.0 (4) derlemeleri Apple tarafından yeniden imzalandığı için profil yenilemesinden etkilenmez.
 
 ## 9. Gerçek iPhone test planı (hepsi NOT RUN)
 
@@ -246,7 +248,7 @@ Mevcut 1.2.0 (3) ve 1.3.0 (4) derlemeleri bundan etkilenmez.
 1. **Sunucu tarafı hile koruması yok.** Yalnızca istemci tutarlılık kontrolleri var (§4).
 2. **Haftalık bekleyen skor yalnızca bellekte.** Uygulama kapanırsa çevrimdışı haftalık skor düşer (bilinçli: dönemler arası taşınmasın). Önceki döneme ait skor kontrolü cihaz saatindeki "yapılma zamanına" bakıyor.
 3. **Cihaz paylaşımı.** Eski rekor aktarımı kurulum başına bir kez yapılıyor. Aynı cihazda farklı Apple hesabı açılırsa eski rekor ilk bağlanan hesaba gider.
-4. **Swift kodu yerelde derlenemiyor (Windows).** Codemagic'te imzasız derleme geçti. İmzalı derleme, App ID'de Game Center açılıp profil yenilenene kadar başarısız (§8a).
+4. **Swift kodu yerelde derlenemiyor (Windows).** Codemagic'te imzasız ve imzalı derlemeler geçti (§8a). Çalışma zamanı davranışı gerçek cihazda henüz denenmedi.
 5. **Tablo ve başarımlar Apple'da tanımlı değil.** Kimlikler "doğrulanmadı" durumunda.
 6. **Haftalık tablonun başlangıç saati** App Store Connect'te girilen saat diliminde ayarlanmalı.
 7. **Android:** Bu fazda geliştirme yok; Game Center yalnızca iOS.
