@@ -9,7 +9,7 @@
 | App Store incelemesindeki sürüm | 1.2.0 (3), etiket `v1.2.0+3`. **Dokunulmadı** |
 | TestFlight | 1.3.0 (4) Phase 2.3 dalından yüklendi (kullanıcı onayıyla). Bu fazda **hiçbir şey yüklenmedi** |
 | Bu faz | Yalnızca `feature/phase2-4-game-center` dalında |
-| App Store Connect | Game Center tabloları ve başarımları **oluşturulmadı**. Kullanıcı adımları §6'da |
+| App Store Connect | 2 liderlik tablosu ve 9 başarım **oluşturuldu** (23 Ekim 2026, kullanıcı onayıyla): durum "Prepare for Submission". Hiçbiri incelemeye gönderilmedi; 1.2.0 sürümüne eklenmedi (§6) |
 
 ## 1. Mimari analiz
 
@@ -61,7 +61,10 @@
 | `istanbul_flight_weekly_score` | **Tekrarlayan** | Aynı biçim · Start: Pazartesi 00:00 (İstanbul) · Duration: **7 gün** · Restart interval: **7 gün** |
 
 - **Haftalık sıfırlama Apple sunucusunda.** Dönemi GameKit'ten gelen `startDate` + `duration` belirler; cihaz saati sıfırlamayı etkilemez.
-- **Durum: DOĞRULANMADI.** Kimlikler henüz App Store Connect'te yok; Apple tarafında oluşturulana kadar "aktif" sayılmaz. O zamana kadar GameKit `not_configured` döner ve skor kuyrukta bekler; oyun etkilenmez.
+- **Durum: App Store Connect'te OLUŞTURULDU** (23 Ekim 2026), kimlikler koddaki `GameCenterIds` ile birebir doğrulandı.
+  - Tüm zamanlar: Integer, 0–9999, Best Score, High to Low, Hidden: No; TR "Tüm Zamanların Rekoru" / EN "All-Time Best".
+  - Haftalık: tekrarlayan, ilk dönem **26 Ekim 2026 00:00 (GMT+3)**, süre 168 saat, 7 günde bir; aynı skor ayarları; TR "Haftanın Rekoru" / EN "Weekly Best".
+  - Durum "Prepare for Submission": canlı değil. 1.4.0 sürümüyle birlikte incelemeye girecek; o zamana kadar yalnızca TestFlight (sandbox) ortamında çalışır.
 
 **Yerelleştirme önerisi:**
 
@@ -131,11 +134,11 @@
 
 ## 6. App Store Connect ve Apple tarafı (kullanıcının yapması gerekenler)
 
-Hesap erişimim bu faz için kullanılmadı; aşağıdakilerin **hiçbiri yapılmadı**.
+Durum (23 Ekim 2026): 1 ve 2 **yapıldı** (kullanıcı onayıyla); 3–5 bekliyor.
 
 1. ~~**Developer → Identifiers:** Game Center yeteneği~~: **yapıldı** (§8a). Varsayılan olarak açıktır; profil `istanbulflight_appstore` bunu içermeli.
    - Not: Codemagic'teki imzalı derleme bu noktayı doğrular (§8).
-2. **App Store Connect → İstanbul Flight → Features → Game Center:**
+2. ~~**App Store Connect → Game Center:** tablolar ve başarımlar~~ **yapıldı**: 2 tablo + 9 başarım (TR/EN metinler, 1024×1024 görseller, puanlar §5, toplam 300; Hidden: No; tekrar kazanılamaz). Görseller tarayıcıda 64×64 aslından 16× en yakın komşu büyütmeyle yüklendi (`docs/store/game_center/achievements` ile piksel piksel aynı). Kayıt için yapılan adımlar:
    - **Leaderboard ekle (Classic):**
      - Reference Name: `Tüm Zamanlar`
      - ID: `istanbul_flight_best_score`
