@@ -2,9 +2,10 @@
 
 > **Durum: TestFlight'a YÜKLENDİ (23 Ekim 2026, onayınla).** 1.4.0 (5): Codemagic `ios-testflight` hatasız (dal `feature/phase2-4-game-center`); App Store Connect işledi.
 > - Codemagic'in harici beta incelemesine gönderme denemesi test bilgileri eksik olduğu için reddedildi: harici dağıtım yok.
-> - Yalnızca dahili "Ekip" grubu.
+> - Dahili "Ekip" grubu + harici "Test Kullanıcıları" grubu (23 Ekim 2026, kullanıcı isteğiyle).
 > - "What to Test" (TR) girildi (23 Ekim 2026).
-> - Dahili test kullanıcısı: Beyza İnce, App Store Connect ekibine davet edildi (Developer rolü, yalnızca İstanbul Flight); daveti kabul edince "Ekip" grubuna eklenecek.
+> - Beyza İnce: kullanıcı isteğiyle ekip üyeliği kaldırıldı; yalnızca **harici test kullanıcısı** olarak "Test Kullanıcıları" grubunda. 1.4.0 (5) bu grup için TestFlight beta incelemesine gönderildi ("Waiting for Review"); onaylanınca Beyza'ya TestFlight daveti gider.
+> - TestFlight test bilgileri dolduruldu: beta açıklaması, geri bildirim e-postası, pazarlama ve gizlilik URL'leri, beta inceleme iletişimi (kullanıcının App Review için verdiği bilgiler), giriş gerekmez, inceleme notu.
 >
 > App Store incelemesindeki 1.2.0 (3) bundan etkilenmez. Game Center tabloları ve başarımları App Store Connect'te "Prepare for Submission" durumunda; TestFlight derlemeleri Game Center'ın test (sandbox) ortamını kullanır.
 > Ayrıntı: [../16_phase2_4_game_center.md](../16_phase2_4_game_center.md)
