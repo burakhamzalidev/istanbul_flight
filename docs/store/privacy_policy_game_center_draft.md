@@ -1,6 +1,6 @@
 # Gizlilik politikası güncelleme taslağı (Game Center, sürüm 1.4.0)
 
-> **Durum: TASLAK, YAYIMLANMADI.** Yayındaki sayfa (https://burakhamzalidev.github.io/istanbul_flight/privacy.html, `gh-pages` dalı) değiştirilmedi.
+> **Durum: YAYIMLANDI (23 Ekim 2026, kullanıcı onayıyla).** `gh-pages` commit `5cff65e`; yayındaki metin "Sürüm 1.4.0 ve sonrası" ayrımıyla yazıldı (incelemedeki 1.2.0 Game Center kullanmıyor).
 > 1.4.0 (Game Center) App Store'a gönderilmeden önce, kullanıcının onayıyla yayımlanmalı. 1.2.0 ve 1.3.0 için mevcut metin doğru.
 
 ## Değişecek bölüm: "İnternet" → "İnternet ve Game Center"

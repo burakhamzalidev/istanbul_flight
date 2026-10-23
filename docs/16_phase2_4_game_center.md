@@ -134,7 +134,7 @@
 
 ## 6. App Store Connect ve Apple tarafı (kullanıcının yapması gerekenler)
 
-Durum (23 Ekim 2026): 1 ve 2 **yapıldı** (kullanıcı onayıyla); 3–5 bekliyor.
+Durum (23 Ekim 2026): 1, 2 ve 4 **yapıldı** (kullanıcı onayıyla); 3 (1.4.0 sürüm kaydı) ve 5 (TestFlight testi) bekliyor.
 
 1. ~~**Developer → Identifiers:** Game Center yeteneği~~: **yapıldı** (§8a). Varsayılan olarak açıktır; profil `istanbulflight_appstore` bunu içermeli.
    - Not: Codemagic'teki imzalı derleme bu noktayı doğrular (§8).
@@ -154,7 +154,7 @@ Durum (23 Ekim 2026): 1 ve 2 **yapıldı** (kullanıcı onayıyla); 3–5 bekliy
 3. **Yeni sürüm (1.4.0) sayfası:** "Game Center" kutusunu işaretle, iki tabloyu ve 9 başarımı bu sürüme ekle.
    - Game Center bileşenleri ilk kez **o sürümle birlikte App Review'da incelenir**.
    - **1.2.0 sürüm kaydında Game Center kutusunu işaretleme.**
-4. **Gizlilik politikası:** "İnternet" bölümü değişmeli (taslak: `docs/store/privacy_policy_game_center_draft.md`).
+4. ~~**Gizlilik politikası:**~~ **yapıldı**: `gh-pages` `5cff65e`, "İnternet ve Game Center" bölümü ve destek SSS (sürüm 1.4.0 ve sonrası ayrımıyla); yayında doğrulandı. Önceki not: "İnternet" bölümü değişmeli (taslak: `docs/store/privacy_policy_game_center_draft.md`).
    - Yayımlamak senin onayınla (`gh-pages`).
    - App Privacy beyanı: Apple "Apple'ın topladığı veriyi beyan etmek sizin sorumluluğunuz değil" diyor. Uygulama Game Center verisini saklamıyor ve bir yere göndermiyor; bu yüzden "Data Not Collected" kalabilir. Bu hukuki görüş değildir.
 5. **TestFlight testi:** TestFlight derlemeleri Game Center'ın test (sandbox) ortamını kullanır. Tablolar App Store Connect'te oluşturulduktan sonra çalışır.
@@ -222,7 +222,7 @@ Sahte GameKit ile otomatik test edilen senaryolar:
 1. Developer → Identifiers → `com.burakhamzali.istanbulFlight`: **Game Center etkinleştirildi.** Apple uyarısı: bu kimliği içeren profiller geçersiz olur.
 2. `istanbulflight_appstore` profili yeniden oluşturuldu. Etkin yetenekler: Game Center, In-App Purchase; geçerlilik 19 Ekim 2027.
 3. Codemagic → Code signing identities: yeni profil Apple'dan çekildi (`istanbulflight_appstore_gc`).
-   - Eski, artık geçersiz kopya (`istanbulflight_appstore`) Codemagic'te duruyor; silinmesi önerilir (kullanıcı kararı).
+   - Eski, geçersiz kopya (`istanbulflight_appstore`) kullanıcı onayıyla Codemagic'ten **silindi**; yalnızca `istanbulflight_appstore_gc` kaldı (`codemagic.yaml` profili bundle ID ile seçiyor, adla başvuru yok).
 4. `ios-ipa` (imzalı, **yükleme yok**) tekrar çalıştırıldı: **başarılı**, `Istanbul_Flight.ipa` (22,25 MB) + dSYM'ler. Codemagic yeni profili seçti; Game Center yetkisi imzada.
 
 App Store ve TestFlight'taki 1.2.0 (3) / 1.3.0 (4) derlemeleri Apple tarafından yeniden imzalandığı için profil yenilemesinden etkilenmez.
