@@ -213,7 +213,7 @@ Sahte GameKit ile otomatik test edilen senaryolar:
 | Derleme | Sonuç |
 |---|---|
 | `ios-check` (imzasız, Xcode 26.6, iOS 26 SDK) | **Başarılı.** Swift `GameCenterPlugin` ve Dart kodu derlendi; testler CI'da da geçti |
-| `ios-ipa` (imzalı, yükleme yok) | **Başarısız: imzalama.** "Provisioning profile istanbulflight_appstore doesn't include the Game Center capability / com.apple.developer.game-center entitlement" |
+| `ios-ipa` (imzalı, yükleme yok) | İlk deneme **başarısız (imzalama)**; profil yenilendikten sonra **başarılı** (aşağıda). İlk hata: "Provisioning profile istanbulflight_appstore doesn't include the Game Center capability / com.apple.developer.game-center entitlement" |
 
 **Çözüm (23 Ekim 2026, kullanıcı onayıyla uygulandı):**
 1. Developer → Identifiers → `com.burakhamzali.istanbulFlight`: **Game Center etkinleştirildi.** Apple uyarısı: bu kimliği içeren profiller geçersiz olur.
