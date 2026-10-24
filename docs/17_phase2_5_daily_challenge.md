@@ -9,7 +9,7 @@
 | App Store sürüm kaydı | 1.4.0 (6) bağlı, "Prepare for Submission". **Bu fazda dokunulmadı**; App Review'a gönderilmedi |
 | TestFlight | Bu fazda **hiçbir şey yüklenmedi** (son derleme 1.4.0 (6)) |
 | Bu faz | Yalnızca `feature/phase2-5-daily-challenge` dalında |
-| App Store Connect | Günlük tablo **oluşturulmadı**: kurulum değerleri §8'de, kullanıcı onayı bekliyor |
+| App Store Connect | Günlük tablo **oluşturuldu** (24 Ekim 2026, kullanıcı onayıyla): "Prepare for Submission". İncelemeye gönderilmedi (§8) |
 | iOS imza / Codemagic | Değişmedi (yeni yetenek ya da entitlement yok; Game Center zaten açık) |
 
 ## 1. Mimari analiz (güncel depo)
@@ -157,7 +157,9 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 
 **Hile koruması:** Yalnızca istemci tarafı tutarlılık kontrolüdür. Değiştirilmiş bir istemci ya da jailbreak'li cihaz Game Center'a uydurma skor gönderebilir. Sunucu tarafı doğrulama yoktur ve tam koruma olduğu iddia edilmez.
 
-## 8. Game Center günlük tablo kurulumu (App Store Connect; onay bekliyor)
+## 8. Game Center günlük tablo kurulumu (App Store Connect; OLUŞTURULDU)
+
+> 24 Ekim 2026, kullanıcı onayıyla App Store Connect API üzerinden oluşturuldu. Kimlik `717468f8-9c7b-400c-b8c5-e438aa0ac046`, sürüm 1 "Prepare for Submission". API'den doğrulanan değerler: `RECURRING`, başlangıç `2026-10-27T00:00:00Z`, süre `PT24H`, kural `FREQ=DAILY;INTERVAL=1`.
 
 | Alan | Değer |
 |---|---|
@@ -168,9 +170,11 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 | Start Date and Time | **27 Ekim 2026 00:00 UTC** (ASC saat dilimi **GMT+0** seçilmeli; İstanbul saatiyle 03:00) |
 | Duration | **1 gün** (24 saat) |
 | Restarts Interval | **Her 1 gün** |
-| Yerelleştirme (TR) | Ad: "Günün Uçuşu" · Biçim: "{skor} engel" (tüm zamanlar tablosuyla aynı biçim) |
-| Yerelleştirme (EN) | Name: "Daily Flight" |
-| Görsel | İsteğe bağlı (mevcut kupa görseli) |
+| Yerelleştirme (TR) | Ad: "Günün Uçuşu" · Ek: "puan" (haftalık tabloyla aynı) · Açıklama: günlük sıfırlanma |
+| Yerelleştirme (EN) | Name: "Daily Flight" · Suffix: "points" / "point" |
+| Görsel | Yok (isteğe bağlı) |
+
+**Not:** API, birim ekinin başındaki boşluğu kırptı (haftalık tabloda arayüzden girildiği için " puan"). Game Center skoru "12puan" biçiminde gösterirse ek arayüzden " puan" olarak düzeltilmeli.
 
 - Haftalık tablodan farklı olarak başlangıç **UTC** gece yarısıdır. Uygulama da UTC gününü kullanır.
 - Yanlış saat dilimiyle kurulursa günlük skorlar hiç gönderilmez (güvenli taraf) ve saat denetimi devre dışı kalır.
