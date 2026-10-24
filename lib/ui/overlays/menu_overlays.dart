@@ -9,6 +9,7 @@ import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
+import 'daily_overlays.dart';
 import 'discovery_overlays.dart';
 import 'leaderboard_overlay.dart';
 import 'progression_overlays.dart';
@@ -140,19 +141,27 @@ class MainMenuOverlay extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, c) {
               final compact = c.maxHeight < 600;
-              // 4,7" ekran (iPhone SE 2/3, 667 pt): keşif düğmesine yer açmak için boşluklar biraz daralır
+              // 4,7" ekran (iPhone SE 2/3, 667 pt): keşif ve Günün Uçuşu düğmelerine yer açmak için
+              // boşluklar, logo ve ana düğme biraz küçülür (Phase 2.3, 2.5)
               final tight = c.maxHeight < 720;
               return Column(
                 children: [
                   SizedBox(
                     height: compact
-                        ? 8
+                        ? 4
                         : tight
-                        ? 20
+                        ? 8
                         : 48,
                   ),
-                  LogoStamp(reduceMotion: reduce, scale: compact ? 0.7 : 1),
-                  SizedBox(height: compact ? 8 : 14),
+                  LogoStamp(
+                    reduceMotion: reduce,
+                    scale: compact
+                        ? 0.6
+                        : tight
+                        ? 0.85
+                        : 1,
+                  ),
+                  SizedBox(height: compact ? 6 : 14),
                   Wrap(
                     alignment: WrapAlignment.center,
                     spacing: 8,
@@ -173,9 +182,15 @@ class MainMenuOverlay extends StatelessWidget {
                       ShopChip(game: game),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: compact ? 4 : 8),
                   MenuProgressStrip(game: game),
                   const Spacer(),
+                  // Phase 2.5: Günün Uçuşu (keşif/sıralama satırının üstünde, ayrı satır)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: DailyMenuButton(game: game),
+                  ),
+                  SizedBox(height: compact ? 4 : 8),
                   // Phase 2.3: keşif albümüne tek giriş noktası (ana eylemin hemen üstünde)
                   // Phase 2.4: Sıralama aynı satırda (menü yüksekliği değişmez)
                   Padding(
@@ -197,21 +212,31 @@ class MainMenuOverlay extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: compact ? 8 : 12),
+                  SizedBox(
+                    height: compact
+                        ? 6
+                        : tight
+                        ? 8
+                        : 12,
+                  ),
                   MartiButton(
                     key: const Key('startButton'),
                     game: game,
                     label: 'Uçmaya başla',
                     icon: Icons.flight_takeoff_rounded,
                     width: (c.maxWidth - 48).clamp(220, 340),
-                    height: 72,
+                    height: compact
+                        ? 56
+                        : tight
+                        ? 62
+                        : 72,
                     onPressed: game.startFromMenu,
                   ),
                   SizedBox(
                     height: compact
-                        ? 10
+                        ? 6
                         : tight
-                        ? 16
+                        ? 10
                         : 22,
                   ),
                   ValueListenableBuilder<GameSettings>(
@@ -250,9 +275,9 @@ class MainMenuOverlay extends StatelessWidget {
                   ),
                   SizedBox(
                     height: compact
-                        ? 10
+                        ? 6
                         : tight
-                        ? 24
+                        ? 14
                         : 36,
                   ),
                 ],
@@ -280,6 +305,8 @@ class ReadyOverlay extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
               LogoStamp(reduceMotion: true, scale: 0.7),
+              const SizedBox(height: 12),
+              DailyReadyBanner(game: game),
               const Spacer(),
               _Pulse(
                 reduce: game.reduceMotion,

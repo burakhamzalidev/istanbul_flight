@@ -85,9 +85,15 @@ class TestServices {
     GameSettings settings = const GameSettings(),
     PlayerProgress progress = const PlayerProgress(),
     GameCenterController Function(ProgressController progress)? gameCenter,
+    DateTime Function()? clock,
   }) : settingsRepo = InMemorySettingsRepository(settings),
        progressRepo = InMemoryProgressRepository(progress) {
-    final progressController = ProgressController(progressRepo, progress);
+    // saat verilirse ilerleme ve Günün Uçuşu servisi onu kullanır (GameServices varsayılanı)
+    final progressController = ProgressController(
+      progressRepo,
+      progress,
+      clock: clock,
+    );
     services = GameServices(
       audio: audio,
       haptics: haptics,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'challenge/daily_challenge.dart';
 import 'data/score_repository.dart';
 import 'game/game_services.dart';
 import 'game/day_cycle.dart';
@@ -16,6 +17,7 @@ import 'services/haptics_service.dart';
 import 'services/progress.dart';
 import 'services/settings.dart';
 import 'services/share_service.dart';
+import 'ui/overlays/daily_overlays.dart';
 import 'ui/overlays/discovery_overlays.dart';
 import 'ui/overlays/hud_overlay.dart';
 import 'ui/overlays/leaderboard_overlay.dart';
@@ -89,6 +91,8 @@ Future<void> main() async {
     gameCenter: gameCenter,
   );
   services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
+  // Günün Uçuşu: önceki oturumda yarıda kalan dereceli deneme "kesildi" olur (hak geri verilmez)
+  services.progress.recoverDaily();
 
   // Geliştirme bayrakları (normal derlemede kapalı):
   //   MARTI_AUTOPILOT=true  → Simit kendi uçar
@@ -112,9 +116,11 @@ Future<void> main() async {
   runApp(MartiApp(game: game));
   // GameKit girişi ilk kareden sonra (giriş ekranı uygulamanın üstünde açılır); bekleyen skorlar
   // uygulama öne her geldiğinde tekrar denenir.
-  WidgetsBinding.instance.addPostFrameCallback(
-    (_) => unawaited(gameCenter.start()),
-  );
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(gameCenter.start());
+    // Bugünün parkuru arka planda doğrulanır (ilk "Günün Uçuşu" ekranı beklemesin)
+    unawaited(DailyGenerators.prepare(services.daily.now()));
+  });
   AppLifecycleListener(onResume: () => unawaited(gameCenter.flush()));
 }
 
@@ -188,6 +194,7 @@ class GameScreen extends StatelessWidget {
                   Overlays.wardrobe: (_, g) => WardrobeOverlay(game: g),
                   Overlays.discovery: (_, g) => DiscoveryOverlay(game: g),
                   Overlays.leaderboard: (_, g) => LeaderboardOverlay(game: g),
+                  Overlays.daily: (_, g) => DailyOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

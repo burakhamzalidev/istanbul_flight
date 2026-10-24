@@ -49,6 +49,9 @@ class ObstaclePair extends PositionComponent
   /// Kıl payı değerlendirmesi yapıldı mı (bir kez).
   bool nearMissChecked = false;
 
+  /// Günün Uçuşu'nda parkurdaki sırası (klasikte -1). Konumu her adımda parkur koordinatından hesaplanır.
+  int courseIndex = -1;
+
   double get gapTop => gapCenter - gapHeight / 2;
   double get gapBottom => gapCenter + gapHeight / 2;
   double get right => position.x + size.x;

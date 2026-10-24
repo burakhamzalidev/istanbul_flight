@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../challenge/daily_challenge.dart';
+import '../challenge/daily_service.dart';
+import '../challenge/daily_state.dart';
 import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../progression/run_settlement.dart';
@@ -26,6 +29,9 @@ class ProgressController extends ValueNotifier<PlayerProgress>
   /// Son uçuşun özeti (oyun sonu ekranı). Yeni uçuş başlayınca temizlenir.
   final lastRun = ValueNotifier<RunSummary?>(null);
 
+  /// Son günlük uçuşun özeti (Günün Uçuşu oyun sonu ekranı; klasik uçuşta null).
+  final lastDaily = ValueNotifier<DailyRunOutcome?>(null);
+
   Future<void> _saving = Future.value();
 
   DateTime now() => _clock();
@@ -35,6 +41,9 @@ class ProgressController extends ValueNotifier<PlayerProgress>
     switch (event) {
       case RunStarted():
         lastRun.value = null;
+        lastDaily.value = null;
+      case RunAbandoned(:final runId):
+        _closeDaily(runId, DailyAttemptStatus.abandoned);
       case RunFinished(:final result):
         settle(result);
       case ObstaclePassed() ||
@@ -47,12 +56,59 @@ class ProgressController extends ValueNotifier<PlayerProgress>
 
   /// Uçuşu hesaplar ve kaydeder. Aynı uçuş ikinci kez gelirse hiçbir şey yapmaz (null).
   RunSummary? settle(RunResult result) {
-    final s = settleRun(value, result, _clock());
+    final now = _clock();
+    final s = settleRun(value, result, now);
     if (s == null) return null;
-    value = s.progress;
+    // Günün Uçuşu: denemenin kapanışı, günlük rekor ve tek seferlik günlük ödüller (aynı kayıtta)
+    final (progress, daily) = settleDailyRun(s.progress, result, now);
+    value = progress;
+    lastDaily.value = daily;
     lastRun.value = s.summary;
     _persist();
     return s.summary;
+  }
+
+  /// Dereceli günlük denemeyi başlatır; başladıysa hak harcanmıştır ve hemen kaydedilir.
+  DailyBeginResult beginDailyAttempt(
+    DailyChallengeDefinition def,
+    String runId, {
+    String? trustedDay,
+  }) {
+    final (next, result) = applyDailyBegin(
+      value,
+      def,
+      runId,
+      _clock(),
+      trustedDay: trustedDay,
+    );
+    if (result == DailyBeginResult.started) {
+      value = next;
+      _persist();
+    }
+    return result;
+  }
+
+  /// Açılışta: önceki oturumda yarıda kalan günlük denemeler "kesildi" olarak kapanır.
+  void recoverDaily() {
+    final next = recoverInterruptedDaily(value, _clock());
+    if (identical(next, value)) return;
+    value = next;
+    _persist();
+  }
+
+  void _closeDaily(String runId, DailyAttemptStatus to) {
+    final next = closeDailyAttempt(value, runId, to, _clock());
+    if (identical(next, value)) return;
+    value = next;
+    _persist();
+  }
+
+  /// Game Center gönderim durumunu günlük kayda yazar.
+  void markDailyGc(String challengeId, DailyGcStatus status) {
+    final next = applyDailyGcStatus(value, challengeId, status);
+    if (identical(next, value)) return;
+    value = next;
+    _persist();
   }
 
   /// Gün değiştiyse görevleri yeniler (açılışta ve görev ekranında çağrılır).
@@ -120,6 +176,7 @@ class ProgressController extends ValueNotifier<PlayerProgress>
   @override
   void dispose() {
     lastRun.dispose();
+    lastDaily.dispose();
     super.dispose();
   }
 }
@@ -134,7 +191,13 @@ class GameServices {
     required this.progress,
     required this.share,
     GameCenterController? gameCenter,
-  }) : gameCenter = gameCenter ?? GameCenterController.disabled();
+    DailyChallengeService? daily,
+  }) : gameCenter = gameCenter ?? GameCenterController.disabled(),
+       daily = daily ?? DailyChallengeService(clock: progress.now) {
+    // Günlük skorların Game Center durumu günlük kayda yazılır; Apple'ın günlük dönemi saat denetimine girer
+    this.gameCenter.onDailyStatus = progress.markDailyGc;
+    this.gameCenter.onDailyOccurrence = this.daily.setOccurrence;
+  }
 
   /// Testler ve servislerin kurulamadığı durum: ses ve titreşim yok, kayıt bellekte.
   factory GameServices.silent({GameSettings settings = const GameSettings()}) =>
@@ -160,6 +223,9 @@ class GameServices {
 
   /// Apple Game Center eşzamanlaması (Phase 2.4). İsteğe bağlı: yoksa devre dışı (Android, web, testler).
   final GameCenterController gameCenter;
+
+  /// Günün Uçuşu: bugünün challenge tanımı, saat denetimi (Phase 2.5).
+  final DailyChallengeService daily;
 
   /// Ek dinleyiciler (testler, ileride analitik olmayan yerel sistemler).
   final List<GameEventListener> listeners = [];

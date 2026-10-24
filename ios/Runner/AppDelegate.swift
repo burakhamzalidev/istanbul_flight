@@ -49,6 +49,7 @@ final class GameCenterPlugin: NSObject, FlutterPlugin, GKGameCenterControllerDel
     case "submitScore": submitScore(args, result)
     case "reportAchievements": reportAchievements(args, result)
     case "loadEntries": loadEntries(args, result)
+    case "loadOccurrence": loadOccurrence(args, result)
     case "showLeaderboard": showLeaderboard(args, result)
     case "showAchievements": present(GKGameCenterViewController(state: .achievements), result)
     default: result(FlutterMethodNotImplemented)
@@ -129,6 +130,15 @@ final class GameCenterPlugin: NSObject, FlutterPlugin, GKGameCenterControllerDel
       guard let start = board.startDate, Date() < start.addingTimeInterval(board.duration) else {
         return DispatchQueue.main.async {
           result(FlutterError(code: "inactive", message: nil, details: nil))
+        }
+      }
+      // Günün Uçuşu (Phase 2.5): skor yalnızca kendi gününün dönemine gider. Açık dönem (Apple sunucu
+      // saati) beklenen anda başlamadıysa skor başka bir güne aittir: gönderilmez.
+      if let expected = args["occurrenceStartMs"] as? Double,
+        abs(start.timeIntervalSince1970 - expected / 1000) > 120
+      {
+        return DispatchQueue.main.async {
+          result(FlutterError(code: "expired", message: nil, details: nil))
         }
       }
       if let at = achievedAtMs, Date(timeIntervalSince1970: at / 1000) < start {
@@ -223,6 +233,29 @@ final class GameCenterPlugin: NSObject, FlutterPlugin, GKGameCenterControllerDel
         DispatchQueue.main.async {
           result(FlutterError(code: "friends_denied", message: nil, details: nil))
         }
+      }
+    }
+  }
+
+  /// Tekrarlayan tablonun açık dönemi (Apple sunucu saati): Günün Uçuşu saat denetimi (Phase 2.5).
+  private func loadOccurrence(_ args: [String: Any], _ result: @escaping FlutterResult) {
+    guard GKLocalPlayer.local.isAuthenticated else {
+      return result(FlutterError(code: "not_authenticated", message: nil, details: nil))
+    }
+    guard let id = args["leaderboardId"] as? String else {
+      return result(FlutterError(code: "bad_args", message: nil, details: nil))
+    }
+    GKLeaderboard.loadLeaderboards(IDs: [id]) { boards, error in
+      DispatchQueue.main.async {
+        if let error = error { return result(Self.flutterError(error)) }
+        guard let board = boards?.first else {
+          return result(FlutterError(code: "unknown_leaderboard", message: id, details: nil))
+        }
+        guard let start = board.startDate, board.duration > 0 else { return result(nil) }
+        result([
+          "startMs": start.timeIntervalSince1970 * 1000,
+          "endMs": start.addingTimeInterval(board.duration).timeIntervalSince1970 * 1000,
+        ])
       }
     }
   }

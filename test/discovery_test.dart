@@ -413,7 +413,7 @@ void main() {
       expect(b.completed.keys.toSet(), a.completed.keys.toSet());
       expect(b.badges.keys.toSet(), a.badges.keys.toSet());
       expect(b.albumCompletedAt, a.albumCompletedAt!.toUtc());
-      expect(back.toJson()['v'], 3);
+      expect(back.toJson()['v'], PlayerProgress.version);
     });
 
     test(
@@ -522,7 +522,10 @@ void main() {
           clock: () => _now,
         ).load();
         expect(again.bonusSimits, p.bonusSimits);
-        expect((jsonDecode(prefs.getString('progress_v2')!) as Map)['v'], 3);
+        expect(
+          (jsonDecode(prefs.getString('progress_v2')!) as Map)['v'],
+          PlayerProgress.version,
+        );
         // eski anahtar silinmedi (v1 ya da v2 kaydı asla silinmez)
         expect(prefs.getString('progress_v2'), isNotNull);
       },

@@ -142,7 +142,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             Row(
               children: [
                 Expanded(
-                  child: _Toggle(
+                  child: BoardToggle(
                     key: const Key('boardAllTime'),
                     game: widget.game,
                     label: 'Tüm zamanlar',
@@ -152,7 +152,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
                 ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: _Toggle(
+                  child: BoardToggle(
                     key: const Key('boardWeekly'),
                     game: widget.game,
                     label: 'Haftalık',
@@ -166,7 +166,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             Row(
               children: [
                 Expanded(
-                  child: _Toggle(
+                  child: BoardToggle(
                     key: const Key('scopeGlobal'),
                     game: widget.game,
                     label: 'Dünya',
@@ -176,7 +176,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
                 ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: _Toggle(
+                  child: BoardToggle(
                     key: const Key('scopeFriends'),
                     game: widget.game,
                     label: 'Arkadaşlar',
@@ -189,7 +189,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             const SizedBox(height: 8),
             FutureBuilder<GcBoardPage>(
               future: _page,
-              builder: (context, snap) => _BoardList(
+              builder: (context, snap) => BoardList(
                 game: widget.game,
                 snap: snap,
                 board: _board,
@@ -365,8 +365,8 @@ class _StatusCard extends StatelessWidget {
   }
 }
 
-class _Toggle extends StatelessWidget {
-  const _Toggle({
+class BoardToggle extends StatelessWidget {
+  const BoardToggle({
     super.key,
     required this.game,
     required this.label,
@@ -409,8 +409,9 @@ class _Toggle extends StatelessWidget {
 }
 
 /// Sıralama satırları: yükleniyor, hata, boş ve liste durumları.
-class _BoardList extends StatelessWidget {
-  const _BoardList({
+class BoardList extends StatelessWidget {
+  const BoardList({
+    super.key,
     required this.game,
     required this.snap,
     required this.board,
@@ -466,6 +467,16 @@ class _BoardList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (board == GcBoard.daily && end != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text(
+              'Bugünün sıralaması ${end.toLocal().hour.toString().padLeft(2, '0')}:'
+              '${end.toLocal().minute.toString().padLeft(2, '0')}’de kapanır.',
+              key: const Key('dailyBoardEnds'),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+            ),
+          ),
         if (board == GcBoard.weekly && end != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 4),

@@ -18,6 +18,9 @@ abstract final class GameCenterIds {
   /// Tekrarlayan tablo: haftalık (7 gün süre, 7 gün yeniden başlama). Dönem Apple sunucusunda belirlenir.
   static const weeklyScore = 'istanbul_flight_weekly_score';
 
+  /// Tekrarlayan tablo: Günün Uçuşu (1 gün süre, her gün 00:00 UTC'de yeniden başlar; Phase 2.5).
+  static const dailyChallenge = 'istanbul_flight_daily_challenge';
+
   /// Yerel başarım kimliği → Game Center başarım kimliği. Yerel sistem esas kaynaktır.
   static const achievements = <String, String>{
     'first_flap': 'istanbul_flight_first_flap',
@@ -34,7 +37,8 @@ abstract final class GameCenterIds {
 
 enum GcBoard {
   allTime(GameCenterIds.bestScore, recurring: false),
-  weekly(GameCenterIds.weeklyScore, recurring: true);
+  weekly(GameCenterIds.weeklyScore, recurring: true),
+  daily(GameCenterIds.dailyChallenge, recurring: true);
 
   const GcBoard(this.id, {required this.recurring});
   final String id;
@@ -139,6 +143,25 @@ class GcBoardPage {
   }
 }
 
+/// Tekrarlayan tablonun açık dönemi (Apple sunucu saati).
+@immutable
+class GcOccurrence {
+  const GcOccurrence({required this.start, required this.end});
+
+  final DateTime start;
+  final DateTime end;
+
+  static GcOccurrence? fromMap(Object? raw) {
+    if (raw is! Map) return null;
+    final s = raw['startMs'], e = raw['endMs'];
+    if (s is! num || e is! num) return null;
+    return GcOccurrence(
+      start: DateTime.fromMillisecondsSinceEpoch(s.round(), isUtc: true),
+      end: DateTime.fromMillisecondsSinceEpoch(e.round(), isUtc: true),
+    );
+  }
+}
+
 /// GameKit hatası: [code] tekrar deneme kararını verir.
 class GameCenterException implements Exception {
   const GameCenterException(this.code, [this.message]);
@@ -165,7 +188,17 @@ abstract class GameCenterApi {
   Future<GcAuthStatus> authenticate();
 
   /// Klasik tabloya ya da tekrarlayan tablonun açık dönemine skor gönderir. Hata: [GameCenterException].
-  Future<void> submitScore(GcBoard board, int score, {DateTime? achievedAt});
+  /// [occurrenceStart] verilirse açık dönem tam olarak o anda başlamış olmalıdır (Apple sunucu saatiyle);
+  /// değilse `expired` (Günün Uçuşu: skor yalnızca kendi gününün tablosuna gider).
+  Future<void> submitScore(
+    GcBoard board,
+    int score, {
+    DateTime? achievedAt,
+    DateTime? occurrenceStart,
+  });
+
+  /// Tekrarlayan tablonun açık dönemi (yoksa null: dönem kapalı ya da tablo tanımsız).
+  Future<GcOccurrence?> loadOccurrence(GcBoard board);
 
   /// Başarım yüzdeleri (0..100); [banner] ilk tamamlanışta Apple bildirimini gösterir.
   Future<void> reportAchievements(
@@ -217,14 +250,26 @@ class MethodChannelGameCenterApi implements GameCenterApi {
       GcAuthStatus.fromMap(await _call<Object?>('authenticate'));
 
   @override
-  Future<void> submitScore(GcBoard board, int score, {DateTime? achievedAt}) =>
-      _call<void>('submitScore', {
-        'leaderboardId': board.id,
-        'score': score,
-        'recurring': board.recurring,
-        if (achievedAt != null)
-          'achievedAtMs': achievedAt.millisecondsSinceEpoch.toDouble(),
-      });
+  Future<void> submitScore(
+    GcBoard board,
+    int score, {
+    DateTime? achievedAt,
+    DateTime? occurrenceStart,
+  }) => _call<void>('submitScore', {
+    'leaderboardId': board.id,
+    'score': score,
+    'recurring': board.recurring,
+    if (achievedAt != null)
+      'achievedAtMs': achievedAt.millisecondsSinceEpoch.toDouble(),
+    if (occurrenceStart != null)
+      'occurrenceStartMs': occurrenceStart.millisecondsSinceEpoch.toDouble(),
+  });
+
+  @override
+  Future<GcOccurrence?> loadOccurrence(GcBoard board) async =>
+      GcOccurrence.fromMap(
+        await _call<Object?>('loadOccurrence', {'leaderboardId': board.id}),
+      );
 
   @override
   Future<void> reportAchievements(
@@ -276,8 +321,15 @@ class UnavailableGameCenterApi implements GameCenterApi {
   Future<GcAuthStatus> authenticate() async => GcAuthStatus.signedOut;
 
   @override
-  Future<void> submitScore(GcBoard board, int score, {DateTime? achievedAt}) =>
-      Future.error(_no);
+  Future<void> submitScore(
+    GcBoard board,
+    int score, {
+    DateTime? achievedAt,
+    DateTime? occurrenceStart,
+  }) => Future.error(_no);
+
+  @override
+  Future<GcOccurrence?> loadOccurrence(GcBoard board) => Future.error(_no);
 
   @override
   Future<void> reportAchievements(

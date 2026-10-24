@@ -62,20 +62,38 @@ class FakeGameCenterApi implements GameCenterApi {
     return authResult;
   }
 
+  /// Günlük tablonun açık döneminin başlangıcı (sunucu saati taklidi, 00:00 UTC); null = dönem kapalı.
+  DateTime? dayStart;
+
+  /// Günlük tablonun dönem süresi (yanlış kurulmuş tablo taklidi için değiştirilebilir).
+  Duration dayLength = const Duration(days: 1);
+
+  final submittedOccurrences = <DateTime?>[];
+
+  DateTime? _startOf(GcBoard board) =>
+      board == GcBoard.daily ? dayStart : weekStart;
+
   @override
   Future<void> submitScore(
     GcBoard board,
     int score, {
     DateTime? achievedAt,
+    DateTime? occurrenceStart,
   }) async {
     _check();
     if (board.recurring) {
-      final start = weekStart;
+      final start = _startOf(board);
       if (start == null) throw const GameCenterException('inactive');
+      // native: açık dönem beklenen anda başlamadıysa skor başka bir güne aittir
+      if (occurrenceStart != null &&
+          start.difference(occurrenceStart).inSeconds.abs() > 120) {
+        throw const GameCenterException('expired');
+      }
       if (achievedAt != null && achievedAt.isBefore(start)) {
         throw const GameCenterException('expired');
       }
     }
+    submittedOccurrences.add(occurrenceStart);
     submissions.add((board, score));
     final prev = best[board];
     if (prev == null || score > prev) best[board] = score;
@@ -104,6 +122,22 @@ class FakeGameCenterApi implements GameCenterApi {
     loadCalls++;
     _check();
     return page;
+  }
+
+  int occurrenceCalls = 0;
+
+  @override
+  Future<GcOccurrence?> loadOccurrence(GcBoard board) async {
+    occurrenceCalls++;
+    _check();
+    final start = _startOf(board);
+    if (start == null) return null;
+    return GcOccurrence(
+      start: start,
+      end: start.add(
+        board == GcBoard.daily ? dayLength : const Duration(days: 7),
+      ),
+    );
   }
 
   int nativeOpens = 0;

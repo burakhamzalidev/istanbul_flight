@@ -95,5 +95,13 @@ String shareText({
   required String zoneName,
   required int score,
   required int simits,
-}) =>
-    'Martı: Istanbul Flight\'ta $zoneName bölgesine kadar uçtum! Skor: $score · Simit: $simits';
+  DateTime? dailyDate,
+}) {
+  final base =
+      'Martı: Istanbul Flight\'ta $zoneName bölgesine kadar uçtum! Skor: $score · Simit: $simits';
+  if (dailyDate == null) return base;
+  // Günün Uçuşu: yalnızca yerel bilgi (sıralama iddiası yok)
+  final d = dailyDate.toUtc();
+  return 'İstanbul Flight — Günün Uçuşu (${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}): '
+      '$zoneName bölgesine kadar uçtum! Skor: $score · Simit: $simits';
+}

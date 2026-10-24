@@ -1,3 +1,5 @@
+import '../challenge/daily_challenge.dart';
+
 /// Oyun olayları: oyun (IstanbulFlightGame) bunları yayınlar, ilerleme sistemleri dinler.
 ///
 /// Olay veriyolu ya da durum kütüphanesi yok: [GameServices.emit] olayı dinleyicilere
@@ -8,7 +10,18 @@ sealed class GameEvent {
 }
 
 class RunStarted extends GameEvent {
-  const RunStarted(this.runId);
+  const RunStarted(this.runId, {this.mode = RunMode.classic, this.challengeId});
+  final String runId;
+  final RunMode mode;
+
+  /// Günün Uçuşu'nda challenge kimliği (klasikte null).
+  final String? challengeId;
+}
+
+/// Oyuncu uçuşu yarıda bıraktı (duraklatıp ana menüye döndü ya da yeniden başlattı). Uçuş hesabı
+/// yapılmaz; Günün Uçuşu'nda dereceli hak harcanmış kalır.
+class RunAbandoned extends GameEvent {
+  const RunAbandoned(this.runId);
   final String runId;
 }
 
@@ -53,6 +66,8 @@ class RunResult {
     required this.flightMs,
     this.zoneStats = const {},
     this.assisted = false,
+    this.mode = RunMode.classic,
+    this.challengeId,
   });
 
   /// Uçuşun benzersiz kimliği: aynı uçuş iki kez hesaplanmaz.
@@ -77,6 +92,12 @@ class RunResult {
   /// Geliştirme yardımı açıktı (otomatik pilot, çarpışmasızlık ya da başlangıç skoru): skor liderlik
   /// tablosuna gönderilmez (Phase 2.4). Normal derlemede hep false.
   final bool assisted;
+
+  /// Oyun modu (Phase 2.5). Günlük uçuşlar klasik rekoru ve klasik Game Center tablolarını etkilemez.
+  final RunMode mode;
+
+  /// Günün Uçuşu challenge kimliği (`daily_2026_10_24`); klasikte null.
+  final String? challengeId;
 }
 
 /// Bir uçuşun tek bölgedeki sayaçları.

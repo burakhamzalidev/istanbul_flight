@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+import '../../challenge/daily_state.dart';
 import '../../game/components/landmark_layer.dart';
 import '../../game/day_cycle.dart';
 import '../../game/game_art.dart';
@@ -15,6 +16,7 @@ import '../simit_frame_view.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
+import 'daily_overlays.dart';
 import 'progression_overlays.dart';
 
 /// Oyun sonu: düşülen bölgenin kartpostalı (yolculuğun hatırası) + Tekrar uç / Paylaş / Ana menü.
@@ -53,6 +55,9 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
               zoneName: zone.name,
               score: g.score.value,
               simits: g.runSimits.value,
+              dailyDate: g.runMode.value.isDaily
+                  ? g.dailyDefinition.value?.dateUtc
+                  : null,
             ),
             origin: origin,
           );
@@ -72,10 +77,31 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
     }
   }
 
+  /// Günün Uçuşu'nda "Tekrar uç" yerine: dereceli hak varsa yeniden dene, yoksa antrenman.
+  Widget _dailyAgain(IstanbulFlightGame g, bool ok) {
+    final p = g.services.progress.value;
+    final id = g.dailyDefinition.value?.challengeId;
+    final remaining = id == null
+        ? 0
+        : (p.dailyChallenge[id]?.remaining ?? DailyRules.rankedAttempts);
+    final canRank =
+        remaining > 0 && g.services.daily.clockStatus(p) == DailyClockStatus.ok;
+    return MartiButton(
+      key: Key(canRank ? 'dailyRetry' : 'dailyPracticeAgain'),
+      game: g,
+      label: canRank ? 'Yeniden dene · $remaining hak' : 'Antrenman yap',
+      icon: Icons.replay_rounded,
+      width: double.infinity,
+      onPressed: ok ? () => g.startDaily(ranked: canRank) : null,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final g = widget.game;
     final reduce = g.reduceMotion;
+    final daily = g.runMode.value.isDaily;
+    final dailyBest = g.services.progress.lastDaily.value?.newBest ?? false;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {},
@@ -105,7 +131,7 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                             key: _cardKey,
                             child: Postcard(game: g),
                           ),
-                          if (g.isNewRecord.value && !reduce)
+                          if ((g.isNewRecord.value || dailyBest) && !reduce)
                             const Positioned.fill(
                               child: IgnorePointer(child: SesameConfetti()),
                             ),
@@ -113,18 +139,24 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                       ),
                       // Uçuş özeti paylaşılan kartpostalın dışında: kart kompozisyonu değişmez
                       const SizedBox(height: 12),
+                      if (daily) ...[
+                        DailyResultPanel(game: g),
+                        const SizedBox(height: 8),
+                      ],
                       RunSummaryPanel(game: g),
                       const SizedBox(height: 16),
                       ValueListenableBuilder<bool>(
                         valueListenable: g.canRestart,
-                        builder: (_, ok, _) => MartiButton(
-                          key: const Key('restartButton'),
-                          game: g,
-                          label: 'Tekrar uç',
-                          icon: Icons.replay_rounded,
-                          width: double.infinity,
-                          onPressed: ok ? g.restart : null,
-                        ),
+                        builder: (_, ok, _) => daily
+                            ? _dailyAgain(g, ok)
+                            : MartiButton(
+                                key: const Key('restartButton'),
+                                game: g,
+                                label: 'Tekrar uç',
+                                icon: Icons.replay_rounded,
+                                width: double.infinity,
+                                onPressed: ok ? g.restart : null,
+                              ),
                       ),
                       const SizedBox(height: 12),
                       // Esnek genişlik: 320 px'lik ekranlarda da taşmaz
@@ -178,6 +210,14 @@ class Postcard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final zone = zones[game.zoneIndex.value];
+    // Günün Uçuşu: rekor yerine günün en iyisi; damga günlük rekor için (klasik rekor değişmez)
+    final daily = game.runMode.value.isDaily
+        ? game.services.progress.lastDaily.value
+        : null;
+    final dailyDate = game.runMode.value.isDaily
+        ? game.dailyDefinition.value?.dateUtc
+        : null;
+    final newRecord = daily != null ? daily.newBest : game.isNewRecord.value;
     return Container(
       decoration: pixelBox(
         color: UiColors.paper,
@@ -289,8 +329,10 @@ class Postcard extends StatelessWidget {
                 const VerticalDivider(color: Color(0xFFD8CDB6), thickness: 1),
                 Expanded(
                   child: _Stat(
-                    label: 'REKOR',
-                    value: game.best.value,
+                    label: dailyDate != null ? 'EN İYİ' : 'REKOR',
+                    value: dailyDate != null
+                        ? daily?.bestScore ?? 0
+                        : game.best.value,
                     valueKey: const Key('finalBest'),
                   ),
                 ),
@@ -315,7 +357,7 @@ class Postcard extends StatelessWidget {
               style: const TextStyle(color: UiColors.action),
             ),
           ],
-          if (game.isNewRecord.value) ...[
+          if (newRecord) ...[
             const SizedBox(height: 8),
             Center(
               child: _RecordStamp(
@@ -331,9 +373,9 @@ class Postcard extends StatelessWidget {
                     borderWidth: kUiPx * 2,
                     steps: 1,
                   ),
-                  child: const Text(
-                    'YENİ REKOR!',
-                    style: TextStyle(
+                  child: Text(
+                    dailyDate != null ? 'GÜNÜN REKORU!' : 'YENİ REKOR!',
+                    style: const TextStyle(
                       color: UiColors.action,
                       letterSpacing: 2,
                       fontSize: 20,
@@ -344,8 +386,11 @@ class Postcard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 8),
-          const Text(
-            'Martı: Istanbul Flight',
+          Text(
+            dailyDate != null
+                ? 'Martı: Istanbul Flight – Günün Uçuşu · ${formatDailyDate(dailyDate)}'
+                : 'Martı: Istanbul Flight',
+            key: const Key('postcardFooter'),
             textAlign: TextAlign.right,
             style: TextStyle(
               color: UiColors.navySoft,

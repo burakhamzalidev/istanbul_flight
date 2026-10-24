@@ -7,6 +7,8 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
 
+import '../challenge/daily_challenge.dart';
+import '../challenge/daily_state.dart';
 import '../data/score_repository.dart';
 import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
@@ -45,6 +47,7 @@ abstract final class Overlays {
   static const wardrobe = 'wardrobe';
   static const discovery = 'discovery';
   static const leaderboard = 'leaderboard';
+  static const daily = 'daily';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -97,6 +100,27 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Bu turda önceki rekor geçildi mi (HUD'da bir kez rozet).
   final recordPassed = ValueNotifier(false);
+
+  // ---- Oyun modu (Phase 2.5) ----
+
+  /// Bu uçuşun (ya da "uçmak için dokun" ekranındaki bir sonraki uçuşun) modu.
+  final runMode = ValueNotifier(RunMode.classic);
+
+  /// Günün Uçuşu'nda bu uçuşun challenge'ı (klasikte null).
+  final dailyDefinition = ValueNotifier<DailyChallengeDefinition?>(null);
+
+  /// Dereceli deneme başlatılamadığı için uçuş antrenmana döndüyse nedeni (arayüz gösterir).
+  final dailyNotice = ValueNotifier<DailyBeginResult?>(null);
+
+  /// Günlük parkur (klasikte null: klasik üretici aynen çalışır).
+  DailyCourse? _course;
+  int _courseIndex = 0;
+
+  /// Günlük parkurda uçuş başından beri kayılan mesafe (çift duyarlıklı; engel konumları buradan).
+  double _courseScroll = 0;
+
+  /// Uçuş içi "rekor geçildi" rozeti için karşılaştırılan skor: klasikte rekor, günlükte günün en iyisi.
+  int _runBest = 0;
 
   /// Simit'in uygulanan görünümü (kozmetik kimliği). Yalnızca çizimi etkiler; uçuş sırasında değişmez:
   /// seçim menüde hemen, uçuş içinde yapılırsa bir sonraki turda uygulanır.
@@ -189,10 +213,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   PhasePalette get palette => dayCycle.palette;
   double get readyY => config.worldHeight * 0.42;
-  double get birdX => (visibleWidth * config.birdXFraction).clamp(
-    config.birdMinX,
-    config.birdMaxX,
-  );
+  double get birdX => runMode.value.isDaily
+      ? DailyCourse.birdX
+      : (visibleWidth * config.birdXFraction).clamp(
+          config.birdMinX,
+          config.birdMaxX,
+        );
   double get currentSpeed => config.speedForScore(score.value);
 
   @override
@@ -301,7 +327,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _start() {
     _accumulator = 0;
-    _nextSpawnX = visibleWidth + config.firstObstacleOffset;
+    _runId = '${DateTime.now().microsecondsSinceEpoch}-${_runCounter++}';
+    _prepareRun();
     menuOpen.value = false;
     modal.value = null;
     _setPhase(GamePhase.playing);
@@ -309,13 +336,49 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       score.value = debugStartScore - 1;
       _addPoint();
     }
-    _runId = '${DateTime.now().microsecondsSinceEpoch}-${_runCounter++}';
     _runTime = 0;
     _runObstacles = 0;
     _zoneStats.clear();
     _runAssisted = autopilot || debugInvincible || debugStartScore > 0;
-    services.emit(RunStarted(_runId));
+    services.emit(
+      RunStarted(
+        _runId,
+        mode: runMode.value,
+        challengeId: dailyDefinition.value?.challengeId,
+      ),
+    );
     _flap();
+  }
+
+  /// Uçuşun parkurunu ve modunu kesinleştirir. Klasik: ekran genişliğine bağlı ilk engel (1.0'dan beri).
+  /// Günlük: o anki günün tanımı (ekranda beklerken gün değiştiyse yeni gün), sabit ilk engel mesafesi;
+  /// dereceli hak bu anda harcanır, hak yoksa ya da saat güvenilmezse uçuş antrenmana döner.
+  void _prepareRun() {
+    if (!runMode.value.isDaily) {
+      _course = null;
+      dailyDefinition.value = null;
+      _runBest = best.value;
+      _nextSpawnX = visibleWidth + config.firstObstacleOffset;
+      return;
+    }
+    final def = services.daily.today();
+    dailyDefinition.value = def;
+    if (runMode.value == RunMode.dailyRanked) {
+      final r = services.progress.beginDailyAttempt(
+        def,
+        _runId,
+        trustedDay: services.daily.trustedDay,
+      );
+      if (r != DailyBeginResult.started) {
+        runMode.value = RunMode.dailyPractice;
+        dailyNotice.value = r;
+      }
+    }
+    _runBest =
+        services.progress.value.dailyChallenge[def.challengeId]?.bestScore ?? 0;
+    _course = DailyGenerators.course(def, config: config);
+    _courseIndex = 0;
+    _courseScroll = 0;
   }
 
   void _flap() {
@@ -330,6 +393,23 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// "UÇMAYA BAŞLA": menüyü kapatır, "uçmak için dokun" ekranına geçer.
   void startFromMenu() {
     if (phase.value != GamePhase.ready) return;
+    runMode.value = RunMode.classic;
+    dailyDefinition.value = null;
+    menuOpen.value = false;
+    modal.value = null;
+    _applyOverlays();
+  }
+
+  /// Günün Uçuşu: "Uçuşa başla" / "Antrenman yap". Menü ya da oyun sonundan "uçmak için dokun"
+  /// ekranına geçer; dereceli hak ilk dokunuşta (uçuş gerçekten başlayınca) harcanır.
+  void startDaily({required bool ranked}) {
+    if (phase.value != GamePhase.ready) {
+      if (phase.value == GamePhase.gameOver && !canRestart.value) return;
+      restart();
+    }
+    runMode.value = ranked ? RunMode.dailyRanked : RunMode.dailyPractice;
+    dailyDefinition.value = services.daily.today();
+    dailyNotice.value = null;
     menuOpen.value = false;
     modal.value = null;
     _applyOverlays();
@@ -338,6 +418,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Ana menüye dön (duraklatma ya da oyun sonundan). Tur temizlenir.
   void openMenu() {
     if (phase.value != GamePhase.ready) restart();
+    runMode.value = RunMode.classic;
+    dailyDefinition.value = null;
     menuOpen.value = true;
     _applyOverlays();
     _syncMusic();
@@ -451,8 +533,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     scrollDistance += dx;
     physics.step(dt);
 
+    _courseScroll += dx;
+    final course = _course;
     for (final o in obstacles) {
-      o.position.x -= dx;
+      // Günlük: konum parkur koordinatından (ekran ve kare hızından bağımsız, birikmiş yuvarlama yok)
+      if (course != null && o.courseIndex >= 0) {
+        o.position.x = course.leftOf(o.courseIndex, _courseScroll);
+      } else {
+        o.position.x -= dx;
+      }
     }
     _nextSpawnX -= dx;
     _spawnIfNeeded();
@@ -534,12 +623,23 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
         break;
       }
     }
-    final target = (next?.gapCenter ?? config.worldHeight * 0.45) + 30;
+    // Günlük: sıradaki engel henüz doğmadıysa (dar ekran) parkurdan okunur; pilot ekran genişliğinden
+    // bağımsız uçar (determinizm testleri)
+    final upcoming = next?.gapCenter ?? _course?.at(_courseIndex).gapCenter;
+    final target = (upcoming ?? config.worldHeight * 0.45) + 30;
     if (physics.y > target && physics.velocity > -150) _flap();
   }
 
   void _spawnIfNeeded() {
     // Engel görünür alanın hemen sağında, ekrana girmeden önce üretilir
+    final course = _course;
+    if (course != null) {
+      while (course.leftOf(_courseIndex, _courseScroll) <=
+          visibleWidth + config.obstacleWidth + 40) {
+        _spawnDaily(course);
+      }
+      return;
+    }
     while (_nextSpawnX <= visibleWidth + config.obstacleWidth + 40) {
       final gap = _gaps.next(score.value);
       final o = ObstaclePair(
@@ -566,6 +666,26 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     }
   }
 
+  /// Günlük parkurdan sıradaki engel: yalnızca sırasına bağlı (skor, ekran ve kare hızından bağımsız).
+  void _spawnDaily(DailyCourse course) {
+    final index = _courseIndex++;
+    final spec = course.at(index);
+    final o =
+        ObstaclePair(
+            x: course.leftOf(index, _courseScroll),
+            gapCenter: spec.gapCenter,
+            gapHeight: spec.gapHeight,
+            width: config.obstacleWidth,
+            worldHeight: config.worldHeight,
+            kit: dayCycle.zone.kit,
+            seed: _spawnCount++, // yalnızca görsel varyant
+          )
+          ..pickupY = spec.pickupY
+          ..courseIndex = index;
+    obstacles.add(o);
+    world.add(o);
+  }
+
   void _recycleOffscreen() {
     while (obstacles.isNotEmpty && obstacles.first.right < -60) {
       obstacles.removeAt(0).removeFromParent();
@@ -587,9 +707,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _addPoint() {
     score.value++;
-    if (!recordPassed.value &&
-        best.value > 0 &&
-        score.value == best.value + 1) {
+    if (!recordPassed.value && _runBest > 0 && score.value == _runBest + 1) {
       recordPassed.value = true;
     }
     if (dayCycle.updateScore(score.value)) {
@@ -612,7 +730,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       -420,
     ); // küçük sekme, sonra düşüş
     final s = score.value;
-    if (s > best.value) {
+    // Klasik rekor yalnızca klasik uçuşlarda (günlük rekor ilerleme kaydında, ayrı tutulur)
+    if (runMode.value == RunMode.classic && s > best.value) {
       best.value = s;
       isNewRecord.value = true;
       unawaited(_saveBest(s));
@@ -630,6 +749,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           flightMs: (_runTime * 1000).round(),
           zoneStats: Map.unmodifiable(_zoneStats),
           assisted: _runAssisted,
+          mode: runMode.value,
+          challengeId: dailyDefinition.value?.challengeId,
         ),
       ),
     );
@@ -729,6 +850,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Yeni tur: eski engeller, skor, palet ve karakter temizlenir. READY'e ("uçmak için dokun") dönülür.
   void restart() {
+    // Süren bir uçuş yarıda bırakılıyor: hesap yapılmaz; günlük dereceli hak harcanmış kalır
+    if ((phase.value == GamePhase.playing || phase.value == GamePhase.paused) &&
+        _runId.isNotEmpty) {
+      services.emit(RunAbandoned(_runId));
+    }
+    _course = null;
     for (final o in obstacles) {
       o.removeFromParent();
     }
