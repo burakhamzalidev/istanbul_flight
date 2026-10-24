@@ -276,6 +276,7 @@ Web derlemesinde (375×812) menü, günlük ekran, hazır şeridi ve günlük oy
 | 12 | VoiceOver açık | Menü girişi ve düğmeler okunur |
 | 13 | iPhone SE (4,7") | Menü ve günlük ekran taşmaz |
 | 14 | Gece 03:00 (UTC değişimi) | Yeni parkur, 3 yeni hak; dünün rekoru kayıtta |
+| 15 | Game Center → günlük tablo (Apple ekranı) | Skor "12 puan" biçiminde (Apple birim ekinin baş boşluğunu siliyor; "12puan" görünürse ek değiştirilmeli, §8) |
 
 ## 14. Bilinen güvenlik sınırları
 
