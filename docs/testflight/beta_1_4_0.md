@@ -7,6 +7,10 @@
 > - Beyza İnce: kullanıcı isteğiyle ekip üyeliği kaldırıldı; yalnızca **harici test kullanıcısı** olarak "Test Kullanıcıları" grubunda. 1.4.0 (5) bu grup için TestFlight beta incelemesine gönderildi ("Waiting for Review"); onaylanınca Beyza'ya TestFlight daveti gider.
 > - TestFlight test bilgileri dolduruldu: beta açıklaması, geri bildirim e-postası, pazarlama ve gizlilik URL'leri, beta inceleme iletişimi (kullanıcının App Review için verdiği bilgiler), giriş gerekmez, inceleme notu.
 >
+> - **23 Ekim 2026 22:25 (İstanbul):** hesaptaki TÜM uygulamaların TÜM TestFlight derlemeleri Apple tarafında aynı anda "Expired" oldu. Sertifika, profiller ve üyelik geçerli; neden bilinmiyor.
+> - **1.4.0 (6) (24 Ekim 2026, onayınla):** aynı daldan (`2b4bfe8`) yeniden derlendi; dahili grupta test ediliyor ve "Test Kullanıcıları" grubuna eklendi. Harici beta incelemesine gönderim API'de "Please try again later" (422) hatası veriyor, tekrar denenecek.
+> - **App Store:** 1.2.0 sürüm kaydı 1.4.0'a çevrildi; derleme 6 bağlandı, Game Center işaretlendi, notlar güncellendi ([../store/app_review_reply_1_4_0.md](../store/app_review_reply_1_4_0.md)). Yayın türü: elle.
+>
 > App Store incelemesindeki 1.2.0 (3) bundan etkilenmez. Game Center tabloları ve başarımları App Store Connect'te "Prepare for Submission" durumunda; TestFlight derlemeleri Game Center'ın test (sandbox) ortamını kullanır.
 > Ayrıntı: [../16_phase2_4_game_center.md](../16_phase2_4_game_center.md)
 

@@ -144,9 +144,9 @@ workflows:
 
   ios-testflight:
     # DİKKAT: Bu iş akışı App Store Connect'e YÜKLER. Otomatik tetikleyicisi yoktur; yalnızca Codemagic'te
-    # elle "Start new build" ile çalışır. Başlatmak = TestFlight yüklemesine onay. Yalnızca DAHİLİ test:
-    # harici grup ve herkese açık bağlantı tanımlı değil.
-    name: iOS TestFlight (dahili test, elle başlatılır)
+    # elle "Start new build" ile çalışır. Başlatmak = TestFlight yüklemesine ve harici dağıtıma onay.
+    # Harici grup: "Test Kullanıcıları" (beta incelemesinden sonra). Herkese açık bağlantı yok.
+    name: iOS TestFlight (dahili + Test Kullanıcıları, elle başlatılır)
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
@@ -165,5 +165,6 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true # TestFlight işlemesi; dahili test grubu (otomatik dağıtım açıksa) alır
-        # beta_groups: harici gruplar BİLİNÇLİ OLARAK yok
+        beta_groups: # her yeni derleme harici gruba eklenir ve TestFlight beta incelemesine gider (kullanıcı isteği, 24 Ekim 2026)
+          - Test Kullanıcıları
         submit_to_app_store: false
