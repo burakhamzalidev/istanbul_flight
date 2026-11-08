@@ -23,6 +23,9 @@ function readPNG(file) {
   return c;
 }
 
+/** Bölge simgesi: [dosya, katman, x, taban kaydırması] (önizleme yerleşimi). */
+const LANDMARKS = { halic: ['suleymaniye', 'land', 70, 2], galata: ['galata', 'land', 160, 0], kizkulesi: ['kiz_kulesi', 'water', 130, 12], kopru: ['bridge', 'water', -110, 36], rumeli: ['rumeli_hisari', 'land', 30, 4], ortakoy: ['ortakoy', 'water', -10, 16], emirgan: ['emirgan', 'water', -50, 6], dolmabahce: ['dolmabahce', 'water', -90, 8], uskudar: ['uskudar', 'water', -60, 6] };
+
 function tileX(dst, src, y, offset) { for (let x = -((offset % src.w) + src.w) % src.w; x < dst.w; x += src.w) dst.blit(src, x, y); }
 
 function scene(dir, key, { W = 270, scroll = 0, extras = [] } = {}) {
@@ -49,10 +52,11 @@ if (require.main === module) {
   fs.mkdirSync(out, { recursive: true });
   const keys = Object.keys(ZONES);
   const sheet = new Canvas(270 * keys.length + 4 * (keys.length - 1), 480);
-  const LM = { halic: ['suleymaniye', 'land', 70, 2], galata: ['galata', 'land', 160, 0], kizkulesi: ['kiz_kulesi', 'water', 130, 12], kopru: ['bridge', 'water', -110, 36], rumeli: ['rumeli_hisari', 'land', 30, 4] };
+  const LM = LANDMARKS;
+  
   keys.forEach((k, i) => { const [f, layer, x, base] = LM[k]; const extras = fs.existsSync(`${dir}/landmarks/${f}.png`) ? [{ layer, img: readPNG(`${dir}/landmarks/${f}.png`), x, base }] : []; sheet.blit(scene(dir, k, { extras }), i * 274, 0); });
   sheet.scaled(2).save(`${out}/zones_backgrounds_x2.png`);
   console.log('ok');
 }
 
-module.exports = { readPNG, scene };
+module.exports = { readPNG, scene, LANDMARKS };

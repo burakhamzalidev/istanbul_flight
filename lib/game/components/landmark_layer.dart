@@ -80,13 +80,25 @@ class LandmarkLayer extends Component
       baseOffset: 32.0,
       focus: 0.36,
     ),
+    // Ortaköy (docs/19 §3): meydan çıkıntısında Büyük Mecidiye Camii yakın plan, arkasında köprü tabliyesi
+    Landmark.ortakoy => (w: 1280.0, h: 800.0, baseOffset: 64.0, focus: 0.42),
+    // Emirgan: korunun yamacı, erguvanlar ve Sarı Köşk; odak köşk
+    Landmark.emirgan => (w: 1280.0, h: 560.0, baseOffset: 24.0, focus: 0.68),
+    // Dolmabahçe: sarayın deniz cephesi ve Saat Kulesi; odak Tören Salonu
+    Landmark.dolmabahce => (w: 1600.0, h: 560.0, baseOffset: 32.0, focus: 0.5),
+    // Üsküdar: iskele meydanı ve Mihrimah Sultan Camii; odak kubbe
+    Landmark.uskudar => (w: 1280.0, h: 720.0, baseOffset: 24.0, focus: 0.55),
   };
 
   /// Kıyının önünde (suda / sahilde) duran simgeler.
   static bool isFront(Landmark l) =>
       l == Landmark.kizKulesi ||
       l == Landmark.bridge ||
-      l == Landmark.rumeliHisari;
+      l == Landmark.rumeliHisari ||
+      l == Landmark.emirgan ||
+      l == Landmark.ortakoy ||
+      l == Landmark.dolmabahce ||
+      l == Landmark.uskudar;
 
   /// Odak noktası görünür alanın [at] oranına gelecek x.
   double focusX(Landmark l, double at) {

@@ -30,6 +30,17 @@ class GameConfig {
     this.maxGapDrop = 390,
     this.bigShift = 260,
     this.afterBigShiftScale = 0.6,
+    this.hazardsFromScore = 120,
+    this.flockChance = 0.2,
+    this.gustChance = 0.16,
+    this.hazardCooldown = 2,
+    this.flockWidth = 180,
+    this.flockHeight = 88,
+    this.flockApproach = 0.35,
+    this.flockBob = 22,
+    this.flockBobPeriod = 2.6,
+    this.flockOverlap = 80,
+    this.gustAccel = 400,
     this.gameOverCardDelay = 0.7,
     this.restartLockTime = 0.6,
     this.pickupChance = 0.45,
@@ -93,6 +104,33 @@ class GameConfig {
   /// art arda iki büyük zikzak (yukarı-aşağı-yukarı) üretilmez.
   final double bigShift;
   final double afterBigShiftScale;
+
+  // Dinamik engeller (Phase 2.6.3, docs/19 §5a; yalnızca klasik mod)
+  /// Bu skordan itibaren (ikinci gün bölgeleri) koridorlara tehlike konabilir.
+  final int hazardsFromScore;
+
+  /// Bir koridorda martı sürüsü / rüzgâr kuşağı olasılığı.
+  final double flockChance, gustChance;
+
+  /// Bir tehlikeden sonra en az bu kadar koridor tehlikesiz kalır.
+  final int hazardCooldown;
+
+  /// Martı sürüsünün görsel boyu; çarpışma kutusu bunun %80 × %70'i.
+  final double flockWidth, flockHeight;
+
+  /// Sürü kuşa doğru uçar: kaydırma hızına göre bu oranda daha hızlı yaklaşır. Kuşun hizasına koridorun
+  /// ortasında gelir (konumu yalnızca koridorun kuşa uzaklığına bağlı; zamandan ve kare hızından bağımsız).
+  final double flockApproach;
+
+  /// Sürünün dikey salınım genliği ve periyodu (sn): yavaş ve tahmin edilebilir.
+  final double flockBob, flockBobPeriod;
+
+  /// Sürünün (salınımın en uç anında) iki geçidi birleştiren yol zarfına en fazla girebileceği derinlik.
+  final double flockOverlap;
+
+  /// Hava akımının koridor ortasındaki en büyük dikey ivmesi (yer çekimi 2600; ~%15). Koridorun kenarlarında
+  /// sıfırdan başlar ve sin² eğrisiyle yumuşakça artıp azalır (ortalama bunun yarısı).
+  final double gustAccel;
 
   /// Varsayılan geçit eğrisi (docs/18 §4).
   static const defaultGapCurve = <(int, double)>[

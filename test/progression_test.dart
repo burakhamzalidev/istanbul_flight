@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/data/score_repository.dart';
+import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/game_services.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
@@ -155,7 +156,11 @@ void main() {
       expect(s.progress.totalScore, 0);
       expect(s.progress.totalSimits, 0);
       expect(s.progress.longestFlightMs, 0);
-      expect(s.progress.maxZone, 4, reason: 'bölge sırası sınırlanır');
+      expect(
+        s.progress.maxZone,
+        routeZones.last,
+        reason: 'bölge sırası rotanın son durağına sınırlanır',
+      );
     });
 
     test('XP oyun fiziğini değiştirmez (ayarlar sabit)', () async {

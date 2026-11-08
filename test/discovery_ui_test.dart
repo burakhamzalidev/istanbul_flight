@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/data/score_repository.dart';
+import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
 import 'package:istanbul_flight/main.dart';
@@ -72,17 +73,18 @@ void main() {
     (tester) async {
       final (game, _) = await _pumpApp(tester, progress: _explorer());
       expect(find.byKey(const Key('discoveryButton')), findsOneWidget);
-      expect(_text(tester, 'discoveryMenuCount'), '%31');
+      // Phase 2.6: albüm yüzdesi rotadaki bölgeler üzerinden (5 bölgede %31, 9 bölgede %17)
+      expect(_text(tester, 'discoveryMenuCount'), '%17');
       await _tap(tester, 'discoveryButton');
       expect(game.modal.value, Overlays.discovery);
       expect(find.byKey(const Key('istanbulMap')), findsOneWidget);
-      for (var z = 0; z < 5; z++) {
+      for (final z in routeZones) {
         expect(find.byKey(Key('mapMarker_$z')), findsOneWidget, reason: '$z');
       }
       expect(find.byKey(const Key('mapLegend')), findsOneWidget);
-      expect(_text(tester, 'albumBadges'), '1/5');
-      // Albüm yüzdesi: Haliç 3/3, Galata ulaş + kıl payı 2/3 → (1 + (1 + 2/3 + 0)/3) / 5
-      expect(_text(tester, 'albumPercent'), 'Albüm %31');
+      expect(_text(tester, 'albumBadges'), '1/${routeZones.length}');
+      // Albüm yüzdesi: Haliç 3/3, Galata ulaş + kıl payı 2/3 → (1 + (1 + 2/3 + 0)/3) / 9 rotadaki bölge
+      expect(_text(tester, 'albumPercent'), 'Albüm %17');
       expect(tester.takeException(), isNull);
     },
   );
@@ -150,7 +152,7 @@ void main() {
     }
     expect(find.text('3. kartpostal'), findsOneWidget);
     expect(find.text('35 puanda açılır'), findsOneWidget);
-    expect(find.byType(ZonePostcardImage), findsNWidgets(5));
+    expect(find.byType(ZonePostcardImage), findsNWidgets(routeZones.length));
     await tester.ensureVisible(find.byKey(const Key('albumReward')));
     expect(
       _text(tester, 'albumRewardText'),

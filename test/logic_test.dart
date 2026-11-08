@@ -155,7 +155,45 @@ void main() {
       expect(zoneIndexForScore(35), 2);
       expect(zoneIndexForScore(60), 3);
       expect(zoneIndexForScore(90), 4);
-      expect(zoneIndexForScore(500), 4);
+      expect(zoneIndexForScore(119), 4);
+      // Phase 2.6: rota Rumeli'den sonra ikinci günle devam eder
+      expect(zoneIndexForScore(120), 5);
+      expect(zoneIndexForScore(180), 7);
+      expect(zoneIndexForScore(210), 8);
+      expect(zoneIndexForScore(150), 6);
+      expect(zoneIndexForScore(500), routeZones.last);
+      // Günün Uçuşu v1/v2 rotası Rumeli'de biter
+      expect(zoneIndexForScore(500, maxZone: firstRouteLastZone), 4);
+    });
+
+    test(
+      'bölge kimlikleri kalıcı: ilk beş bölge yerinde, eşikler rotada artan',
+      () {
+        expect(
+          [for (final z in zones.take(5)) z.name],
+          ['Haliç', 'Galata', 'Kız Kulesi', 'Boğaz Köprüsü', 'Rumeli Hisarı'],
+        );
+        expect(
+          [for (final z in zones) z.startScore],
+          [0, 15, 35, 60, 90, 120, 150, 180, 210],
+        );
+        expect(routeZones.take(5), [0, 1, 2, 3, 4]);
+        for (var i = 1; i < routeZones.length; i++) {
+          expect(
+            zones[routeZones[i]].startScore,
+            greaterThan(zones[routeZones[i - 1]].startScore),
+          );
+        }
+        expect(nextRouteZone(4), 5);
+        expect(nextRouteZone(routeZones.last), isNull);
+      },
+    );
+
+    test('Günün Uçuşu gün döngüsü Rumeli\'de kalır', () {
+      final d = DayCycle();
+      expect(d.updateScore(200, maxZone: firstRouteLastZone), isTrue);
+      expect(d.zoneIndex, 4);
+      expect(d.updateScore(250, maxZone: firstRouteLastZone), isFalse);
     });
 
     test('bölge değişince palet yumuşak geçer ve sonunda hedefe ulaşır', () {
@@ -174,13 +212,18 @@ void main() {
 
   test('rota çubuğu ilerlemesi 0..1 ve monoton', () {
     var last = -1.0;
-    for (var s = 0; s <= 120; s++) {
+    for (var s = 0; s <= 260; s++) {
       final p = RouteBar.progressFor(s);
       expect(p, inInclusiveRange(0, 1));
       expect(p, greaterThanOrEqualTo(last));
       last = p;
     }
-    expect(RouteBar.progressFor(90), 1);
+    expect(RouteBar.progressFor(zones[routeZones.last].startScore), 1);
+    // her durak eşit aralıklı: Rumeli rotanın 5. durağı
+    expect(
+      RouteBar.progressFor(90),
+      closeTo(4 / (routeZones.length - 1), 1e-9),
+    );
   });
 
   group('SharedPrefsScoreRepository', () {

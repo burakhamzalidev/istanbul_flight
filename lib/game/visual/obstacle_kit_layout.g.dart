@@ -28,5 +28,9 @@ abstract final class ObstacleKitLayout {
     'kizkulesi': 12.0,
     'kopru': 8.0,
     'rumeli': 12.0,
+    'ortakoy': 32.0,
+    'emirgan': 28.0,
+    'dolmabahce': 20.0,
+    'uskudar': 28.0,
   };
 }

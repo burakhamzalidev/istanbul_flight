@@ -260,7 +260,7 @@ class ProfileOverlay extends StatelessWidget {
                   ('Kıl payı geçiş', '${p.totalNearMisses}'),
                   (
                     'Keşfedilen bölge',
-                    '${p.discoveredZones.length}/${zones.length}',
+                    '${p.discoveredZones.length}/${routeZones.length}',
                   ),
                   ('Tamamlanan görev', '${p.missionsCompleted}'),
                 ],
@@ -382,7 +382,7 @@ class _ZoneTrail extends StatelessWidget {
     spacing: 6,
     runSpacing: 4,
     children: [
-      for (var i = 0; i < zones.length; i++)
+      for (final i in routeZones)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: pixelBox(

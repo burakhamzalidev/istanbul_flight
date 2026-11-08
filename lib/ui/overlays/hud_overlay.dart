@@ -289,18 +289,22 @@ class OneShotFade extends StatelessWidget {
   );
 }
 
-/// Rotadaki 5 durak ve ilerleme (bölge eşiklerine göre).
+/// Rotadaki duraklar ve ilerleme (bölge eşiklerine göre; yalnızca rotadaki bölgeler).
 class RouteBar extends StatelessWidget {
   const RouteBar({super.key, required this.score});
 
   final int score;
 
   static double progressFor(int score) {
-    final last = zones.last.startScore;
+    final route = routeZoneList;
+    final last = route.last.startScore;
     if (score >= last) return 1;
-    final i = zoneIndexForScore(score);
-    final a = zones[i].startScore, b = zones[i + 1].startScore;
-    return (i + (score - a) / (b - a)) / (zones.length - 1);
+    var i = 0;
+    while (i + 1 < route.length && score >= route[i + 1].startScore) {
+      i++;
+    }
+    final a = route[i].startScore, b = route[i + 1].startScore;
+    return (i + (score - a) / (b - a)) / (route.length - 1);
   }
 
   @override
@@ -320,14 +324,14 @@ class RouteBar extends StatelessWidget {
                 color: UiColors.paper.withValues(alpha: 0.35),
               ),
               Container(height: 4, width: w * p, color: UiColors.mustard),
-              for (var i = 0; i < zones.length; i++)
+              for (var i = 0; i < routeZones.length; i++)
                 Positioned(
-                  left: w * i / (zones.length - 1) - 6,
+                  left: w * i / (routeZones.length - 1) - 6,
                   child: Container(
                     width: 12,
                     height: 12,
                     decoration: pixelBox(
-                      color: p * (zones.length - 1) >= i - 0.001
+                      color: p * (routeZones.length - 1) >= i - 0.001
                           ? UiColors.mustard
                           : UiColors.paper,
                       border: UiColors.navy,

@@ -4,7 +4,7 @@
 'use strict';
 const fs = require('fs');
 const { Canvas } = require('./lib');
-const { readPNG, scene } = require('./preview');
+const { readPNG, scene, LANDMARKS } = require('./preview');
 const { ZONES } = require('./zones');
 
 const L = { bodyW: 196, capW: 224, ov: 14, tileH: 192, capH: 128, baseH: 320 };
@@ -13,7 +13,7 @@ const SLOTS = {
   0.25: { bottomBodyA: [0, 0], bottomBodyB: [200, 0], topBodyA: [400, 0], topBodyB: [600, 0], bottomCap: [800, 0], topCap: [1032, 0], bottomBase: [1264, 0] },
   0.5: require('./obstacles').SLOT,
 };
-const BOUNDARY = { halic: 28, galata: 32, kizkulesi: 12, kopru: 8, rumeli: 12 };
+const BOUNDARY = { halic: 28, galata: 32, kizkulesi: 12, kopru: 8, rumeli: 12, ortakoy: 32, emirgan: 28, dolmabahce: 20, uskudar: 28 };
 const WORLD_H = 1920, OUT = 0.5; // çıktı pikseli = 2 dünya birimi
 
 function drawPiece(dst, atlas, scale, src, dx, dy, dw, dh) { // en yakın komşu
@@ -46,8 +46,11 @@ function pair(dst, atlas, scale, kit, x, gapTop, gapBottom, variant) {
   drawPiece(dst, atlas, scale, R('topCap'), x - L.ov, capTopT, L.capW, L.capH);
 }
 
-function zoneShot(dir, atlasDir, scale, key) {
-  const bg = scene(dir, key).scaled(2); // 270×480 (1 px = 4 birim) → 540×960
+function zoneShot(dir, atlasDir, scale, key, { landmark = false } = {}) {
+  // landmark: true → bölge simgesi de çizilir (oyun içi görünüme yakın tam sahne)
+  const lm = landmark && LANDMARKS[key] && fs.existsSync(`${dir}/landmarks/${LANDMARKS[key][0]}.png`)
+    ? [{ layer: LANDMARKS[key][1], img: readPNG(`${dir}/landmarks/${LANDMARKS[key][0]}.png`), x: LANDMARKS[key][2], base: LANDMARKS[key][3] }] : [];
+  const bg = scene(dir, key, { extras: lm }).scaled(2); // 270×480 (1 px = 4 birim) → 540×960
   const atlas = readPNG(`${atlasDir}/kit_${key}.png`);
   const gaps = [[620, 960], [440, 770], [780, 1100]];
   [140, 700, 1260].forEach((x, i) => { const [t, b] = gaps[i]; pair(bg, atlas, scale, key, x, t, b, i + (key.length % 2)); });
@@ -56,6 +59,8 @@ function zoneShot(dir, atlasDir, scale, key) {
   for (let a = 0; a < 360; a += 2) bg.set(cx + Math.round(r * Math.cos(a * Math.PI / 180)), cy + Math.round(r * Math.sin(a * Math.PI / 180)), '#ff2a2a');
   return bg;
 }
+
+module.exports = { zoneShot, pair };
 
 if (require.main === module) {
   const [dir, out, oldDir] = process.argv.slice(2);

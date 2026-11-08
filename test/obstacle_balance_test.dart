@@ -70,7 +70,7 @@ void main() {
           const s = ObstacleKitLayout.atlasScale;
           final ov = (ObstacleKitLayout.overhang * s).round();
           final bw = (ObstacleKitLayout.bodyWidth * s).round();
-          for (final kit in ObstacleKitId.values) {
+          for (final kit in GameArt.routeKits) {
             final a = await _load(kit);
             for (final r in [
               ObstacleKitLayout.bottomBodyA,
@@ -138,7 +138,7 @@ void main() {
       'gövde karoları dikey olarak dikişsiz döşenir (son satır → ilk satır geçişi iç geçişlerden sert değil)',
       (tester) async {
         await tester.runAsync(() async {
-          for (final kit in ObstacleKitId.values) {
+          for (final kit in GameArt.routeKits) {
             final a = await _load(kit);
             for (final r in [
               ObstacleKitLayout.bottomBodyA,
@@ -175,7 +175,7 @@ void main() {
       (tester) async {
         await tester.runAsync(() async {
           final signatures = <String>{};
-          for (final kit in ObstacleKitId.values) {
+          for (final kit in GameArt.routeKits) {
             final a = await _load(kit);
             final bodies = <List<int>>[];
             for (final r in [
@@ -208,7 +208,7 @@ void main() {
             }
             signatures.add(bodies[0].take(400).join(','));
           }
-          expect(signatures.length, ObstacleKitId.values.length);
+          expect(signatures.length, GameArt.routeKits.length);
         });
       },
     );

@@ -41,7 +41,7 @@ class DiscoveryMenuButton extends StatelessWidget {
         key: const Key('discoveryButton'),
         game: game,
         semanticLabel:
-            "İstanbul'u Keşfet, $cards / ${zones.length} kartpostal, albüm yüzde $pct",
+            "İstanbul'u Keşfet, $cards / ${routeZones.length} kartpostal, albüm yüzde $pct",
         onTap: () => game.openModal(Overlays.discovery),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
@@ -166,10 +166,10 @@ class _DiscoveryOverlayState extends State<DiscoveryOverlay> {
                 style: TextStyle(color: UiColors.navySoft, fontSize: 10),
               ),
               const SizedBox(height: 8),
-              for (var z = 0; z < zones.length; z++)
+              for (final z in routeZones)
                 _ZoneRow(game: g, progress: p, zone: z, onTap: () => _open(z)),
             ] else ...[
-              for (var z = 0; z < zones.length; z++) ...[
+              for (final z in routeZones) ...[
                 _PostcardTile(
                   game: g,
                   progress: p,
@@ -224,7 +224,7 @@ class _AlbumHeader extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                '${d.badges.length}/${discoveryZones.length}',
+                '${d.badges.length}/${routeZones.length}',
                 key: const Key('albumBadges'),
                 style: const TextStyle(color: UiColors.navy),
               ),
@@ -234,7 +234,7 @@ class _AlbumHeader extends StatelessWidget {
           XpBar(fraction: d.albumFraction, height: 12),
           const SizedBox(height: 4),
           Text(
-            'Kartpostal ${progress.discoveredZones.length}/${zones.length} · '
+            'Kartpostal ${progress.discoveredZones.length}/${routeZones.length} · '
             'Hedef ${d.goalsDone}/${DiscoveryState.goalsTotal}',
             style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
           ),
@@ -335,10 +335,16 @@ class IstanbulMap extends StatelessWidget {
       final devicePx = (c.maxWidth * dpr / n).floorToDouble().clamp(1.0, 12.0);
       final k = devicePx / dpr;
       final side = n * k;
-      Offset at(int z) {
-        final dz = discoveryZones[z];
+      Offset truePos(int z) {
+        final dz = discoveryZoneOf(z);
         final m = MapProjection.toMap(dz.lat, dz.lon);
         return Offset(m.x * k, m.y * k);
+      }
+
+      // işaretin çizildiği yer (çakışan işaretler kaydırılır; gerçek konuma çizgiyle bağlanır)
+      Offset at(int z) {
+        final dz = discoveryZoneOf(z);
+        return truePos(z) + Offset(dz.markerDx * k, dz.markerDy * k);
       }
 
       return Center(
@@ -378,13 +384,19 @@ class IstanbulMap extends StatelessWidget {
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _RoutePainter(
-                      [for (var z = 0; z < zones.length; z++) at(z)],
-                      reached: progress.maxZone,
+                      [for (final z in routeZones) at(z)],
+                      reached: routeZones.lastIndexWhere(
+                        (z) => z <= progress.maxZone,
+                      ),
                       unit: k,
+                      leaders: [
+                        for (final z in routeZones)
+                          if (at(z) != truePos(z)) (truePos(z), at(z)),
+                      ],
                     ),
                   ),
                 ),
-                for (var z = 0; z < zones.length; z++)
+                for (final z in routeZones)
                   _MapMarker(
                     key: Key('mapMarker_$z'),
                     game: game,
@@ -425,14 +437,44 @@ class IstanbulMap extends StatelessWidget {
 
 /// Uçuş rotası: oyun sırasıyla bölgeleri birleştiren kesikli çizgi (gidilen kısım altın, kalanı soluk).
 class _RoutePainter extends CustomPainter {
-  _RoutePainter(this.points, {required this.reached, required this.unit});
+  _RoutePainter(
+    this.points, {
+    required this.reached,
+    required this.unit,
+    this.leaders = const [],
+  });
 
   final List<Offset> points;
   final int reached;
   final double unit;
 
+  /// Kaydırılmış işaretlerin (gerçek konum, işaret) çiftleri: gerçek konumda nokta ve ona uzanan ince çizgi.
+  final List<(Offset, Offset)> leaders;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final ink = Paint()
+      ..isAntiAlias = false
+      ..color = const Color(0xFF6E5236);
+    for (final (real, marker) in leaders) {
+      final len = (marker - real).distance;
+      for (var t = 0.0; t < len; t += unit) {
+        final p = Offset.lerp(real, marker, t / len)!;
+        canvas.drawRect(
+          Rect.fromLTWH(
+            (p.dx / unit).roundToDouble() * unit,
+            (p.dy / unit).roundToDouble() * unit,
+            unit,
+            unit,
+          ),
+          ink,
+        );
+      }
+      canvas.drawRect(
+        Rect.fromCenter(center: real, width: unit * 3, height: unit * 3),
+        ink,
+      );
+    }
     final dash = unit * 2;
     for (var i = 0; i + 1 < points.length; i++) {
       final a = points[i], b = points[i + 1];
@@ -461,7 +503,10 @@ class _RoutePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_RoutePainter old) =>
-      old.reached != reached || old.unit != unit || old.points != points;
+      old.reached != reached ||
+      old.unit != unit ||
+      old.points != points ||
+      old.leaders != leaders;
 }
 
 class _MapMarker extends StatelessWidget {
@@ -503,7 +548,8 @@ class _MapMarker extends StatelessWidget {
       child: Pressable(
         game: game,
         onTap: onTap,
-        semanticLabel: '${zone + 1}. durak, ${zones[zone].name}, $status',
+        semanticLabel:
+            '${routeZones.indexOf(zone) + 1}. durak, ${zones[zone].name}, $status',
         child: Center(
           child: Container(
             width: size,
@@ -520,7 +566,7 @@ class _MapMarker extends StatelessWidget {
             child: state == ZoneAlbumState.locked
                 ? PixelIcon(Icons.lock_rounded, color: fg, size: 12)
                 : Text(
-                    '${zone + 1}',
+                    '${routeZones.indexOf(zone) + 1}',
                     style: TextStyle(color: fg, fontSize: 15, height: 1),
                   ),
           ),
@@ -572,7 +618,7 @@ class _ZoneRow extends StatelessWidget {
               SizedBox(
                 width: 22,
                 child: Text(
-                  '${zone + 1}',
+                  '${routeZones.indexOf(zone) + 1}',
                   style: const TextStyle(color: UiColors.navySoft),
                 ),
               ),
@@ -704,7 +750,7 @@ class _PostcardTile extends StatelessWidget {
       game: game,
       onTap: onTap,
       semanticLabel: locked
-          ? '${zone + 1}. kartpostal, kilitli'
+          ? '${routeZones.indexOf(zone) + 1}. kartpostal, kilitli'
           : '${zones[zone].name} kartpostalı, yüzde $pct',
       child: Container(
         padding: const EdgeInsets.all(8),
@@ -726,7 +772,9 @@ class _PostcardTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    locked ? '${zone + 1}. kartpostal' : zones[zone].name,
+                    locked
+                        ? '${routeZones.indexOf(zone) + 1}. kartpostal'
+                        : zones[zone].name,
                     style: const TextStyle(color: UiColors.navy),
                   ),
                 ),
@@ -851,7 +899,7 @@ class _ZoneDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dz = discoveryZones[zone];
+    final dz = discoveryZoneOf(zone);
     final d = progress.discovery;
     final state = zoneAlbumState(progress, zone);
     final locked = state == ZoneAlbumState.locked;
@@ -894,7 +942,7 @@ class _ZoneDetail extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          '${zone + 1}. durak · ${locked ? '???' : zones[zone].name}',
+          '${routeZones.indexOf(zone) + 1}. durak · ${locked ? '???' : zones[zone].name}',
           key: const Key('zoneDetailName'),
           textAlign: TextAlign.center,
           style: const TextStyle(color: UiColors.navy, fontSize: 20),

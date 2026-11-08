@@ -1,10 +1,12 @@
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 
 import '../game/config.dart';
 import '../game/day_cycle.dart';
 import '../game/logic/gap_generator.dart';
+import '../game/logic/hazards.dart';
 import '../game/logic/pickup_rules.dart';
 import 'daily_rng.dart';
 
@@ -364,10 +366,21 @@ abstract final class CourseValidator {
   /// temkinli yönde hata yapabilir (çok nadiren geçilebilir bir parkuru reddetmek).
   ///
   /// [bands] verilirse her engelin yanındaki en dar güvenli aralık sırayla eklenir (denge ölçümü).
+  ///
+  /// [hazardAt] verilirse (Phase 2.6.3, klasik mod doğrulaması) koridorlardaki dinamik engeller de oyunla
+  /// aynı kurallarla hesaba katılır: rüzgâr ivmesi fiziğe eklenir, martı sürüsü zamana bağlı konumuyla
+  /// durumları eler. Sürü aralığı bölerse "en dar aralık", deliğin üstünde ve altında kalan parçalardan büyüğüdür
+  /// (kuş en az birinden geçmek zorunda). Verilmezse sonuç önceki sürümle birebir aynıdır.
+  ///
+  /// [decisionSteps] karar aralığıdır (varsayılan: günlük doğrulamayla aynı). Keşfedilen her durum gerçek bir
+  /// dokunuş dizisiyle ulaşılabilir olduğundan farklı aralıklarla bulunan bantların engel başına büyüğü de
+  /// geçerli bir alt sınırdır (ölçüm gürültüsünü azaltmak için; docs/19 §6).
   static ({int depth, double tightest}) explore(
     DailyCourse course, {
     int maxScore = requiredDepth,
     List<double>? bands,
+    Hazard? Function(int corridor)? hazardAt,
+    int decisionSteps = _decisionSteps,
   }) {
     final c = course.config;
     final r = c.birdHitRadius;
@@ -381,7 +394,7 @@ abstract final class CourseValidator {
     var score = 0;
     var tightest = double.infinity;
     for (var step = 0; step < 120 * 600; step++) {
-      if (step > 0 && step % _decisionSteps == 0) {
+      if (step > 0 && step % decisionSteps == 0) {
         // karar: her durum için çırpmayan ve çırpan kopya. Aynı yükseklik kutusundaki durumlardan yalnızca
         // en küçük ve en büyük hızlı olanlar tutulur (aradaki hızlar bu ikisinin arasında kalan yollar izler)
         final minV = <int, int>{}, maxV = <int, int>{};
@@ -422,6 +435,44 @@ abstract final class CourseValidator {
         vs = cv;
       }
       scroll += c.speedForScore(score) * dt;
+      final time = (step + 1) * dt; // oyun saati (ilk dokunuş = 0)
+      var gust = 0.0;
+      Rect? flock;
+      if (hazardAt != null) {
+        for (var i = score; i <= score + 1; i++) {
+          final h = hazardAt(i);
+          if (h == null) continue;
+          final nextLeft = first + i * course.spacing - scroll;
+          if (h.kind == HazardKind.gust) {
+            gust +=
+                h.accel *
+                HazardRules.gustFactor(c, birdX, nextLeft, course.spacing);
+          } else if (h.kind == HazardKind.flock) {
+            flock = h.flockRect(
+              c,
+              HazardRules.flockCenterX(
+                c,
+                HazardRules.corridorCenterX(c, nextLeft, course.spacing),
+                birdX,
+              ),
+              time,
+            );
+          }
+        }
+      }
+      // sürünün kuş merkezine yasakladığı açık aralık (daire–dikdörtgen kesişimi)
+      var fLo = 1.0, fHi = 0.0;
+      final fr = flock;
+      if (fr != null) {
+        final dx = birdX < fr.left
+            ? fr.left - birdX
+            : (birdX > fr.right ? birdX - fr.right : 0.0);
+        if (dx < r) {
+          final reach = math.sqrt(r * r - dx * dx);
+          fLo = fr.top - reach;
+          fHi = fr.bottom + reach;
+        }
+      }
       // bu adımda kuş merkezinin bulunabileceği aralık (tüm durumlar için aynı yatay konum)
       var lo = -double.infinity,
           hi = c.worldHeight - r; // su: y + r >= yükseklik → çarpma
@@ -439,7 +490,7 @@ abstract final class CourseValidator {
       }
       final ny = <double>[], nv = <double>[];
       for (var i = 0; i < ys.length; i++) {
-        var v = vs[i] + c.gravity * dt;
+        var v = vs[i] + (c.gravity + gust) * dt;
         if (v > c.maxFallSpeed) v = c.maxFallSpeed;
         var y = ys[i] + v * dt;
         if (y < r) {
@@ -448,6 +499,7 @@ abstract final class CourseValidator {
         }
         // çarpışma kesin eşitsizlikle (oyundaki daire–dikdörtgen testi: < r²); su: y + r >= yükseklik
         if (y < lo || y > hi || y + r >= c.worldHeight) continue;
+        if (y > fLo && y < fHi) continue; // martı sürüsü
         ny.add(y);
         nv.add(v);
       }
@@ -461,12 +513,19 @@ abstract final class CourseValidator {
           if (y < minY) minY = y;
           if (y > maxY) maxY = y;
         }
-        tightest = math.min(tightest, maxY - minY);
+        var band = maxY - minY;
+        if (fHi > fLo && fLo < maxY && fHi > minY) {
+          // sürü aralığı ikiye böler: kuşun kullanabileceği büyük parça (üstü ya da altı)
+          final above = fLo > minY ? math.min(fLo, maxY) - minY : 0.0;
+          final below = fHi < maxY ? maxY - math.max(fHi, minY) : 0.0;
+          band = math.max(above, below);
+        }
+        tightest = math.min(tightest, band);
         if (bands != null) {
           while (bands.length <= score) {
             bands.add(double.infinity);
           }
-          bands[score] = math.min(bands[score], maxY - minY);
+          bands[score] = math.min(bands[score], band);
         }
       }
       if (first + score * course.spacing - scroll + c.obstacleWidth < birdX) {

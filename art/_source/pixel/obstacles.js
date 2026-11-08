@@ -601,7 +601,351 @@ const rumeli = {
   },
 };
 
-const KITS = { halic, galata, kizkulesi, kopru, rumeli };
+// ---------------- Ortaköy (Phase 2.6, docs/19) ----------------
+// Ortaköy çarşısının 19. yy kagir sıra evleri: taş-tuğla almaşık örgü, Neo-Barok sıva süslemeli pencere alınlıkları,
+// ferforje balkonlar, balüstratlı korniş; zemin katta kumpir dükkânı. Açık öğle: ışık sol üstten, gölgeler kısa.
+// Cami engel değil (tarihi/dini yapı kuralı): bölgenin simgesi olarak arka planda durur.
+const OK = { trim: '#fbf3e4', glass: '#1d2c44', iron: '#1d2030', outline: '#2a2430', shutter: '#3c6e5a' };
+/** Taş-tuğla almaşık örgü: 8 px kesme taş sırası + 4 px (iki sıra) tuğla bandı; 12 px'de bir tekrar (96'ya tam bölünür). */
+function almasik(c, x, y, w, h, { stone, brick, seed = 0 }) {
+  for (let j = y; j < y + h; j++) {
+    const k = ((j % 12) + 12) % 12;
+    if (k < 8) {
+      const row = Math.floor(j / 12);
+      for (let i = x; i < x + w; i++) {
+        const shift = (row % 2) * 8, bx = (i - x + shift) % 16, blk = Math.floor((i - x + shift) / 16);
+        const v = h2(blk, row % 8, seed);
+        let col = v < 0.3 ? dk(stone, 0.07) : v > 0.75 ? lt(stone, 0.07) : stone;
+        if (k === 7 || bx === 0) col = dk(stone, 0.32);
+        else if (k === 0) col = lt(col, 0.2);
+        else if (k === 6) col = dk(col, 0.1);
+        c.set(i, j, col);
+      }
+    } else {
+      const course = Math.floor((k - 8) / 2), r = (k - 8) % 2;
+      for (let i = x; i < x + w; i++) {
+        const joint = r === 1 || (i - x + course * 3) % 6 === 0;
+        c.set(i, j, joint ? dk(brick, 0.42) : h2(Math.floor((i + course * 3) / 6), Math.floor(j / 2) % 48, seed + 3) < 0.25 ? dk(brick, 0.12) : brick);
+      }
+    }
+  }
+}
+/** Neo-Barok pencere: çerçeve, kavisli alınlık ve kilit taşı, altta konsollu denizlik, isteğe bağlı panjur. */
+function baroqueWin(c, x, y, w, h, { frame = OK.trim, glass = OK.glass, shutter = null, balconette = false, scroll = false }) {
+  win(c, x, y, w, h, { frame, glass, shutter, sill: false });
+  for (let i = -2; i < w + 2; i++) { // kavisli (segment) alınlık
+    const t = (i + 2) / (w + 3), dy = Math.round(Math.sin(t * Math.PI) * 3);
+    c.set(x + i, y - 2 - dy, lt(frame, 0.2)); c.set(x + i, y - 3 - dy, frame); c.set(x + i, y - 1 - dy, dk(frame, 0.35));
+  }
+  c.rect(x + Math.floor(w / 2) - 1, y - 6, 3, 4, frame); c.set(x + Math.floor(w / 2), y - 6, lt(frame, 0.3)); // kilit taşı
+  if (scroll) for (const sx of [x - 3, x + w + 2]) { c.set(sx, y - 3, frame); c.set(sx, y - 2, dk(frame, 0.3)); c.set(sx + (sx < x ? 1 : -1), y - 4, frame); } // kıvrım uçları
+  c.hline(x - 2, x + w + 1, y + h + 1, lt(frame, 0.25)); c.hline(x - 1, x + w, y + h + 2, dk(frame, 0.5)); // denizlik
+  for (const kx of [x, x + w - 2]) { c.rect(kx, y + h + 3, 2, 1, dk(frame, 0.2)); c.set(kx + 1, y + h + 4, dk(frame, 0.4)); } // konsollar
+  if (balconette) { // Fransız balkonu (pencerenin alt yarısında ferforje)
+    c.hline(x - 1, x + w, y + h - 4, OK.iron); for (let i = x; i < x + w; i += 2) c.vline(i, y + h - 3, y + h, OK.iron);
+    for (let i = x + 1; i < x + w - 1; i += 4) c.set(i + 1, y + h - 2, OK.iron);
+  }
+}
+function ortakoyHouse(c, { kind, seed }) {
+  if (kind === 'almasikA') almasik(c, 0, 0, bw, th, { stone: '#e8dcc6', brick: '#b0563c', seed });
+  else if (kind === 'almasikB') almasik(c, 0, 0, bw, th, { stone: '#d9d4cc', brick: '#c06a5a', seed });
+  else plaster(c, 0, 0, bw, th, kind === 'cream' ? '#efdcb8' : '#a6cbbb', seed, 0.06);
+  const stucco = kind === 'mint';
+  for (let fy = 0; fy < th; fy += 24) {
+    // kat silmesi (almaşıkta taş sırasının üstüne oturur)
+    c.hline(0, bw - 1, fy, lt(OK.trim, 0.1)); c.hline(0, bw - 1, fy + 1, OK.trim); c.hline(0, bw - 1, fy + 2, dk(kind === 'mint' ? '#a6cbbb' : '#c8b490', 0.35));
+    if (kind === 'cream') { // Neo-Barok sıvalı cephe: pilastrlar, üç pencere, ortada ferforje balkon
+      for (const px of [3, 33, 63, 93]) { c.rect(px, fy + 3, 3, 21, lt('#efdcb8', 0.35)); c.vline(px + 2, fy + 3, fy + 23, dk('#efdcb8', 0.22)); }
+      for (const x of [13, 43, 73]) baroqueWin(c, x, fy + 9, 11, 10, { frame: '#fff7ea', glass: OK.glass, scroll: x === 43, balconette: x !== 43 });
+      balcony(c, 39, 58, fy + 21, { slab: '#e8d6b4', iron: OK.iron, pots: (fy / 24) % 2 ? '#c4573e' : null });
+    } else if (stucco) { // mint sıva, beyaz Barok çerçeveler, yeşil panjurlar
+      for (const x of [12, 44, 76]) baroqueWin(c, x, fy + 9, 9, 10, { frame: '#ffffff', glass: OK.glass, shutter: OK.shutter, scroll: true });
+    } else { // almaşık kagir ev: iki büyük pencere, ortada dar niş
+      for (const x of [14, 70]) baroqueWin(c, x, fy + 9, 14, 10, { frame: OK.trim, glass: OK.glass, balconette: true });
+      c.rect(46, fy + 8, 6, 12, dk(OK.trim, 0.1)); c.rect(47, fy + 9, 4, 10, '#2c3448'); c.hline(45, 52, fy + 7, OK.trim); // niş
+    }
+  }
+  edges(c, 0, 0, bw, th, { light: '#fffaf0', shade: kind === 'mint' ? '#6e978a' : '#8a6e58', outline: OK.outline });
+}
+const ortakoy = {
+  boundary: 32, // 16 px: üstünde bacalar ve parapet vazoları (çarpışmasız süs)
+  bottomBodyA(c) { ortakoyHouse(c, { kind: 'almasikA', seed: 61 }); },
+  bottomBodyB(c) { ortakoyHouse(c, { kind: 'cream', seed: 62 }); },
+  topBodyA(c) { ortakoyHouse(c, { kind: 'almasikB', seed: 63 }); },
+  topBodyB(c) { ortakoyHouse(c, { kind: 'mint', seed: 64 }); },
+  bottomCap(c) { // sınır y=16: bacalar ve vazolar → kiremit üstünde balüstratlı parapet → modilyonlu korniş → friz
+    chimney(c, 22, 2, 7, 15, '#a24c36'); chimney(c, 84, 4, 7, 13, '#a24c36');
+    for (const vx of [BX0 + 2, BX1 - 5]) { c.rect(vx, 11, 4, 5, '#f4ead8'); c.rect(vx + 1, 9, 2, 2, '#f4ead8'); c.set(vx + 3, 12, '#c8b898'); } // parapet vazoları
+    tileRoof(c, 16, 30, '#c05a3e', { hi: '#ffd8b0' });
+    // balüstrat (arka planı kiremit: gövde sütunlarında boşluk yok)
+    c.hline(BX0, BX1, 16, '#fbf3e4'); c.hline(BX0, BX1, 17, '#e4d6bc');
+    for (let x = BX0 + 2; x < BX1 - 1; x += 5) { c.rect(x, 18, 3, 8, '#f4ead8'); c.set(x + 1, 19, '#ffffff'); c.rect(x, 21, 3, 2, '#d8c8a8'); c.vline(x + 2, 18, 25, '#c8b898'); }
+    for (const px of [BX0, BX0 + 47, BX1 - 3]) c.rect(px, 16, 4, 12, '#efe2c8');
+    c.rect(0, 26, cw, 3, '#fbf3e4'); c.hline(0, cw - 1, 26, '#ffffff'); c.hline(0, cw - 1, 28, '#c8b898'); // parapet harpuştası
+    // korniş: modilyonlar (arası gölge, boşluk değil)
+    c.rect(0, 29, cw, 5, '#8a7a62'); for (let x = 2; x < cw - 2; x += 6) { c.rect(x, 29, 4, 4, '#efe2c8'); c.set(x, 29, '#ffffff'); c.hline(x, x + 3, 33, '#a8977a'); }
+    c.rect(2, 34, cw - 4, 3, '#efe2c8'); c.hline(2, cw - 3, 36, '#b9a888');
+    // friz: girland süsleri ve ortada öküzgözü pencere
+    plaster(c, BX0, 37, bw, 27, '#efdcb8', 65, 0.05);
+    for (let x = BX0 + 6; x < BX1 - 8; x += 16) { for (let i = 0; i < 10; i++) c.set(x + i, 41 + Math.round(Math.sin((i / 9) * Math.PI) * 3), '#c8a878'); c.set(x, 40, '#fff7ea'); c.set(x + 9, 40, '#fff7ea'); }
+    c.ellipse(56, 53, 6, 6, '#fff7ea'); c.ellipse(56, 53, 4.4, 4.4, OK.glass); c.set(54, 51, '#8fb4dc'); c.vline(56, 49, 57, '#fff7ea');
+    c.hline(BX0, BX1, 62, dk('#efdcb8', 0.3)); c.vline(BX0, 37, 63, OK.outline); c.vline(BX1, 37, 63, OK.outline);
+  },
+  topCap(c) { // alt kenar = sınır: almaşık cephe → tabela → çizgili tente → kumpir vitrini, kapı → taş subasman
+    almasik(c, BX0, 0, bw, 14, { stone: '#d9d4cc', brick: '#c06a5a', seed: 66 });
+    c.rect(BX0, 14, bw, 7, '#d9d4cc'); c.rect(BX0 + 2, 14, bw - 4, 7, '#2f6f8a'); c.hline(BX0 + 2, BX1 - 2, 14, '#5aa0bc'); // tabelanın arkası taş (boşluk yok) c.hline(BX0 + 2, BX1 - 2, 20, '#1e4a5e');
+    for (let x = BX0 + 8; x < BX1 - 8; x += 3) if ((x * 7) % 5 !== 0) { c.set(x, 16, '#fff4d8'); c.set(x, 17, '#fff4d8'); c.set(x, 18, '#fff4d8'); } // tabela yazısı (okunmaz)
+    for (let x = 0; x < cw; x++) for (let y = 21; y < 30; y++) c.set(x, y, Math.floor(x / 7) % 2 ? '#fbf3e4' : '#2f8f8a');
+    c.hline(0, cw - 1, 21, '#ffffff'); c.hline(BX0, BX1, 30, '#3a3240'); for (let x = 0; x < cw; x++) { const k = x % 7; if (k > 0 && k < 6) c.set(x, 30, Math.floor(x / 7) % 2 ? dk('#fbf3e4', 0.2) : dk('#2f8f8a', 0.25)); }
+    c.rect(BX0, 31, bw, 25, '#3a3240');
+    c.rect(BX0 + 3, 32, 48, 22, '#5e7088'); c.set(BX0 + 4, 33, '#b0cce8');
+    for (let x = BX0 + 6; x < BX0 + 48; x += 8) { c.ellipse(x + 3, 47, 3.2, 2.4, (nx, ny) => ny < -0.2 ? '#e8c070' : '#b8803a'); c.rect(x + 1, 44, 4, 2, ['#e8574a', '#f2d24a', '#7ab84a', '#f2f0e0'][(x / 8) % 4 | 0]); } // kumpirler ve malzeme kâseleri
+    c.hline(BX0 + 3, BX0 + 50, 51, '#d8d0c0'); c.rect(BX0 + 3, 52, 48, 2, '#a8a094');
+    c.rect(BX0 + 55, 32, 14, 24, '#5a3a2a'); c.rect(BX0 + 57, 34, 10, 22, '#7a5238'); c.set(BX0 + 65, 44, '#f2d080');
+    c.rect(BX0 + 72, 32, 24, 22, '#5e7088'); c.set(BX0 + 73, 33, '#b0cce8'); for (let x = BX0 + 75; x < BX0 + 94; x += 6) c.rect(x, 46, 4, 6, x % 4 ? '#f2b8a8' : '#f8e0a0'); // waffle vitrini
+    stones(c, BX0, 56, bw, 8, '#c8c0b4', 67, { bh: 4, bl: 12 });
+    c.vline(BX0, 0, 63, OK.outline); c.vline(BX1, 0, 63, OK.outline);
+  },
+  bottomBase(c) { // kemerli dükkân katı, beyaz kesme taş rıhtım, döküm babalar, su
+    almasik(c, 0, 0, cw, 66, { stone: '#e8dcc6', brick: '#b0563c', seed: 68 });
+    for (const x of [6, 60]) { // kemerli dükkân açıklıkları
+      const w = 46, top = 16;
+      for (let j = 0; j < 8; j++) { const hw = Math.round(Math.sqrt(Math.max(0, 1 - ((8 - j) / 8) ** 2)) * (w / 2)); c.hline(x + w / 2 - hw, x + w / 2 + hw - 1, top + j, '#2a3448'); }
+      c.rect(x, top + 8, w, 40, '#2a3448'); c.rect(x + 2, top + 10, w - 4, 36, '#4e6884'); c.set(x + 3, top + 11, '#b0cce8');
+      c.rect(x + 2, top + 34, w - 4, 12, '#b8803a'); for (let k = x + 4; k < x + w - 4; k += 6) c.rect(k, top + 31, 4, 3, k % 4 ? '#e8c070' : '#e8574a');
+      c.rect(x + w / 2 - 2, top - 3, 4, 4, '#fbf3e4');
+    }
+    c.rect(0, 64, cw, 4, '#fbf3e4'); c.hline(0, cw - 1, 67, '#b9a888');
+    stones(c, 0, 68, cw, 62, '#e2dccf', 69, { bh: 10, bl: 22, vary: 0.06 });
+    for (const x of [16, 56, 96]) { c.rect(x - 3, 74, 7, 8, '#22262e'); c.rect(x - 4, 72, 9, 3, '#30343e'); c.set(x - 2, 73, '#8a90a0'); } // döküm babalar
+    waterline(c, 130, 30, '#8a8478', '#2a8ab0');
+  },
+};
+
+// ---------------- Emirgan (Phase 2.6.2) ----------------
+// Boğaz yalıları (ahşap, geniş saçaklı, kayıkhaneli; aşı boyası ve beyaz) ve korunun erguvanları. Bahar sabahı:
+// ışık soldan, renkler taze. Tarihi yalılar (Şerifler Yalısı) engel değil: engeller yalı TİPİNDEN türetildi.
+const EM = { oxblood: '#8a3a2c', white: '#f2ece0', trim: '#fbf6ea', glass: '#26364a', shutter: '#3e6a4a', outline: '#2a201c' };
+/** Yalı cephesi: dikey ahşap kaplama (bağdadi değil), her katta geniş çıkma, kafesli/panjurlu pencereler. */
+function yali(c, { wall, trim, shutter, seed }) {
+  for (let y = 0; y < th; y++) for (let x = 0; x < bw; x++) { // dikey tahtalar (4 px), derz gölgesi
+    const k = x % 4;
+    let col = k === 0 ? dk(wall, 0.3) : k === 1 ? lt(wall, 0.12) : wall;
+    if (h2(Math.floor(x / 4), Math.floor(y / 24) % 4, seed) < 0.2 && k !== 0) col = dk(col, 0.06);
+    else if (h2(Math.floor(x / 4), Math.floor(y / 24) % 4, seed) > 0.85 && k !== 0) col = lt(col, 0.07); // güneşte solmuş tahta
+    if (k !== 0 && h2(x, y % 96, seed + 9) < 0.025) col = dk(col, 0.18); // budak ve çivi izi
+    c.set(x, y, col);
+  }
+  for (let fy = 0; fy < th; fy += 24) {
+    c.rect(0, fy, bw, 3, trim); c.hline(0, bw - 1, fy, lt(trim, 0.3)); c.hline(0, bw - 1, fy + 3, dk(wall, 0.45)); // kat kuşağı
+    // geniş çıkma: ortada, konsollu, dört pencere (yalılarda cephe boyunca uzanan cumba)
+    c.rect(10, fy + 5, 78, 15, lt(wall, 0.06)); c.vline(10, fy + 5, fy + 19, lt(wall, 0.3)); c.rect(86, fy + 5, 2, 15, dk(wall, 0.35));
+    c.hline(9, 88, fy + 4, trim); c.hline(10, 87, fy + 20, trim); c.hline(11, 86, fy + 21, dk(wall, 0.5));
+    for (const kx of [12, 30, 48, 66, 84]) { c.set(kx, fy + 22, dk(trim, 0.2)); c.set(kx + 1, fy + 22, dk(trim, 0.2)); c.set(kx + 1, fy + 23, dk(trim, 0.4)); }
+    for (const wx of [14, 32, 50, 68]) {
+      win(c, wx, fy + 7, 14, 11, { frame: trim, glass: EM.glass, sill: false });
+      for (let y = fy + 7; y < fy + 18; y += 2) for (let x = wx; x < wx + 14; x += 2) if ((x + y) % 4 === 0) c.set(x, y, dk(trim, 0.15)); // ahşap kafes (alt yarı)
+    }
+    for (let x = 16; x < 84; x += 6) { c.set(x, fy + 19, '#e8323a'); c.set(x + 1, fy + 19, '#f26a5a'); c.set(x, fy + 20, '#4a7a3a'); c.set(x + 1, fy + 20, '#3a6a2e'); } // pencere önünde sardunyalar
+    if (shutter) for (const wx of [2, 91]) { c.rect(wx, fy + 7, 5, 12, shutter); for (let y = fy + 8; y < fy + 19; y += 2) c.hline(wx, wx + 4, y, dk(shutter, 0.3)); }
+  }
+  edges(c, 0, 0, bw, th, { light: lt(wall, 0.35), shade: dk(wall, 0.45), outline: EM.outline });
+}
+/** Erguvan (Judas ağacı) ya da beyaz çiçekli erik: koyu dal zemini (opak), gövde, çiçek kümeleri. */
+function bloomTree(c, y0, y1, { petals, deep, ox = 0, seed }) {
+  c.rect(ox, y0, bw, y1 - y0, dk(deep, 0.35));
+  for (let y = y0; y < y1; y++) for (let x = ox + 42; x < ox + 56; x++) { const t = (x - ox - 42) / 13; c.set(x, y, t < 0.25 ? '#3a2a24' : t < 0.7 ? '#5a4234' : '#7a5a44'); }
+  for (let k = 0; k < 40; k++) { // dallar
+    const y = y0 + h2(k, 1, seed) * (y1 - y0), dir = k % 2 ? 1 : -1, len = 10 + h2(k, 2, seed) * 30;
+    for (let i = 0; i < len; i++) c.set(ox + 49 + dir * i, Math.round(y - i * 0.4), '#4a3428');
+  }
+  const wrap = y0 === 0 && y1 === th;
+  for (let k = 0; k < 120; k++) {
+    const x = ox + h2(k, 3, seed) * bw, y = y0 + h2(k, 4, seed) * (y1 - y0), r = 2.5 + h2(k, 5, seed) * 4;
+    for (const dy of wrap ? [-th, 0, th] : [0]) c.ellipse(x, y + dy, r, r * 0.8, (nx, ny, X, Y) => X < ox || X >= ox + bw || Y < y0 || Y >= y1 ? null : ny < -0.35 ? lt(petals, 0.35) : ny < 0.3 ? petals : dk(petals, 0.22));
+  }
+  for (let k = 0; k < 60; k++) { const x = ox + Math.floor(h2(k, 6, seed) * bw), y = y0 + Math.floor(h2(k, 7, seed) * (y1 - y0)); c.set(x, y, '#5e8a3e'); } // taze yapraklar
+  for (let k = 0; k < 90; k++) { const x = ox + Math.floor(h2(k, 8, seed) * bw), y = y0 + Math.floor(h2(k, 9, seed) * (y1 - y0)); const p = c.get(x, y); if (p && p[3]) c.set(x, y, k % 3 ? lt(petals, 0.6) : dk(petals, 0.4)); } // çiçek göbekleri ve gölgeli taç yaprakları
+  for (let k = 0; k < 30; k++) { const x = ox + Math.floor(h2(k, 10, seed) * bw), y = y0 + Math.floor(h2(k, 11, seed) * (y1 - y0)); c.set(x, y, '#8aba5a'); } // ışık alan genç yapraklar
+  c.vline(ox, y0, y1 - 1, EM.outline); c.vline(ox + bw - 1, y0, y1 - 1, EM.outline);
+}
+const emirgan = {
+  boundary: 28, // 14 px: üstünde bacalar
+  bottomBodyA(c) { yali(c, { wall: '#8a3a2c', trim: EM.trim, shutter: null, seed: 71 }); },
+  bottomBodyB(c) { yali(c, { wall: '#ece4d4', trim: '#ffffff', shutter: EM.shutter, seed: 72 }); },
+  topBodyA(c) { bloomTree(c, 0, th, { petals: '#d8689a', deep: '#5a2a44', seed: 73 }); },
+  topBodyB(c) { bloomTree(c, 0, th, { petals: '#f6eef2', deep: '#3a4a3a', seed: 74 }); },
+  bottomCap(c) { // sınır y=14: bacalar → geniş saçaklı kırma çatı (kiremit) → saçak altı oymalı tahta → üst kat bandı
+    chimney(c, 24, 2, 6, 13, '#9a4a36'); chimney(c, 82, 3, 6, 12, '#9a4a36');
+    tileRoof(c, 14, 36, '#a4503a', { hi: '#ffd8b0' });
+    c.rect(0, 36, cw, 5, '#6e3a2c'); c.hline(0, cw - 1, 36, '#9a5a44'); c.hline(0, cw - 1, 40, '#3e2018'); // geniş saçak alnı
+    for (let x = 1; x < cw - 1; x += 4) { c.rect(x, 41, 2, 4, '#f6eee0'); c.set(x, 44, '#c8b898'); } // saçak altı oyma (sarkıt)
+    c.rect(BX0, 41, bw, 23, '#8a3a2c'); for (let x = BX0; x <= BX1; x++) if (x % 4 === 0) c.vline(x, 45, 63, '#6e2c22');
+    c.hline(BX0, BX1, 45, '#f6eee0'); for (const wx of [BX0 + 8, BX0 + 30, BX0 + 52, BX0 + 74]) win(c, wx, 49, 12, 10, { frame: '#fbf6ea', glass: EM.glass, sill: false });
+    c.vline(BX0, 41, 63, EM.outline); c.vline(BX1, 41, 63, EM.outline);
+  },
+  topCap(c) { // alt kenar = sınır: çiçekli dallar → taş saksı, laleler
+    bloomTree(c, 0, 34, { petals: '#d8689a', deep: '#5a2a44', ox: BX0, seed: 75 });
+    c.rect(BX0, 34, bw, 8, '#4a6a34'); for (let x = BX0; x <= BX1; x++) c.vline(x, 34 - (x % 3), 41, x % 5 ? '#4a7a3a' : '#5e9a48'); // lale yaprakları
+    const tul = ['#e8323a', '#f2c23a', '#d8689a', '#8a4ac8', '#f6f0e8'];
+    for (let x = BX0 + 2; x < BX1 - 2; x += 4) { const col = tul[(x / 4 | 0) % 5]; c.rect(x, 30, 3, 4, col); c.set(x + 1, 29, col); c.set(x, 30, lt(col, 0.4)); c.vline(x + 1, 34, 37, '#3e6a2e'); }
+    c.rect(0, 42, cw, 14, '#d8ccb8'); c.hline(0, cw - 1, 42, '#f2e8d8'); c.hline(0, cw - 1, 55, '#8a7e6e'); // taş saksı
+    for (let x = 6; x < cw - 4; x += 14) { c.rect(x, 45, 9, 7, '#c8baa4'); c.hline(x, x + 8, 45, '#ece2d0'); c.hline(x, x + 8, 51, '#a89a84'); } // panolar
+    c.rect(2, 56, cw - 4, 8, '#b8ac98'); c.hline(2, cw - 3, 56, '#d8ccb8'); c.hline(2, cw - 3, 63, '#5e5448');
+  },
+  bottomBase(c) { // kayıkhane: taş zemin kat, kemerli kayık kapıları, su
+    stones(c, 0, 0, cw, 112, '#c8bca8', 76, { bh: 8, bl: 18, vary: 0.08 });
+    c.rect(0, 0, cw, 6, '#8a3a2c'); c.hline(0, cw - 1, 0, '#a85a44'); c.hline(0, cw - 1, 5, '#3e2018');
+    for (const x of [8, 62]) { // kemerli kayıkhane ağızları (ahşap kanatlar)
+      const w = 42, top = 40;
+      for (let j = 0; j < 10; j++) { const hw = Math.round(Math.sqrt(Math.max(0, 1 - ((10 - j) / 10) ** 2)) * (w / 2)); c.hline(x + w / 2 - hw, x + w / 2 + hw - 1, top + j, '#3a2a22'); }
+      c.rect(x, top + 10, w, 62, '#3a2a22'); for (let k = x + 2; k < x + w - 1; k += 5) c.rect(k, top + 12, 4, 58, '#6a4a36');
+      c.hline(x, x + w - 1, top + 40, '#2a1e18'); c.rect(x + w / 2 - 2, top - 3, 4, 4, '#ece2d0');
+    }
+    waterline(c, 112, 48, '#7a7466', '#2a8494');
+  },
+};
+
+// ---------------- Dolmabahçe (Phase 2.6.2) ----------------
+// Saray rıhtımının mermer ayakları (oymalı panolar, ferforje korkuluk, yaldızlı fenerler) ve Dolmabahçe caddesinin
+// çınarları. Saray ve Saat Kulesi engel değil: simge olarak arka planda. Öğleden sonra: sıcak ışık sağdan.
+const DB = { marble: '#e2d4c0', marbleS: '#b4a690', gold: '#d8a83a', iron: '#1e2230', outline: '#2a2630' }; // saray cephesinden (beyaz) ayrışsın diye sıcak, koyuca mermer
+function marblePier(c, { lamp = false, seed }) {
+  for (let y = 0; y < th; y++) for (let x = 0; x < bw; x++) { // mermer: yumuşak damar, sağdan sıcak ışık
+    const t = x / (bw - 1);
+    let col = t < 0.1 ? dk(DB.marble, 0.22) : t > 0.85 ? mix(DB.marble, '#ffe6b0', 0.25) : DB.marble;
+    if (h2(x >> 1, (y % 96) >> 1, seed) < 0.05) col = mix(col, '#b8b0c0', 0.4);
+    const vein = Math.sin((x + (y % 96) * 0.6) * 0.18 + seed) * Math.sin((y % 96) * 0.07);
+    if (Math.abs(vein) < 0.03) col = mix(col, '#a8a0b0', 0.35);
+    c.set(x, y, col);
+  }
+  for (let fy = 0; fy < th; fy += 48) {
+    // oymalı pano: çift çerçeve, köşe rozetleri, ortada madalyon
+    c.rect(10, fy + 6, 78, 36, DB.marbleS); c.rect(12, fy + 8, 74, 32, DB.marble); c.rect(14, fy + 10, 70, 28, lt(DB.marble, 0.3));
+    c.hline(10, 87, fy + 6, '#ffffff'); c.hline(10, 87, fy + 41, dk(DB.marbleS, 0.3)); c.vline(87, fy + 6, fy + 41, dk(DB.marbleS, 0.25));
+    for (const [rx, ry] of [[16, fy + 12], [80, fy + 12], [16, fy + 34], [80, fy + 34]]) { c.ellipse(rx, ry, 2, 2, DB.gold); c.set(rx, ry, '#fff2c0'); }
+    c.ellipse(49, fy + 24, 9, 9, DB.marbleS); c.ellipse(49, fy + 24, 7.5, 7.5, '#fbf6ee'); c.ellipse(49, fy + 24, 3, 3, DB.gold); c.set(48, fy + 23, '#fff2c0');
+    for (let i = -6; i <= 6; i++) { c.set(49 + i, fy + 24 + Math.round(Math.abs(i) * 0.4) - 9, DB.gold); } // üstte kıvrık yaldız şerit
+    c.hline(0, bw - 1, fy + 45, DB.marbleS); c.hline(0, bw - 1, fy + 46, lt(DB.marble, 0.4)); c.hline(0, bw - 1, fy + 47, dk(DB.marbleS, 0.35)); // silme
+  }
+  if (lamp) for (const ly of [26, 74]) { // yaldızlı duvar feneri (pano yanında)
+    c.rect(3, ly - 1, 5, 2, DB.gold); c.rect(4, ly + 1, 3, 6, '#ffe8a0'); c.rect(3, ly + 7, 5, 1, DB.gold); c.set(5, ly - 2, DB.gold);
+  }
+  edges(c, 0, 0, bw, th, { light: '#fff2d8', shade: '#9a92a0', outline: DB.outline, lightLeft: false });
+}
+function planeTree(c, y0, y1, { ox = 0, sunlit, seed }) { // öğleden sonra ışığında çınar
+  c.rect(ox, y0, bw, y1 - y0, '#2e4a28');
+  for (let y = y0; y < y1; y++) for (let x = ox + 40; x < ox + 58; x++) {
+    let col = (x - ox) < 44 ? '#6a5a48' : (x - ox) > 53 ? '#c8b898' : '#a89878';
+    if (h2(x, Math.floor(y / 3) % 32, seed) < 0.3) col = mix(col, '#e8dcc0', 0.45); // çınar kabuğu benekleri
+    c.set(x, y, col);
+  }
+  const wrap = y0 === 0 && y1 === th;
+  for (let k = 0; k < 100; k++) {
+    const x = ox + h2(k, 1, seed) * bw, y = y0 + h2(k, 2, seed) * (y1 - y0), rx = 3 + h2(k, 3, seed) * 6, ry = 2 + h2(k, 4, seed) * 3;
+    for (const dy of wrap ? [-th, 0, th] : [0]) c.ellipse(x, y + dy, rx, ry, (nx, ny, X, Y) => X < ox || X >= ox + bw || Y < y0 || Y >= y1 ? null : nx > 0.3 && ny < 0 ? sunlit : ny < 0 ? '#6a9a44' : ny < 0.5 ? '#4a7a36' : '#365e2c');
+  }
+  c.vline(ox, y0, y1 - 1, DB.outline); c.vline(ox + bw - 1, y0, y1 - 1, DB.outline);
+}
+const dolmabahce = {
+  boundary: 20, // 10 px: üstünde fener tepeleri
+  bottomBodyA(c) { marblePier(c, { seed: 81 }); },
+  bottomBodyB(c) { marblePier(c, { lamp: true, seed: 82 }); },
+  topBodyA(c) { planeTree(c, 0, th, { sunlit: '#c8c86a', seed: 83 }); },
+  topBodyB(c) { planeTree(c, 0, th, { sunlit: '#e0c060', seed: 84 }); },
+  bottomCap(c) { // sınır y=10: yaldızlı fenerler → mermer harpuşta → ferforje korkuluk (arkası mermer, boşluk yok) → ayak
+    for (const lx of [BX0 + 8, BX1 - 12]) {
+      c.vline(lx + 2, 4, 10, DB.iron); c.rect(lx, 0, 5, 4, DB.gold); c.rect(lx + 1, 1, 3, 2, '#fff2c0'); c.set(lx + 2, 0, '#fff8e0');
+    }
+    c.rect(0, 10, cw, 4, '#fbf6ee'); c.hline(0, cw - 1, 10, '#ffffff'); c.hline(0, cw - 1, 13, DB.marbleS);
+    c.rect(BX0, 14, bw, 14, '#e2dacc');
+    for (let x = BX0 + 1; x < BX1; x += 3) c.vline(x, 15, 26, DB.iron); c.hline(BX0, BX1, 15, DB.iron); c.hline(BX0, BX1, 26, DB.iron);
+    for (let x = BX0 + 5; x < BX1 - 3; x += 9) { c.ellipse(x, 20.5, 2.5, 2.5, DB.iron); c.set(x, 20, DB.gold); } // ferforje halkalar, yaldız göbek
+    c.rect(0, 28, cw, 5, DB.marble); c.hline(0, cw - 1, 28, '#ffffff'); c.hline(0, cw - 1, 32, dk(DB.marbleS, 0.2));
+    c.rect(BX0, 33, bw, 3, dk(DB.marbleS, 0.25)); for (let x = 2; x < cw; x += 6) c.rect(x, 33, 4, 3, DB.marbleS); // dişler (arası gölge, boşluk değil)
+    for (let y = 36; y < 64; y++) for (let x = BX0; x <= BX1; x++) c.set(x, y, x - BX0 > 85 ? mix(DB.marble, '#ffe6b0', 0.25) : x - BX0 < 9 ? dk(DB.marble, 0.2) : DB.marble);
+    c.rect(BX0 + 30, 42, 38, 18, DB.marbleS); c.rect(BX0 + 32, 44, 34, 14, lt(DB.marble, 0.3)); c.ellipse(BX0 + 49, 51, 3, 3, DB.gold);
+    c.vline(BX0, 14, 63, DB.outline); c.vline(BX1, 14, 63, DB.outline);
+  },
+  topCap(c) { // alt kenar = sınır: çınar → mermer saksı, şimşir ve çiçekler
+    planeTree(c, 0, 30, { ox: BX0, sunlit: '#c8c86a', seed: 85 });
+    c.rect(BX0, 30, bw, 10, '#3e6a34'); for (let x = BX0; x <= BX1; x += 3) c.ellipse(x + 1, 31, 2.5, 2, x % 2 ? '#5a8a44' : '#4a7a3a');
+    for (let x = BX0 + 3; x < BX1; x += 6) { c.rect(x, 33, 3, 3, x % 4 ? '#e8323a' : '#f6f0e8'); }
+    c.rect(0, 40, cw, 16, DB.marble); c.hline(0, cw - 1, 40, '#ffffff'); c.hline(0, cw - 1, 41, DB.gold); c.hline(0, cw - 1, 55, DB.marbleS);
+    for (let x = 6; x < cw - 4; x += 20) { c.rect(x, 44, 14, 8, DB.marbleS); c.rect(x + 1, 45, 12, 6, lt(DB.marble, 0.3)); c.set(x + 7, 48, DB.gold); }
+    c.rect(4, 56, cw - 8, 8, '#d8d0c4'); c.hline(4, cw - 5, 56, '#f2ece2'); c.hline(4, cw - 5, 63, '#7a7268');
+  },
+  bottomBase(c) { // rıhtım: mermer basamaklar suya iner, ferforje kapı izleri
+    for (let y = 0; y < 120; y++) for (let x = 0; x < cw; x++) c.set(x, y, h2(x >> 2, y >> 3, 86) < 0.3 ? '#e8e0d4' : DB.marble);
+    for (let y = 8; y < 120; y += 16) { c.hline(0, cw - 1, y, '#ffffff'); c.hline(0, cw - 1, y + 1, DB.marbleS); }
+    for (const x of [10, 64]) { c.rect(x, 20, 38, 70, DB.iron); for (let k = x + 2; k < x + 37; k += 3) c.vline(k, 22, 88, '#3a3e50'); c.ellipse(x + 19, 50, 10, 14, null); for (let a = 0; a < 6.28; a += 0.2) c.set(Math.round(x + 19 + 10 * Math.cos(a)), Math.round(50 + 14 * Math.sin(a)), DB.gold); c.rect(x - 2, 16, 42, 4, DB.gold); }
+    c.rect(0, 120, cw, 12, '#e2dacc'); // basamakların gövdesi (boşluk yok)
+    for (let x = 0; x < cw; x++) for (let k = 0; k < 4; k++) c.set(x, 120 + k * 3, k % 2 ? DB.marbleS : '#d8d0c4'); // suya inen basamaklar
+    waterline(c, 132, 28, '#a8a094', '#2a7698');
+  },
+};
+
+// ---------------- Üsküdar (Phase 2.6.2) ----------------
+// İskele meydanı çevresinin geç Osmanlı evleri: kesme taş zemin kat (kemerli dükkânlar), üstte ahşap katlar ve
+// çıkmalar, pastel boyalar. Akşamüstü: yumuşak pembe ışık soldan. Cami (Mihrimah Sultan) engel değil: simge.
+const US = { trim: '#fbf0e4', glass: '#2a2440', outline: '#2a1e28' };
+function uskudarHouse(c, { wall, seed, kind }) {
+  // üst katlar ahşap (yatay bağdadi), her katta çıkma; varyantta Osmanlı kafesli pencereler
+  clapboard(c, 0, 0, bw, th, wall, seed);
+  for (let fy = 0; fy < th; fy += 24) {
+    floorBand(c, 0, bw, fy, dk(wall, 0.2));
+    if (kind === 'kafes') {
+      for (const x of [10, 42, 74]) { win(c, x, fy + 6, 13, 13, { frame: US.trim, glass: US.glass, sill: true, shutter: '#5a7a6a' }); for (let y = fy + 6; y < fy + 19; y++) for (let i = x; i < x + 13; i++) if ((i + y) % 3 === 0 || (i - y + 99) % 3 === 0) c.set(i, y, '#7a5a44'); }
+    } else {
+      cumba(c, 28, fy + 5, 42, 15, { face: lt(wall, 0.1), trim: US.trim, glass: US.glass, wins: 3, winH: 8, cladding: (cc, x, y, w, h) => clapboard(cc, x, y, w, h, lt(wall, 0.1), seed + 2) });
+      win(c, 9, fy + 7, 8, 11, { frame: US.trim, glass: US.glass, shutter: '#6a4a5a' });
+      win(c, 81, fy + 7, 8, 11, { frame: US.trim, glass: US.glass, shutter: '#6a4a5a' });
+    }
+    if ((fy / 24) % 2 === 0) c.set(18, fy + 12, '#ffd090'); // akşamüstü yanan bir pencere ışığı
+    for (let x = 6; x < 92; x += 11) { c.rect(x, fy + 21, 4, 2, '#8a5a44'); c.set(x + 1, fy + 20, x % 2 ? '#e8574a' : '#f2d24a'); c.set(x + 2, fy + 20, '#5a8a44'); } // pencere önü saksıları
+  }
+  edges(c, 0, 0, bw, th, { light: lt(wall, 0.35), shade: dk(wall, 0.42), outline: US.outline });
+}
+const uskudar = {
+  boundary: 28, // 14 px: üstünde bacalar
+  bottomBodyA(c) { uskudarHouse(c, { wall: '#e0a898', seed: 91 }); },
+  bottomBodyB(c) { uskudarHouse(c, { wall: '#c8a8c8', seed: 92, kind: 'kafes' }); },
+  topBodyA(c) { uskudarHouse(c, { wall: '#ecc890', seed: 93, kind: 'kafes' }); },
+  topBodyB(c) { uskudarHouse(c, { wall: '#a8c0b8', seed: 94 }); },
+  bottomCap(c) { // sınır y=14: bacalar → kırma çatı → ahşap saçak, sarkıtlar → çatı katı
+    chimney(c, 20, 3, 6, 12, '#a04c3e'); chimney(c, 86, 2, 6, 13, '#a04c3e');
+    tileRoof(c, 14, 36, '#b05a46', { hi: '#ffd0b0' });
+    c.rect(0, 36, cw, 4, '#7a4a3e'); c.hline(0, cw - 1, 36, '#a86a5a'); c.hline(0, cw - 1, 39, '#3e2420');
+    c.rect(BX0, 40, bw, 4, '#5a3a34'); // sarkıtların arkası saçak gölgesi (boşluk yok)
+    for (let x = 2; x < cw; x += 5) { c.rect(x, 40, 3, 3, '#fbf0e4'); c.set(x + 1, 43, '#d8c8b8'); }
+    clapboard(c, BX0, 44, bw, 20, '#e0a898', 95); c.hline(BX0, BX1, 44, '#fbf0e4');
+    for (const wx of [BX0 + 10, BX0 + 42, BX0 + 74]) win(c, wx, 49, 12, 10, { frame: US.trim, glass: US.glass, sill: false });
+    c.vline(BX0, 40, 63, US.outline); c.vline(BX1, 40, 63, US.outline);
+  },
+  topCap(c) { // alt kenar = sınır: ahşap kat → kesme taş zemin kat, kemerli dükkân (çay ocağı, simitçi) → subasman
+    clapboard(c, BX0, 0, bw, 14, '#ecc890', 96); c.hline(BX0, BX1, 13, '#fbf0e4');
+    stones(c, BX0, 14, bw, 42, '#d8c4b0', 97, { bh: 7, bl: 16, vary: 0.07 });
+    for (const x of [BX0 + 6, BX0 + 52]) {
+      const w = 40, top = 22;
+      for (let j = 0; j < 8; j++) { const hw = Math.round(Math.sqrt(Math.max(0, 1 - ((8 - j) / 8) ** 2)) * (w / 2)); c.hline(x + w / 2 - hw, x + w / 2 + hw - 1, top + j, '#3a2a30'); }
+      c.rect(x, top + 8, w, 26, '#3a2a30'); c.rect(x + 2, top + 10, w - 4, 22, '#6a5a78'); c.set(x + 3, top + 11, '#c8b8e0');
+      c.rect(x + 3, top + 22, w - 6, 10, '#a8784a');
+      for (let k = x + 5; k < x + w - 4; k += 7) { c.ellipse(k + 2, top + 21, 2.5, 2, '#c88a3a'); c.set(k + 2, top + 21, '#e8b060'); } // simitler
+      c.rect(x + w / 2 - 2, top - 3, 4, 4, '#f2e2d0');
+    }
+    stones(c, BX0, 56, bw, 8, '#a89888', 98, { bh: 4, bl: 12 });
+    c.vline(BX0, 0, 63, US.outline); c.vline(BX1, 0, 63, US.outline);
+  },
+  bottomBase(c) { // kesme taş zemin kat, iskele rıhtımı, su
+    stones(c, 0, 0, cw, 70, '#d8c4b0', 99, { bh: 7, bl: 16, vary: 0.07 });
+    for (const x of [8, 62]) { c.rect(x, 14, 42, 48, '#3a2a30'); c.rect(x + 2, 16, 38, 44, '#6a5a78'); c.set(x + 3, 17, '#c8b8e0'); c.rect(x + 2, 46, 38, 14, '#a8784a'); }
+    c.rect(0, 70, cw, 4, '#f2e2d0'); c.hline(0, cw - 1, 73, '#a89888');
+    stones(c, 0, 74, cw, 56, '#b8a8a0', 100, { bh: 10, bl: 22 });
+    waterline(c, 130, 30, '#7a6e74', '#62709a');
+  },
+};
+
+const KITS = { halic, galata, kizkulesi, kopru, rumeli, ortakoy, emirgan, dolmabahce, uskudar };
 
 function atlas(name) {
   const k = KITS[name], c = new Canvas(px(KIT_W), px(KIT_H));

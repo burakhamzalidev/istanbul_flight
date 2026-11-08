@@ -15,18 +15,22 @@ import '../progression/game_events.dart';
 import '../services/audio_service.dart';
 import 'components/background.dart';
 import 'components/fx_layer.dart';
+import 'components/hazard_view.dart';
 import 'components/landmark_layer.dart';
 import 'components/obstacle_pair.dart';
 import 'components/pickup_layer.dart';
 import 'components/simit_bird.dart';
+import 'components/weather_layer.dart';
 import 'config.dart';
 import 'day_cycle.dart';
 import 'game_art.dart';
 import 'game_phase.dart';
 import 'game_services.dart';
+import 'weather.dart';
 import 'logic/bird_physics.dart';
 import 'logic/collision.dart';
 import 'logic/gap_generator.dart';
+import 'logic/hazards.dart';
 import 'logic/pickup_rules.dart';
 import 'visual/obstacle_renderer.dart';
 
@@ -64,10 +68,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     this.config = const GameConfig(),
     math.Random? random,
     math.Random? pickupRandom,
+    math.Random? hazardRandom,
     this.loadArt = true,
     GameServices? services,
   }) : _random = random ?? math.Random(),
        _pickupRandom = pickupRandom ?? math.Random(),
+       _hazardRandom = hazardRandom ?? math.Random(),
        services = services ?? GameServices.silent();
 
   final ScoreRepository scores;
@@ -76,6 +82,20 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   final GameServices services;
   final math.Random _random;
   final math.Random _pickupRandom;
+
+  /// Dinamik engel kararları (Phase 2.6.3): geçit ve simit akışından ayrı, böylece klasik parkur değişmez.
+  final math.Random _hazardRandom;
+  late final HazardPlanner _hazards = HazardPlanner(
+    config,
+    _hazardRandom.nextDouble,
+  );
+
+  /// Ekrandaki dinamik engeller (koridor sırasıyla).
+  final List<HazardView> hazardViews = [];
+
+  /// Hava durumu (yalnızca görsel ve ses; Phase 2.6.3).
+  final WeatherLayer weatherLayer = WeatherLayer();
+  ObstaclePair? _lastSpawned;
   final math.Random _ambientRandom = math.Random(11);
 
   // ---- Arayüzün dinlediği durum ----
@@ -182,6 +202,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   int _runCounter = 0;
   String _runId = '';
   double _runTime = 0;
+
+  /// Uçuşun oyun saati (sabit adımlarla ilerler; dinamik engellerin ritmi buna bağlı).
+  double get runTime => _runTime;
   int _runObstacles = 0;
 
   /// Uçuşun bölge bazlı sayaçları (keşif hedefleri, Phase 2.3). Fizik ve skor bunları okumaz.
@@ -207,6 +230,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Demo modu: yüklenince menüyü atlayıp turu başlatır (mağaza ekran görüntüleri; MARTI_DEMO + `&play=1`).
   bool debugAutoStart = false;
+
+  /// Geliştirme: her bölgede bu hava (web demoda `&weather=rain|fog|windy`; klasik mod).
+  Weather? debugWeather;
 
   /// Geliştirme: Simit kendi kendine uçar (`--dart-define=MARTI_AUTOPILOT=true`).
   bool autopilot = false;
@@ -252,6 +278,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       _ferry,
       LandmarkFrontLayer(_landmarks),
       FogLayer(),
+      weatherLayer,
       PickupLayer(),
       fx,
       bird,
@@ -293,8 +320,10 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   /// Bölgenin ortam döngüsü: limanlı bölgelerde dalga, açık Boğaz'da rüzgâr.
+  /// Liman sesi kıyının kalabalık olduğu bölgelerde (Haliç–Kız Kulesi, Ortaköy, Dolmabahçe, Üsküdar),
+  /// rüzgâr Boğaz'ın açık ve korulu kısımlarında (Köprü, Rumeli Hisarı, Emirgan).
   static Ambience ambienceForZone(int zone) =>
-      zone <= 2 ? Ambience.harbor : Ambience.windy;
+      zone <= 2 || zone >= 6 ? Ambience.harbor : Ambience.windy;
 
   @override
   void onGameResize(Vector2 size) {
@@ -332,6 +361,8 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     menuOpen.value = false;
     modal.value = null;
     _setPhase(GamePhase.playing);
+    // ilk bölgenin havası (sonraki bölgeler girişte seçilir)
+    _enterZoneWeather();
     if (debugStartScore > 0 && score.value == 0) {
       score.value = debugStartScore - 1;
       _addPoint();
@@ -523,6 +554,25 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _cueTimer = 7 + _ambientRandom.nextDouble() * 9;
   }
 
+  /// Bölgeye girişte hava (görsel rastgelelik; Günün Uçuşu'nda hep açık) ve ona uygun ortam sesi.
+  void _enterZoneWeather() {
+    final z = dayCycle.zoneIndex;
+    final w = _course != null
+        ? Weather.clear
+        : debugWeather ??
+              WeatherRules.pick(
+            z,
+            _ambientRandom.nextDouble(),
+            _ambientRandom.nextDouble(),
+          );
+    weatherLayer.setWeather(w);
+    services.audio.setAmbience(switch (w) {
+      Weather.rain => Ambience.rain,
+      Weather.windy => Ambience.windy,
+      _ => ambienceForZone(z),
+    });
+  }
+
   /// Bir sabit fizik adımı (sadece PLAYING).
   void _stepPlaying(double dt) {
     if (autopilot || debugInvincible) _runAssisted = true;
@@ -531,6 +581,19 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     final speed = currentSpeed;
     final dx = speed * dt;
     scrollDistance += dx;
+    // hava akımı: koridorda yumuşakça artıp azalan dikey ivme (engeller bu adımda dx kadar kayacak)
+    for (final h in hazardViews) {
+      if (h.hazard.kind != HazardKind.gust) continue;
+      physics.velocity +=
+          h.hazard.accel *
+          HazardRules.gustFactor(
+            config,
+            birdX,
+            h.anchor.position.x - dx,
+            config.obstacleSpacing,
+          ) *
+          dt;
+    }
     physics.step(dt);
 
     _courseScroll += dx;
@@ -652,6 +715,22 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
         seed: _spawnCount++,
       );
       // İlk engelde simit yok: oyuncu önce kontrolü öğrensin
+      // önceki engelle bu engel arasındaki koridora dinamik engel (yalnızca klasik, ikinci gün bölgeleri)
+      final prev = _lastSpawned;
+      if (prev != null) {
+        final h = _hazards.next(
+          corridor: o.seed,
+          score: score.value,
+          previous: (center: prev.gapCenter, height: prev.gapHeight),
+          gap: gap,
+        );
+        if (h != null) {
+          final view = HazardView(h, anchor: o);
+          hazardViews.add(view);
+          world.add(view);
+        }
+      }
+      _lastSpawned = o;
       if (o.seed > 0) {
         o.pickupY = PickupRules.place(
           config: config,
@@ -691,6 +770,10 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     while (obstacles.isNotEmpty && obstacles.first.right < -60) {
       obstacles.removeAt(0).removeFromParent();
     }
+    while (hazardViews.isNotEmpty &&
+        hazardViews.first.anchor.position.x < -config.obstacleSpacing) {
+      hazardViews.removeAt(0).removeFromParent();
+    }
   }
 
   bool _collides() {
@@ -703,6 +786,25 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
         return true;
       }
     }
+    for (final h in hazardViews) {
+      if (h.hazard.kind != HazardKind.flock) continue;
+      final cx = HazardRules.flockCenterX(
+        config,
+        HazardRules.corridorCenterX(
+          config,
+          h.anchor.position.x,
+          config.obstacleSpacing,
+        ),
+        birdX,
+      );
+      if (circleIntersectsRect(
+        center,
+        r,
+        h.hazard.flockRect(config, cx, _runTime),
+      )) {
+        return true;
+      }
+    }
     return false;
   }
 
@@ -711,10 +813,14 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     if (!recordPassed.value && _runBest > 0 && score.value == _runBest + 1) {
       recordPassed.value = true;
     }
-    if (dayCycle.updateScore(score.value)) {
+    // Günün Uçuşu v1/v2 rotası Rumeli Hisarı'nda biter: yeni bölgeler günlük parkurun görünümünü değiştirmez
+    if (dayCycle.updateScore(
+      score.value,
+      maxZone: _course?.definition.zoneSequence.last,
+    )) {
       zoneIndex.value = dayCycle.zoneIndex;
       services.audio.playSfx(Sfx.zone);
-      services.audio.setAmbience(ambienceForZone(dayCycle.zoneIndex));
+      _enterZoneWeather();
       services.emit(ZoneReached(dayCycle.zoneIndex));
     }
   }
@@ -861,7 +967,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       o.removeFromParent();
     }
     obstacles.clear();
+    for (final h in hazardViews) {
+      h.removeFromParent();
+    }
+    hazardViews.clear();
+    _lastSpawned = null;
+    _hazards.reset();
     _gaps.reset();
+    weatherLayer.snap(Weather.clear);
+    services.audio.setAmbience(ambienceForZone(0));
     dayCycle.reset();
     score.value = 0;
     zoneIndex.value = 0;

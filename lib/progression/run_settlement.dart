@@ -114,13 +114,14 @@ Settlement? settleRun(PlayerProgress p, RunResult r, DateTime now) {
   final obstacles = _nonNeg(r.obstaclesPassed);
   final simits = _nonNeg(r.simits);
   final near = _nonNeg(r.nearMisses);
-  final maxZone = r.maxZone.clamp(0, zones.length - 1);
+  // yalnızca rotadaki bölgeler keşfedilebilir (hazır olmayan bölge atlanır; bozuk değer son durağa kırpılır)
+  final maxZone = r.maxZone.clamp(0, routeZones.last);
   final levelBefore = p.level;
 
   // ---- Bölge keşfi (Haliç başlangıç: keşif XP'si yok) ----
   final newZones = [
-    for (var z = 0; z <= maxZone; z++)
-      if (!p.discoveredZones.contains(z)) z,
+    for (final z in routeZones)
+      if (z <= maxZone && !p.discoveredZones.contains(z)) z,
   ];
   final paidZones = newZones.where((z) => z > 0).length;
 

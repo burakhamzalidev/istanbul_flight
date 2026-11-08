@@ -252,8 +252,9 @@ class PlayerProgress {
   /// Rekordan (`best_score_v1`) geçilmiş bölgeler türetilir ve ilk keşif XP'si verilir: TestFlight
   /// oyuncuları zaten gördükleri bölgeler için geride kalmaz.
   factory PlayerProgress.migrateFromV1(PlayerProgress v1, {required int best}) {
+    // 1.0.0'da yalnızca ilk rotanın beş bölgesi vardı: sonradan eklenen bölgeler rekordan türetilmez
     final reached = best > 0 || v1.totalSimits > 0
-        ? zoneIndexForScore(best)
+        ? zoneIndexForScore(best, maxZone: firstRouteLastZone)
         : -1;
     final discovered = {for (var z = 0; z <= reached; z++) z};
     return v1.copyWith(

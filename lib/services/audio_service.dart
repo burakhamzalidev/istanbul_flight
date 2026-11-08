@@ -63,7 +63,10 @@ enum MusicTrack {
 /// Bölge ortam döngüsü.
 enum Ambience {
   harbor('amb_waves.wav', 0.32),
-  windy('amb_wind.wav', 0.28);
+  windy('amb_wind.wav', 0.28),
+
+  /// Phase 2.6.3: hafif yağmur (hava durumu; prosedürel, özgün).
+  rain('amb_rain.wav', 0.3);
 
   const Ambience(this.file, this.gain);
   final String file;

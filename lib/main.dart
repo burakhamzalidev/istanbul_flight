@@ -10,6 +10,7 @@ import 'data/score_repository.dart';
 import 'game/game_services.dart';
 import 'game/day_cycle.dart';
 import 'game/istanbul_flight_game.dart';
+import 'game/weather.dart';
 import 'services/audio_service.dart';
 import 'services/game_center/game_center.dart';
 import 'services/game_center/game_center_controller.dart';
@@ -98,20 +99,28 @@ Future<void> main() async {
   //   MARTI_AUTOPILOT=true  → Simit kendi uçar
   //   MARTI_DEMO=true       → otomatik pilot + çarpışma kapalı (tüm bölgeleri görmek için)
   //   MARTI_STATS=true      → FPS ve nesne sayısı
-  // Web demoda: ?zone=n turu o bölgeden başlatır; &card=1 otomatik pilotu ve korumayı kapatır
-  // (Simit düşer → o bölgenin kartpostalı görülür); &play=1 menüyü atlayıp turu başlatır.
+  // Web demoda: ?zone=n turu o bölgeden (bölge sırası, 6 = Ortaköy), &score=n o skordan başlatır; &card=1 otomatik pilotu ve korumayı kapatır
+  // (Simit düşer → o bölgenin kartpostalı görülür); &play=1 menüyü atlayıp turu başlatır; &weather=rain|fog|windy
+  // her bölgede o havayı gösterir.
   const demo = bool.fromEnvironment('MARTI_DEMO');
   final card = demo && Uri.base.queryParameters['card'] == '1';
   final game = IstanbulFlightGame(scores: scores, services: services)
     ..autopilot =
         (demo && !card) || const bool.fromEnvironment('MARTI_AUTOPILOT')
     ..debugInvincible = demo && !card
+    // &score=n: turu bu skordan başlatır (bölge geçişini görmek için; ?zone'dan önceliklidir)
     ..debugStartScore = demo
-        ? zones[(int.tryParse(Uri.base.queryParameters['zone'] ?? '') ?? 0)
-                  .clamp(0, zones.length - 1)]
-              .startScore
+        ? int.tryParse(Uri.base.queryParameters['score'] ?? '') ??
+              zones[(int.tryParse(Uri.base.queryParameters['zone'] ?? '') ?? 0)
+                      .clamp(0, zones.length - 1)]
+                  .startScore
         : 0
     ..debugAutoStart = demo && Uri.base.queryParameters['play'] == '1'
+    ..debugWeather = demo
+        ? Weather.values
+              .where((w) => w.name == Uri.base.queryParameters['weather'])
+              .firstOrNull
+        : null
     ..showStats = const bool.fromEnvironment('MARTI_STATS');
   runApp(MartiApp(game: game));
   // GameKit girişi ilk kareden sonra (giriş ekranı uygulamanın üstünde açılır); bekleyen skorlar

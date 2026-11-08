@@ -306,7 +306,8 @@ class Postcard extends StatelessWidget {
                   style: const TextStyle(color: UiColors.navy),
                 ),
                 TextSpan(
-                  text: '  ·  ${game.zoneIndex.value + 1}/${zones.length}',
+                  text:
+                      '  ·  ${routeZones.indexOf(game.zoneIndex.value) + 1}/${routeZones.length}',
                   style: const TextStyle(color: UiColors.navySoft),
                 ),
               ],

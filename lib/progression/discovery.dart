@@ -56,9 +56,9 @@ class DiscoveryGoal {
 
   String get title {
     final name = zones[zone].name;
-    final loc = discoveryZones[zone].locative;
+    final loc = discoveryZoneOf(zone).locative;
     return switch (kind) {
-      DiscoveryGoalKind.reach => discoveryZones[zone].reachTitle,
+      DiscoveryGoalKind.reach => discoveryZoneOf(zone).reachTitle,
       DiscoveryGoalKind.simitsInZone => '$loc $target simit topla',
       DiscoveryGoalKind.nearMissesInZone => '$loc $target kıl payı geçiş yap',
       DiscoveryGoalKind.obstaclesInZoneRun =>
@@ -90,9 +90,15 @@ class DiscoveryZone {
     required this.summary,
     required this.facts,
     required this.goals,
+    this.markerDx = 0,
+    this.markerDy = 0,
   });
 
   final int zone;
+
+  /// Harita işaretinin gerçek konumdan kaydırılması (harita pikseli). Yakın iki yerin işaretleri çakışırsa
+  /// (Ortaköy ile köprü) işaret kaydırılır ve gerçek konuma ince bir çizgiyle bağlanır; konum değişmez.
+  final double markerDx, markerDy;
 
   /// Haritada işaretlenen gerçek yer (ör. "Galata Kulesi, Beyoğlu").
   final String place;
@@ -120,6 +126,19 @@ abstract final class DiscoveryConfig {
       .expand((z) => z.goals)
       .fold(0, (a, g) => a + g.rewardSimits);
 }
+
+/// Albüm ödülünün ([DiscoveryConfig.albumRewardCosmetic]) koşulu: ilk rotanın beş rozeti. Phase 2.6'da
+/// eklenen bölgeler bu koşulu değiştirmez: ödülü almış oyuncu korur, yeni oyuncu aynı koşulla alır (docs/19 §8).
+const albumRewardZones = [0, 1, 2, 3, firstRouteLastZone];
+
+/// Bölgenin keşif kartı ([Zone] sırasıyla; kartlar liste sırasından bağımsızdır).
+DiscoveryZone discoveryZoneOf(int zone) =>
+    discoveryZones.firstWhere((d) => d.zone == zone);
+
+/// Rotadaki bölgelerin keşif kartları (rota sırasıyla). Albüm yüzdesi bunlar üzerinden hesaplanır.
+List<DiscoveryZone> get routeDiscoveryZones => [
+  for (final z in routeZones) discoveryZoneOf(z),
+];
 
 const discoveryZones = <DiscoveryZone>[
   DiscoveryZone(
@@ -371,6 +390,214 @@ const discoveryZones = <DiscoveryZone>[
       ),
     ],
   ),
+  // ---- Phase 2.6: ikinci gün rotası (kaynaklar: docs/19 §3). Kartlar yalnızca bölge rotadayken görünür. ----
+  DiscoveryZone(
+    zone: 6,
+    place: 'Ortaköy ve Büyük Mecidiye Camii',
+    lat: 41.0473,
+    lon: 29.0270,
+    // cami köprünün Avrupa ayağının dibinde: işaret köprününkiyle çakışmasın diye kıyı boyunca batıya kayar
+    markerDx: -16,
+    markerDy: -6,
+    locative: "Ortaköy'de",
+    reachTitle: "Ortaköy'e ulaş",
+    summary: 'Köprünün gölgesinde, denize uzanan meydanın ucunda zarif bir cami ve öğle güneşi.',
+    facts: [
+      ZoneFact(
+        'Tarih',
+        'Büyük Mecidiye Camii Sultan Abdülmecid’in isteğiyle 1850’lerde yapıldı; kaynaklar tamamlanma yılını 1854 ya da 1856 olarak verir.',
+      ),
+      ZoneFact(
+        'Mimari',
+        'Balyan ailesinden Garabet ve oğlu Nigoğos Balyan’ın eseridir: tek kubbe, iki ince minare ve hünkâr kasrı. Üslubu Neo-Barok olarak anılır.',
+      ),
+      ZoneFact(
+        'İstanbul için',
+        'Boğaziçi Köprüsü’nün Avrupa ayağının hemen yanında, denize uzanan meydanın ucunda durur; köprüyle birlikte Boğaz’ın en tanınmış manzaralarındandır.',
+      ),
+      ZoneFact(
+        'Az bilinen',
+        '1894 depreminde hasar gördü; 1960’ta başlayan onarımda kubbesi yenilendi ve cami 1969’da yeniden ibadete açıldı.',
+      ),
+    ],
+    goals: [
+      DiscoveryGoal(
+        id: 'ortakoy_reach',
+        zone: 6,
+        kind: DiscoveryGoalKind.reach,
+        target: 1,
+        rewardSimits: 10,
+      ),
+      DiscoveryGoal(
+        id: 'ortakoy_near',
+        zone: 6,
+        kind: DiscoveryGoalKind.nearMissesInZone,
+        target: 6,
+        rewardSimits: 15,
+      ),
+      DiscoveryGoal(
+        id: 'ortakoy_score',
+        zone: 6,
+        kind: DiscoveryGoalKind.runScore,
+        target: 170,
+        rewardSimits: 20,
+      ),
+    ],
+  ),
+  DiscoveryZone(
+    zone: 5,
+    place: 'Emirgan Korusu ve sahili',
+    lat: 41.1065,
+    lon: 29.0553,
+    locative: "Emirgan'da",
+    reachTitle: "Emirgan'a ulaş",
+    summary: 'Bahar sabahı: erguvanlar açmış, korunun yamacında laleler ve Sarı Köşk.',
+    facts: [
+      ZoneFact(
+        'Tarih',
+        'Adını 1635’te Revan’ı IV. Murad’a teslim eden Emir Güne Han’dan alır; padişah ona bugünkü koruyu da içine alan bir arazi verdi.',
+      ),
+      ZoneFact(
+        'Mimari',
+        'Korudaki Sarı, Pembe ve Beyaz köşkler Mısır Hidivi İsmail Paşa döneminde, 1870’lerde yapıldı; Sarı Köşk’ü Sarkis Balyan tasarladı.',
+      ),
+      ZoneFact(
+        'İstanbul için',
+        'Emirgan Korusu her Nisan İstanbul Lale Festivali’ne ev sahipliği yapar; koru en güzel hâlini bu ayda alır.',
+      ),
+      ZoneFact(
+        'Az bilinen',
+        'Sahildeki Şerifler Yalısı 18. yüzyıldan kalmadır; Avrupa yakasının ayakta kalan en eski yalısı sayılır.',
+      ),
+    ],
+    goals: [
+      DiscoveryGoal(
+        id: 'emirgan_reach',
+        zone: 5,
+        kind: DiscoveryGoalKind.reach,
+        target: 1,
+        rewardSimits: 10,
+      ),
+      DiscoveryGoal(
+        id: 'emirgan_simits',
+        zone: 5,
+        kind: DiscoveryGoalKind.simitsInZone,
+        target: 6,
+        rewardSimits: 15,
+      ),
+      DiscoveryGoal(
+        id: 'emirgan_obstacles',
+        zone: 5,
+        kind: DiscoveryGoalKind.obstaclesInZoneRun,
+        target: 15,
+        rewardSimits: 20,
+      ),
+    ],
+  ),
+  DiscoveryZone(
+    zone: 7,
+    place: 'Dolmabahçe Sarayı, Beşiktaş',
+    lat: 41.0391,
+    lon: 29.0003,
+    locative: "Dolmabahçe'de",
+    reachTitle: "Dolmabahçe'ye ulaş",
+    summary:
+        'Öğleden sonra güneşi, uzun mermer cephe ve suya düşen sıcak ışık.',
+    facts: [
+      ZoneFact(
+        'Tarih',
+        'Sultan Abdülmecid yaptırdı; yapımı 1843’te başladı ve 1850’lerde tamamlandı.',
+      ),
+      ZoneFact(
+        'Mimari',
+        'Garabet Balyan ile oğlu Nigoğayos Balyan’ın eseridir. Ortadaki Tören (Muayede) Salonu’nun kubbesi 36 metre yüksekliğindedir.',
+      ),
+      ZoneFact(
+        'İstanbul için',
+        'Tören Salonu’nda 750 lambalı, yaklaşık 4,5 tonluk dev bir kristal avize asılıdır.',
+      ),
+      ZoneFact(
+        'Az bilinen',
+        'Saat Kulesi’ni II. Abdülhamid yaptırdı; Sarkis Balyan’ın tasarımıyla 1890–1895 arasında yükseldi.',
+      ),
+    ],
+    goals: [
+      DiscoveryGoal(
+        id: 'dolmabahce_reach',
+        zone: 7,
+        kind: DiscoveryGoalKind.reach,
+        target: 1,
+        rewardSimits: 10,
+      ),
+      DiscoveryGoal(
+        id: 'dolmabahce_near',
+        zone: 7,
+        kind: DiscoveryGoalKind.nearMissesInZone,
+        target: 6,
+        rewardSimits: 15,
+      ),
+      DiscoveryGoal(
+        id: 'dolmabahce_score',
+        zone: 7,
+        kind: DiscoveryGoalKind.runScore,
+        target: 200,
+        rewardSimits: 20,
+      ),
+    ],
+  ),
+  DiscoveryZone(
+    zone: 8,
+    place: 'Üsküdar ve Mihrimah Sultan Camii',
+    lat: 41.0266,
+    lon: 29.0150,
+    locative: "Üsküdar'da",
+    reachTitle: "Üsküdar'a ulaş",
+    summary: 'Akşamüstü iskele meydanı: vapurlar yanaşır, cami yumuşak ışıkta.',
+    facts: [
+      ZoneFact(
+        'Tarih',
+        'Mimar Sinan bu camiyi Kanuni Sultan Süleyman’ın kızı Mihrimah Sultan için 1543–44 ile 1548 arasında yaptı.',
+      ),
+      ZoneFact(
+        'Mimari',
+        'Tek kubbeli harimi üç yarım kubbe destekler; önünde geniş bir çift revak vardır ve cami yükseltilmiş bir set üzerinde durur.',
+      ),
+      ZoneFact(
+        'İstanbul için',
+        'Vapur iskelesinin hemen yanında durduğu için halk arasında İskele Camii diye anılır.',
+      ),
+      ZoneFact(
+        'Az bilinen',
+        'İki minaresinden birinin üstünde oyma bir güneş saati bulunur.',
+      ),
+    ],
+    goals: [
+      DiscoveryGoal(
+        id: 'uskudar_reach',
+        zone: 8,
+        kind: DiscoveryGoalKind.reach,
+        target: 1,
+        rewardSimits: 10,
+      ),
+      DiscoveryGoal(
+        id: 'uskudar_simits',
+        zone: 8,
+        kind: DiscoveryGoalKind.simitsInZone,
+        target: 6,
+        rewardSimits: 15,
+      ),
+      DiscoveryGoal(
+        id: 'uskudar_score',
+        zone: 8,
+        kind: DiscoveryGoalKind.runScore,
+        target: 230,
+        rewardSimits: 20,
+      ),
+    ],
+    // Kız Kulesi işaretiyle çakışmasın diye kıyı boyunca kuzeydoğuya kayar (gerçek konuma çizgiyle bağlı)
+    markerDx: 12,
+    markerDy: -10,
+  ),
 ];
 
 DiscoveryGoal? discoveryGoalById(String id) {
@@ -427,7 +654,7 @@ class DiscoveryState {
   /// Üç hedefi de tamamlanan bölgelerin rozetleri → zaman.
   final Map<int, DateTime> badges;
 
-  /// Beş rozetin tamamlandığı an (albüm ödülü bir kez verilir).
+  /// İlk rotanın beş rozetinin tamamlandığı an (albüm ödülü bir kez verilir; [albumRewardZones]).
   final DateTime? albumCompletedAt;
 
   int progressOf(DiscoveryGoal g) =>
@@ -435,11 +662,11 @@ class DiscoveryState {
 
   bool isDone(DiscoveryGoal g) => completed.containsKey(g.id);
 
-  int doneInZone(int zone) => discoveryZones[zone].goals.where(isDone).length;
+  int doneInZone(int zone) => discoveryZoneOf(zone).goals.where(isDone).length;
 
   /// Bölgenin tamamlanma oranı: 0..1 (üç hedef eşit ağırlıkta, kısmi ilerleme sayılır).
   double zoneFraction(int zone) {
-    final goals = discoveryZones[zone].goals;
+    final goals = discoveryZoneOf(zone).goals;
     var sum = 0.0;
     for (final g in goals) {
       sum += (progressOf(g) / g.target).clamp(0.0, 1.0);
@@ -447,19 +674,20 @@ class DiscoveryState {
     return sum / goals.length;
   }
 
-  /// Albümün tamamlanma oranı (bütün hedefler).
+  /// Albümün tamamlanma oranı: rotadaki bölgelerin hedefleri. Yeni bölge açılınca oran düşebilir (yeni
+  /// kartlar %0); kazanılmış rozet, ödül ve kartlar geri alınmaz (docs/19 §8).
   double get albumFraction {
     var sum = 0.0;
-    for (var z = 0; z < discoveryZones.length; z++) {
+    for (final z in routeZones) {
       sum += zoneFraction(z);
     }
-    return sum / discoveryZones.length;
+    return sum / routeZones.length;
   }
 
   int get goalsDone =>
       completed.keys.where((id) => discoveryGoalById(id) != null).length;
   static int get goalsTotal =>
-      discoveryZones.fold(0, (a, z) => a + z.goals.length);
+      routeDiscoveryZones.fold(0, (a, z) => a + z.goals.length);
 
   DiscoveryState copyWith({
     Map<int, DateTime>? firstSeen,
@@ -611,7 +839,8 @@ int _goalValue(DiscoveryGoal g, PlayerProgress p, RunResult r) {
   final progress = {...d.progress};
   final completed = {...d.completed};
   final done = <DiscoveryGoal>[];
-  for (final zone in discoveryZones) {
+  for (final zone in routeDiscoveryZones) {
+    // rota sırasıyla (oyun sonu özeti de bu sırada)
     for (final g in zone.goals) {
       // keşfedilmemiş bölgenin hedefleri ilerlemez (kilitli kart %0 kalır)
       if (completed.containsKey(g.id) || !p.discoveredZones.contains(g.zone)) {
@@ -675,7 +904,8 @@ int _goalValue(DiscoveryGoal g, PlayerProgress p, RunResult r) {
   var albumNow = false;
   String? cosmetic;
   var unlocked = p.unlockedCosmetics;
-  if (d.albumCompletedAt == null && badges.length == discoveryZones.length) {
+  if (d.albumCompletedAt == null &&
+      albumRewardZones.every(badges.containsKey)) {
     d = d.copyWith(albumCompletedAt: now);
     albumNow = true;
     const id = DiscoveryConfig.albumRewardCosmetic;

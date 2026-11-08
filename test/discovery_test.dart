@@ -86,6 +86,12 @@ Settlement _settle(PlayerProgress p, RunResult r, [DateTime? at]) =>
 int _reward(String id) => discoveryGoalById(id)!.rewardSimits;
 
 /// Bütün hedefleri tamamlayan tek uçuş (rozetler + albüm ödülü).
+/// İlk rotanın (beş bölge) keşif hedeflerinin toplam simit ödülü.
+int get _firstRouteGoalSimits => discoveryZones
+    .where((d) => d.zone <= firstRouteLastZone)
+    .expand((d) => d.goals)
+    .fold(0, (a, g) => a + g.rewardSimits);
+
 RunResult _perfectRun(String id) => _run(
   id: id,
   score: 120,
@@ -101,35 +107,40 @@ RunResult _perfectRun(String id) => _run(
 
 void main() {
   group('İçerik', () {
-    test(
-      'beş bölge, her birinde üç hedef ve dört kısa bilgi; kimlikler benzersiz',
-      () {
-        expect(discoveryZones.length, zones.length);
-        final ids = <String>{};
-        for (var z = 0; z < discoveryZones.length; z++) {
-          final dz = discoveryZones[z];
-          expect(dz.zone, z);
-          expect(dz.goals.length, 3, reason: zones[z].name);
-          expect(dz.facts.length, 4, reason: zones[z].name);
-          expect(
-            dz.goals.where((g) => g.kind == DiscoveryGoalKind.reach).length,
-            1,
-          );
-          for (final g in dz.goals) {
-            expect(g.zone, z);
-            expect(g.target, greaterThan(0));
-            expect(g.rewardSimits, greaterThan(0));
-            expect(ids.add(g.id), isTrue, reason: 'tekrarlanan kimlik ${g.id}');
-            expect(g.title, isNotEmpty);
-          }
-          for (final f in dz.facts) {
-            // kısa: ansiklopedi değil
-            expect(f.text.length, lessThanOrEqualTo(160), reason: f.text);
-          }
-          expect(dz.summary.length, lessThanOrEqualTo(90), reason: dz.summary);
+    test('rotadaki her bölgenin kartı var; her kartta üç hedef ve dört kısa bilgi; kimlikler benzersiz', () {
+      // her kart geçerli ve tek bir bölgeye ait; rotadaki her bölgenin kartı var
+      expect(
+        discoveryZones.map((d) => d.zone).toSet().length,
+        discoveryZones.length,
+      );
+      for (final z in routeZones) {
+        expect(discoveryZoneOf(z).zone, z, reason: zones[z].name);
+      }
+      expect([for (final d in routeDiscoveryZones) d.zone], routeZones);
+      final ids = <String>{};
+      for (final dz in discoveryZones) {
+        final z = dz.zone;
+        expect(z, inInclusiveRange(0, zones.length - 1));
+        expect(dz.goals.length, 3, reason: zones[z].name);
+        expect(dz.facts.length, 4, reason: zones[z].name);
+        expect(
+          dz.goals.where((g) => g.kind == DiscoveryGoalKind.reach).length,
+          1,
+        );
+        for (final g in dz.goals) {
+          expect(g.zone, z);
+          expect(g.target, greaterThan(0));
+          expect(g.rewardSimits, greaterThan(0));
+          expect(ids.add(g.id), isTrue, reason: 'tekrarlanan kimlik ${g.id}');
+          expect(g.title, isNotEmpty);
         }
-      },
-    );
+        for (final f in dz.facts) {
+          // kısa: ansiklopedi değil
+          expect(f.text.length, lessThanOrEqualTo(160), reason: f.text);
+        }
+        expect(dz.summary.length, lessThanOrEqualTo(90), reason: dz.summary);
+      }
+    });
 
     test('puan hedefleri bölgenin puan aralığında; tek uçuşluk engel hedefi bölgeye sığar', () {
       for (final g in discoveryZones.expand((z) => z.goals)) {
@@ -146,14 +157,25 @@ void main() {
       }
     });
 
-    test(
-      'ödül dengesi: toplam 210 simit, mağazanın toplamından (900) çok az',
-      () {
-        expect(DiscoveryConfig.totalGoalSimits, 210);
-        final shop = ShopConfig.prices.values.fold(0, (a, b) => a + b);
-        expect(DiscoveryConfig.totalGoalSimits, lessThan(shop ~/ 4));
-      },
-    );
+    test('ödül dengesi: ilk rota 210 simit (değişmedi, mağazanın dörtte birinden az); bütün albüm mağazanın yarısından az', () {
+      final shop = ShopConfig.prices.values.fold(0, (a, b) => a + b);
+      expect(_firstRouteGoalSimits, 210);
+      expect(_firstRouteGoalSimits, lessThan(shop ~/ 4));
+      expect(DiscoveryConfig.totalGoalSimits, lessThan(shop ~/ 2));
+      // Phase 2.6 bölgelerinin hedefleri en fazla 45 simit (sonraki bölgeler aynı ölçüyü kullanır)
+      for (final dz in discoveryZones.where(
+        (d) => d.zone > firstRouteLastZone,
+      )) {
+        expect(
+          dz.goals.fold(0, (a, g) => a + g.rewardSimits),
+          lessThanOrEqualTo(45),
+        );
+      }
+    });
+
+    test('albüm ödülü koşulu ilk rotanın beş rozeti: yeni bölgeler koşulu değiştirmez', () {
+      expect(albumRewardZones, [0, 1, 2, 3, 4]);
+    });
 
     test(
       'harita: işaretler kutunun içinde ve gerçek coğrafyaya göre sıralı',
@@ -171,6 +193,13 @@ void main() {
         // Köprü ve Rumeli Hisarı Boğaz'ın kuzeyinde; Rumeli Hisarı en kuzeyde
         expect(pos[3].y, lessThan(pos[1].y));
         expect(pos[4].y, lessThan(pos[3].y));
+        // Ortaköy: köprünün Avrupa ayağı yanında (köprüyle aynı yükseklikte, Rumeli'nin güneyinde, Galata'nın kuzeyinde)
+        final ortakoy = MapProjection.toMap(
+          discoveryZoneOf(6).lat,
+          discoveryZoneOf(6).lon,
+        );
+        expect(ortakoy.y, greaterThan(pos[4].y));
+        expect(ortakoy.y, lessThan(pos[1].y));
       },
     );
   });
@@ -350,7 +379,7 @@ void main() {
         s.progress.simitBalance - base.simitBalance,
         s.summary.simitsTotal,
       );
-      expect(s.summary.discovery.simits, DiscoveryConfig.totalGoalSimits);
+      expect(s.summary.discovery.simits, _firstRouteGoalSimits);
     });
   });
 
@@ -594,7 +623,7 @@ void main() {
           '1': '2026-10-20T10:00:00.000Z',
           '9': '2026-10-20T10:00:00.000Z',
         },
-        'legacyZones': [2, 'x', -1, 7],
+        'legacyZones': [2, 'x', -1, 12],
         'zoneRecords': {'0': -5, '1': 12, 'a': 3},
         'progress': {'halic_simits': 3, 'galata_near': 'çok'},
         'completed': {'halic_reach': '2026-10-20T10:00:00.000Z', 'x': 5},

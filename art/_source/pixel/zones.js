@@ -67,4 +67,53 @@ const ZONES = {
   },
 };
 
+// ---- Phase 2.6 (docs/19): ikinci gün rotası. Katmanların çoğu bölgenin kendi dosyasında (ortakoy.js) çizilir;
+// buradaki palet gök, güneş, bulut ve su katmanları içindir.
+ZONES.ortakoy = {
+  name: 'Ortaköy · Açık öğle',
+  sky: [[0, '#0f5cc4'], [0.2, '#1d6cd0'], [0.45, '#3a86d8'], [0.65, '#5e9fe0'], [0.82, '#8ab8e6'], [0.93, '#b2cfea'], [1, '#d2e3ef']],
+  sun: { kind: 'sun', x: 0.62, y: 52, core: '#fffdf0', mid: '#fff4c8', halo: '#d8ecfa', r: 13 },
+  clouds: { light: '#ffffff', mid: '#eef4fb', shade: '#c2d2e6', deep: '#9ab2d0' },
+  distant: { far: '#9db6cf', near: '#86a2be', rim: '#e8f0f8', lit: null },
+  walls: ['#efdcb8', '#e8b48a', '#d9d4cc', '#f2e6d2', '#c9806a', '#a6cbbb', '#f0c896'],
+  roof: '#c05a3e', roofShade: '#8a3c2c', shade: '#5a6478', ink: '#1a2030', glass: '#1d2c44', lit: null, litChance: 0, sunSide: -1,
+  trees: ['#3e7a44', '#5a9a50'],
+  water: [[0, '#6ab4dc'], [0.06, '#2a92c8'], [0.3, '#1a7eb8'], [0.6, '#126aa4'], [1, '#0a4e84']],
+  waterHi: ['#d8f0ff', '#ffffff'], reflect: '#d8ecfa', fog: null,
+};
+
+ZONES.emirgan = {
+  name: 'Emirgan · Bahar sabahı',
+  sky: [[0, '#3d86c8'], [0.25, '#5a9ad2'], [0.5, '#7fb2dc'], [0.7, '#a8cce2'], [0.86, '#d2e2dc'], [1, '#f2ead2']],
+  sun: { kind: 'sun', x: 0.22, y: 150, core: '#fffbe8', mid: '#fff0c0', halo: '#f2ead2', r: 13 },
+  clouds: { light: '#ffffff', mid: '#f4f0ea', shade: '#cdd6de', deep: '#a8b8c8' },
+  distant: { far: '#8fb0a8', near: '#78a094', rim: '#eef2e4', lit: null },
+  walls: ['#7a3a2e', '#f2ece0', '#c9a27a', '#e8dcc8'], roof: '#8a4a3a', roofShade: '#5e3428', shade: '#4e5e5a', ink: '#1c2620', glass: '#2a3a48', lit: null, litChance: 0, sunSide: 1,
+  trees: ['#3e7a44', '#5e9a4e'],
+  water: [[0, '#7ab8c0'], [0.06, '#3e98a6'], [0.3, '#2a8494'], [0.6, '#1e6e80'], [1, '#14566a']],
+  waterHi: ['#e8f6f2', '#ffffff'], reflect: '#f2ead2', fog: null,
+};
+ZONES.dolmabahce = {
+  name: 'Dolmabahçe · Öğleden sonra',
+  sky: [[0, '#2a6cb8'], [0.25, '#4a86c6'], [0.5, '#76a4d0'], [0.7, '#b0c4d0'], [0.86, '#e6d6b8'], [1, '#f6deaa']],
+  sun: { kind: 'sun', x: 0.84, y: 120, core: '#fffbe0', mid: '#ffe6a8', halo: '#f6deaa', r: 15 },
+  clouds: { light: '#fff6e4', mid: '#f2e2c8', shade: '#c8bcb0', deep: '#a09a9a' },
+  distant: { far: '#a8a0a8', near: '#948a96', rim: '#f6e2c0', lit: null },
+  walls: ['#f4ece0', '#e8d8c0'], roof: '#8a8a96', roofShade: '#5e5e6a', shade: '#5a5468', ink: '#1e1c28', glass: '#2a3048', lit: null, litChance: 0, sunSide: 1,
+  trees: ['#4a6e3a', '#7a9a48'],
+  water: [[0, '#8ab4c8'], [0.06, '#3a88ac'], [0.3, '#2a7698'], [0.6, '#1e6284'], [1, '#144c6c']],
+  waterHi: ['#ffe6a8', '#fff8e0'], reflect: '#f6deaa', fog: null,
+};
+ZONES.uskudar = {
+  name: 'Üsküdar · Akşamüstü',
+  sky: [[0, '#4a5a9c'], [0.22, '#6a6aa8'], [0.45, '#9a80b0'], [0.65, '#c898a8'], [0.82, '#eab8a0'], [1, '#f8d8a8']],
+  sun: { kind: 'sun', x: 0.18, y: 230, core: '#fff2d0', mid: '#ffd8a0', halo: '#f2b898', r: 16 },
+  clouds: { light: '#ffd8c0', mid: '#eab0a8', shade: '#a888a8', deep: '#806a98' },
+  distant: { far: '#a890a8', near: '#907a98', rim: '#ffd0a8', lit: '#ffd8a0' },
+  walls: ['#e8b0a0', '#f2d2a8', '#c8a8c0', '#e8c8b8'], roof: '#a8584a', roofShade: '#6e3a3e', shade: '#5a4a64', ink: '#1e1626', glass: '#2a2440', lit: '#ffd090', litChance: 0.15, sunSide: -1,
+  trees: ['#4a5a4a', '#6a7a5a'],
+  water: [[0, '#b0a0c0'], [0.06, '#7a80a8'], [0.3, '#62709a'], [0.6, '#4e5e88'], [1, '#3a4870']],
+  waterHi: ['#ffd8b0', '#fff2e0'], reflect: '#f8c8a0', fog: null,
+};
+
 module.exports = { ZONES, HORIZON, SCREEN_H };
