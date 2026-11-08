@@ -1,4 +1,4 @@
-# 19 · Phase 2.6: Genişleyen İstanbul (2.6.1–2.6.3: dört yeni bölge, dinamik engeller, hava durumu)
+# 19 · Phase 2.6: Genişleyen İstanbul (dört yeni bölge, dinamik engeller, hava durumu, performans)
 
 > **Dosya adı:** İstekte `docs/18_phase2_6_expanded_istanbul.md` geçiyordu. 18 numara engel ve geçit raporunda kullanıldığı için bu rapor 19 numaralı.
 >
@@ -7,7 +7,7 @@
 > - Sürüm önerisi: **1.6.0**. Son derleme 1.5.0 (8) TestFlight'ta; App Store'da 1.4.0 kaydı "Prepare for Submission" durumunda.
 > - TestFlight'a yükleme, App Review gönderimi ve yayın **yapılmadı**.
 
-## 0. Yapılanlar (2.6.1, 2.6.2) ve kalanlar
+## 0. Yapılanlar ve kalanlar
 
 | Aşama | Durum |
 |---|---|
@@ -15,7 +15,7 @@
 | 2.6.1: Ortaköy | **Tamam.** Gök, uzak plan, orta plan, kıyı, su, vapur, simge (cami + köprü), engel kiti (1 px = 2 birim), keşif kartı. Oyun içinde ve testlerde doğrulandı |
 | 2.6.2: Emirgan, Dolmabahçe, Üsküdar | **Tamam.** Her biri için gök, uzak plan, orta plan, kıyı, su, vapur, simge, engel kiti ve keşif kartı (§3a). Dokuz bölgenin hepsi rotada. Önizleme aracıyla tam sahne olarak doğrulandı; oyun içi web kontrolü bu turda yapılamadı (§12) |
 | 2.6.3: Dinamik engeller, hava durumu, bölge sesleri | **Kısmen tamam (§6a–§6c).** Martı sürüsü ve rüzgâr kuşağı: klasik modda, skor 120'den sonra, ölçülerek. Hava: yağmur, sis, rüzgârlı (yalnızca görsel). Yeni ses: yağmur. Vapur engeli, sallanan nesne ve vapur düdüğü **yapılmadı** (gerekçe §6a) |
-| 2.6.4: Performans ölçümü ve iPhone testleri | **Yapılmadı.** Gerçek cihazda test yok |
+| 2.6.4: Performans ölçümü ve iPhone testleri | **Masaüstü ölçümleri ve iyileştirmeler tamam (§8); bir sızıntı bulundu ve düzeltildi. iPhone testi yapılmadı (NOT RUN, plan §11).** |
 
 ## 1. Mevcut mimari analizi
 
@@ -255,21 +255,43 @@ Keşif hedefleri artık rota sırasıyla işleniyor; oyun sonu özetinde Emirgan
 - **Yeni bölgelere ilk ulaşma:** Yalnızca o bölgelerin kartları, "ulaş" ödülleri ve bölge başına 25 XP ilk keşif verilir (Ortaköy'e ulaşan oyuncu yolda Emirgan'ı da keşfeder). Eski ödül ve başarımlar tekrar verilmez; aynı uçuş ikinci kez işlenmez.
 - **Kayıt biçimi:** Değişmedi; yeni alan ya da sürüm yok. Bozuk kayıtta geçersiz bölge kimlikleri atılmaya devam eder.
 
-## 8. Performans
+## 8. Performans (2.6.4)
 
-- **Ölçüm:** Gerçek cihaz ölçümü yapılmadı; 60 FPS iddiası yok.
-- **Yükleme:** Rotada olmayan bölgeler yüklenmez.
-- **Bellek:** Dört yeni bölge, açılışta yüklenen görsellere 44 görsel ve ~144 KB PNG ekler. Dokular küçük: en büyüğü 400×298. Dört bölgenin GPU belleği kabaca 4 MB'ın altında (RGBA, sıkıştırmasız tahmin; ölçülmedi).
-- **Çizim maliyeti:** Engel ve katman sayısı, dolayısıyla çizim çağrısı sayısı değişmedi. Yeni nesne üretimi, parçacık ya da kare başına bellek ayırma yok.
-- **2.6.3 maliyeti:** Dinamik engel aynı anda en fazla 2–3 görünüm bileşeni (her biri 15 dikdörtgen veya ~170 küçük dikdörtgen). Hava katmanı tek bileşen; kare başına en fazla ~150 dikdörtgen, nesne üretimi yok. Yağmur sesi 8 sn döngü (345 KB WAV; rüzgâr sesiyle aynı biçim ve boyut). Ölçülmedi.
-- **Asıl risk:** Açılışta artık dokuz bölgenin ~117 görseli yükleniyor; arka plan, simge ve engel PNG'leri toplam ~270 KB. Açılış süresi ve bellek gerçek cihazda ölçülmeli. Gerekirse 2.6.4'te ikinci günün bölgeleri tembel yüklenebilir: Rumeli'ye gelmeden önce arka planda.
+**Gerçek cihaz ölçümü yapılmadı; 60 FPS iddiası yok.** Aşağıdakiler masaüstünde yapılan ölçümler ve hesaplar. Cihaz ölçümü §11'deki planla yapılmalı.
+
+**Görsel yükü** (açılışta yüklenen her şey; `flutter test tool/perf_bench_test.dart`):
+
+| Grup | Dosya | PNG | Çözülmüş (RGBA) |
+|---|---|---|---|
+| Ortak (Simit, görünümler, efekt, simgeler) | 13 | 42 KB | 1,48 MB |
+| 1. gün: Haliç, Galata, Kız Kulesi, Köprü, Rumeli | 51 | 130 KB | 6,54 MB |
+| 2. gün: Emirgan, Ortaköy, Dolmabahçe, Üsküdar | 44 | 114 KB | 5,76 MB |
+| **Toplam** | **108** | **286 KB** | **13,8 MB** |
+
+- Ses dosyaları toplam 3,2 MB (yağmur 345 KB).
+- **Tembel yükleme: yapılmadı, gerek görülmedi.** İkinci gün bölgeleri 5,8 MB ve 44 küçük PNG; en eski desteklenen iPhone için küçük. Önceki tahmin (dört bölge < 4 MB) yanlıştı; ölçülen 5,8 MB. Cihazda açılış süresi belirgin uzarsa yeniden değerlendirilir (§11 P1).
+
+**Kare başına işlem** (1170×2532, 1800 kare, masaüstü JIT; oyun güncellemesi + çizim komutlarının kaydı, GPU raster **hariç**; iki turun ikincisi):
+
+| Sahne | Güncelleme ort. | Kayıt ort. | Kayıt p95 |
+|---|---|---|---|
+| Haliç, açık | 0,02 ms | 0,14 ms | 0,25 ms |
+| Ortaköy, açık + sürü/rüzgâr | 0,03 ms | 0,19 ms | 0,34 ms |
+| Ortaköy, rüzgârlı + sürü/rüzgâr | 0,03 ms | 0,28 ms | 0,51 ms |
+| Üsküdar, yağmur + sürü/rüzgâr | 0,03 ms | 0,26 ms | 0,46 ms |
+| Rumeli, sis | 0,02 ms | 0,22 ms | 0,37 ms |
+
+- Bütçe 16,7 ms (60 FPS). Ölçülen CPU tarafı bunun çok altında, ama GPU, gerçek cihaz ve AOT derlemesi bu ölçüme girmiyor. p99 değerleri (1–1,7 ms) çöp toplama gürültüsü.
+- **İyileştirmeler:** Martı kareleri bir kez kaydedilip yeniden kullanılıyor (martı başına ~45 dikdörtgen → 1 çizim). Rüzgâr şeritlerinin sabit izi tek yol (~360 dikdörtgen → 1 çizim). Yağmur üç yola toplanıyor (144 → 3 çizim). Yağmurlu sahnede kayıt süresi ~%28 düştü (0,36 → 0,26 ms). Görüntü değişmedi (karşılaştırmalı kareler).
+- **Bulunan hata (düzeltildi):** Tehlike görünümleri, bağlı oldukları engel ekrandan çıkınca kaldırılmıyordu; uzun bir turda birikiyorlardı (3 dakikada 27). Ekranda görünmüyorlardı ve oynanışı etkilemiyorlardı, ama her kare döngüye giriyorlardı. Artık engelle birlikte kalkıyorlar; regresyon testi var.
+- **Nesne sayısı:** 3 dakikalık uçuşta dünya bileşenleri ≤ 30, tehlike görünümleri ≤ 3 (test).
 
 ## 9. Test sonuçları
 
 | Komut | Sonuç |
 |---|---|
 | `flutter analyze` | No issues found |
-| `flutter test` | **361 / 361** (2.6.3 yeniden tasarım sonrası) |
+| `flutter test` | **362 / 362** (2.6.4 sonrası) |
 | Oyun içi kareler (2.6.3) | Oyun gerçek asset'lerle test ortamında kare kare çizildi (1080×1920): sürü, rüzgâr kuşağı, yağmur, sis. Tarayıcıda yalnızca Emirgan görüldü (skor 135); panel arka plana geçince oyun yine duraklattı |
 | Web derlemesi (demo, 390×844) | 2.6.1: Ortaköy oynanışı, Rumeli → Ortaköy geçişi, kartpostal, harita, keşif kartı ve baştan sona tur kontrol edildi. 2.6.2: derleme başarılı, ama tarayıcı paneli arka planda kaldığı için oyun açılır açılmaz kendini duraklattı. Emirgan, Dolmabahçe ve Üsküdar oyun içinde görülemedi; aynı asset'lerle önizleme aracında tam sahne olarak kontrol edildi |
 
@@ -302,7 +324,7 @@ Yeni ve güncellenen testler:
   - `hazardAt` verilmezse simülasyon sonucu birebir aynı (günlük doğrulama değişmedi).
   - 30 parkur 230 engele kadar sürü + rüzgârla geçilebilir, en dar bant ≥ 90.
   - Hava seçimi bölge seçeneklerine bağlı; hava katmanı engellerin arkasında; yağmur sesi dosyası kayıtlı.
-- **`test/hazards_game_test.dart` (yeni, 2 test):** Klasikte skor 120 sonrası sürü ve rüzgâr çıkıyor, dizi 30/60/120 FPS'te aynı. Günün Uçuşu'nda 130 engel boyunca hiç dinamik engel yok ve hava hep açık.
+- **`test/hazards_game_test.dart` (yeni, 3 test):** Uzun uçuşta bileşen ve tehlike görünümü birikmemesi (performans regresyonu). Klasikte skor 120 sonrası sürü ve rüzgâr çıkıyor, dizi 30/60/120 FPS'te aynı. Günün Uçuşu'nda 130 engel boyunca hiç dinamik engel yok ve hava hep açık.
 
 ## 10. Ekran görüntüleri
 
@@ -347,27 +369,43 @@ Dinamik engeller ve hava (2.6.3; oyunun kendisi, gerçek asset'lerle test ortam�
 - **Ayrıntı:** Ortaköy simgesi, Süleymaniye ve Rumeli Hisarı simgeleriyle aynı ayrıntı düzeyinde: tonlu taş, pencere kayıtları, kurşun levha dikişleri.
 - **Engeller:** Ortaköy kiti docs/18'deki v3 kitleriyle aynı standartta.
 
-## 11. Gerçek cihaz test planı (hepsi NOT RUN)
+## 11. iPhone test planı (2.6.4; hepsi NOT RUN)
 
+**Nasıl yapılır:** Geliştirme Windows'ta; iOS derlemesi Codemagic'te yapılıyor, bu yüzden cihazda profil modu (`flutter run --profile`) kullanılamıyor. Cihaz testi için yeni bir TestFlight derlemesi gerekir (**kullanıcı onayıyla**; yalnızca dahili test grubu). FPS ölçümü için iki seçenek:
+- **A:** Ayrı bir dahili derleme, `--dart-define=MARTI_STATS=true` ile (ekranda FPS ve nesne sayısı).
+- **B:** Normal derleme ve iOS'un kendi ölçümü (Xcode Instruments yok). Bu durumda yalnızca gözle akıcılık değerlendirilir.
+
+**Cihazlar:** En eski desteklenen iPhone (varsa iPhone SE 2. nesil veya 8), güncel bir iPhone.
+
+**Performans (geçme ölçütü):**
+
+| # | Test | Ölçüt |
+|---|---|---|
+| P1 | Soğuk açılış: uygulama simgesi → menü | 1.5.0 (8)'e göre en fazla +0,5 sn |
+| P2 | Haliç'ten Üsküdar'a tek uçuş (demo değil; yüksek skor ya da çok deneme) | FPS ≥ 58 çoğu zaman; bölge geçişinde gözle görülür takılma yok |
+| P3 | Yağmur + sürü + rüzgâr aynı anda (Üsküdar/Galata) | FPS düşüşü ≤ 2; takılma yok |
+| P4 | 10 dakika ardışık oyun | Kademeli yavaşlama ya da aşırı ısınma yok; uygulama kapanmıyor (Xcode olmadan bellek ölçülemez) |
+| P5 | Düşük Güç Modu açık | Oyun oynanabilir; 30 FPS'e kilitlenmesi kabul edilebilir |
+
+**Oynanış ve görünüm:**
 1. Dört yeni bölgeye ulaşma: geçişler yumuşak mı, rota çubuğunda 9 durak var mı?
 2. Yeni engeller göğe karşı net mi (özellikle Emirgan'ın pembe erguvanı ve Dolmabahçe'nin mermeri); "çarpmadım ama öldüm" anı var mı?
 3. Simgenin su yansıması rahatsız edici mi?
 4. Keşif haritasında Ortaköy–Köprü ve Üsküdar–Kız Kulesi işaretleri parmakla ayrı ayrı seçilebiliyor mu?
 5. Eski kayıtlı cihazda albüm %55, İznik görünümü ve rozetler duruyor mu?
-6. Günün Uçuşu 150'yi geçince Rumeli görünümünde kalıyor mu?
-7. Açılış süresi ve bellek, 1.5.0 ile karşılaştırıldığında değişti mi?
-8. iPhone SE'de menü, kartpostal ve harita taşmıyor mu?
-9. Martı sürüsü ilk görüldüğünde tehlike olarak anlaşılıyor mu (dekor sanılmıyor mu)? Kanat ucuna sürtünce ölüm "haksız" hissettiriyor mu?
-10. Rüzgâr kuşağı okları yeterince erken fark ediliyor mu; itme hissi "fizik bozuldu" gibi mi, yoksa anlaşılır mı?
-11. Yağmur ve sis küçük ekranda göz yoruyor mu; engel kenarları her zaman net mi?
-12. Yağmur sesi döngüsünde dikiş/tık duyuluyor mu; sessiz modda ve ses ayarı 0'da hiç çalmıyor mu?
+6. Günün Uçuşu 150'yi geçince Rumeli görünümünde kalıyor mu; hiç sürü/rüzgâr ve hava efekti yok mu?
+7. iPhone SE'de menü, kartpostal ve harita taşmıyor mu?
+8. Martı sürüsü küçük ekranda da tehlike olarak anlaşılıyor mu? Kanat ucuna sürtünce ölüm "haksız" hissettiriyor mu? (Web'de kullanıcı onayladı: "Martılar güzel olmuş".)
+9. Hava akımı şeritleri yeterince erken fark ediliyor mu; itme doğal mı? (Web'de kullanıcı onayladı.)
+10. Yağmur ve sis küçük ekranda göz yoruyor mu; engel kenarları her zaman net mi?
+11. Yağmur sesi döngüsünde dikiş/tık duyuluyor mu; martı çığlığı sürü başına bir kez mi; sessiz modda ve ses ayarı 0'da hiç çalmıyor mu?
 
 ## 12. Bilinen eksikler
 
 - **Oyun içi doğrulama:** 2.6.3'te Ortaköy, Üsküdar, Emirgan, Rumeli, Galata ve Haliç oyunun kendi çiziminde görüldü (test ortamı kareleri; Emirgan ayrıca tarayıcıda). **Dolmabahçe oyun içinde hâlâ görülmedi** (yalnızca önizleme aracında). Tarayıcı paneli arka planda kalınca oyun kendini duraklatıyor.
 - **Mekanikler:** Vapur engeli, sallanan nesne ve vapur düdüğü yapılmadı (§6a, §6c).
-- **Yeniden tasarım doğrulaması:** Yeni sürü ve hava akımı yalnızca çizilen karelerde ve testlerde doğrulandı; oyuncu hissi yerel denemede ve cihazda tekrar değerlendirilmeli (§11/9–10).
+- **Yeniden tasarım doğrulaması:** Yeni sürü ve hava akımı yerel web denemesinde kullanıcı tarafından onaylandı; küçük ekranda (iPhone) henüz denenmedi (§11/8–9).
 - **Adalet ölçümü:** Simülatör alt sınır verir; gerçek oyuncu hissi cihaz testinde doğrulanmalı.
-- **Ölçüm:** Performans ölçümü ve gerçek cihaz testi yok (2.6.4).
+- **Ölçüm:** Performans yalnızca masaüstünde ölçüldü (§8); gerçek cihaz testi yok.
 - **Game Center:** Yeni bölgeler için başarım yok; Game Center öğeleri değişmedi.
-- **Commit:** Bu çalışma commit edilmedi.
+- **Commit:** 2.6.1–2.6.3 `f9f5703` (push yok). 2.6.4 değişiklikleri henüz commit edilmedi. TestFlight yüklemesi yok.

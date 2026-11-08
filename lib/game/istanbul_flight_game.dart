@@ -770,8 +770,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     while (obstacles.isNotEmpty && obstacles.first.right < -60) {
       obstacles.removeAt(0).removeFromParent();
     }
-    while (hazardViews.isNotEmpty &&
-        hazardViews.first.anchor.position.x < -config.obstacleSpacing) {
+    // tehlike görünümü bağlı olduğu engelle birlikte kalkar (kaldırılan engel artık kaymaz; koridoru da
+    // bu anda tamamen ekranın solundadır)
+    while (hazardViews.isNotEmpty && hazardViews.first.anchor.right < -60) {
       hazardViews.removeAt(0).removeFromParent();
     }
   }

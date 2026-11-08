@@ -65,7 +65,8 @@ class HazardView extends Component with HasGameReference<IstanbulFlightGame> {
     const offsets = [(-44.0, -18.0), (46.0, -22.0), (2.0, 20.0)];
     for (var i = 0; i < offsets.length; i++) {
       final (dx, dy) = offsets[i];
-      final frame = ((game.time * 7 + i * 0.9) % 3).floor(); // kanat: yukarı, orta, aşağı
+      final frame = ((game.time * 7 + i * 0.9) % 3)
+          .floor(); // kanat: yukarı, orta, aşağı
       _gull(canvas, snapPx(cx + dx), snapPx(cy + dy), frame, i);
     }
   }
@@ -129,23 +130,38 @@ class HazardView extends Component with HasGameReference<IstanbulFlightGame> {
         _p,
       );
     }
+    canvas
+      ..save()
+      ..translate(x, y)
+      ..drawPicture(_gullPicture(frame))
+      ..restore();
+  }
+
+  /// Martı karesi bir kez kaydedilir (≈45 dikdörtgen → tek çizim çağrısı; docs/19 §8).
+  static final List<Picture?> _gullPictures = List.filled(_frames.length, null);
+
+  static Picture _gullPicture(int frame) => _gullPictures[frame] ??= () {
+    const px = kArtPx * 2;
+    final rec = PictureRecorder();
+    final c = Canvas(rec);
+    final p = Paint()..isAntiAlias = false;
     final rows = _frames[frame];
     for (var r = 0; r < rows.length; r++) {
       for (var k = 0; k < rows[r].length; k++) {
         final col = _colors[rows[r][k]];
         if (col == null) continue;
-        _p.color = col;
-        canvas.drawRect(
-          Rect.fromLTWH(x + (k - 6) * px, y + (r - 3.5) * px, px, px),
-          _p,
-        );
+        p.color = col;
+        c.drawRect(Rect.fromLTWH((k - 6) * px, (r - 3.5) * px, px, px), p);
       }
     }
-  }
+    return rec.endRecording();
+  }();
 
   /// Hava akımı: koridor boyunca akan rüzgâr şeritleri, akımın yönünde kavislenir (yükselen akımda yukarı
   /// kemer, alçalan akımda aşağı). Kavis, kuşa uygulanan ivmeyle aynı sin² eğrisini izler: en güçlü yer en
   /// çok bükülen yer. Şeritlerde akan kesikler ve savrulan yapraklar.
+  static final Map<(double, double, double), Path> _trailPaths = {};
+
   void _renderGust(Canvas canvas) {
     final c = game.config;
     final width = c.obstacleSpacing - c.obstacleWidth;
@@ -162,21 +178,32 @@ class HazardView extends Component with HasGameReference<IstanbulFlightGame> {
     }
 
     const ribbons = 7;
-    for (var k = 0; k < ribbons; k++) {
-      final y0 = 220 + k * (c.worldHeight - 440) / (ribbons - 1);
-      // şeridin kendisi: çok soluk sürekli iz
-      _p.color = light.withValues(alpha: 0.16);
-      for (var u = 0.0; u <= 1.0; u += 0.02) {
-        canvas.drawRect(
-          Rect.fromLTWH(
-            snapPx(left + u * width),
-            snapPx(yAt(y0, u)),
-            px * 3,
-            px,
-          ),
-          _p,
-        );
+    double ribbonY(int k) => 220 + k * (c.worldHeight - 440) / (ribbons - 1);
+    // şeritlerin soluk sürekli izi: şekil sabit, tek yol olarak bir kez hesaplanır
+    final trails = _trailPaths[(dir, width, c.worldHeight)] ??= () {
+      final path = Path();
+      for (var k = 0; k < ribbons; k++) {
+        for (var u = 0.0; u <= 1.0; u += 0.02) {
+          path.addRect(
+            Rect.fromLTWH(
+              snapPx(u * width),
+              snapPx(yAt(ribbonY(k), u)),
+              px * 3,
+              px,
+            ),
+          );
+        }
       }
+      return path;
+    }();
+    _p.color = light.withValues(alpha: 0.16);
+    canvas
+      ..save()
+      ..translate(snapPx(left), 0)
+      ..drawPath(trails, _p)
+      ..restore();
+    for (var k = 0; k < ribbons; k++) {
+      final y0 = ribbonY(k);
       // akan kesikler: sağdan sola (kuşa doğru) akar
       for (var d = 0; d < 2; d++) {
         final head = 1 - ((t * 0.55 + k * 0.37 + d * 0.5) % 1.0);

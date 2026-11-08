@@ -87,4 +87,30 @@ void main() {
     }
     expect(g.score.value, greaterThanOrEqualTo(130));
   });
+
+  // Performans regresyonu (docs/19 §8): uzun uçuşta bileşen sayısı sınırlı kalır, dinamik engel görünümleri
+  // geri dönüştürülür (birikme yok).
+  test('uzun uçuş: dünya bileşenleri ve tehlike görünümleri birikmez', () async {
+    final g = await _game();
+    g.debugInvincible = true;
+    g.autopilot = true;
+    g.debugStartScore = 120;
+    g.debugWeather = Weather.rain;
+    g.handleTap();
+    var maxChildren = 0, maxHazards = 0, seen = 0;
+    final ids = <int>{};
+    for (var i = 0; i < 60 * 180; i++) {
+      g.update(1 / 60);
+      if (i % 30 == 0) await g.ready();
+      maxChildren = max(maxChildren, g.world.children.length);
+      maxHazards = max(maxHazards, g.hazardViews.length);
+      for (final h in g.hazardViews) {
+        if (ids.add(h.hazard.corridor)) seen++;
+      }
+    }
+    expect(g.score.value, greaterThan(200));
+    expect(seen, greaterThan(15)); // çok sayıda tehlike geldi ve gitti
+    expect(maxHazards, lessThanOrEqualTo(3));
+    expect(maxChildren, lessThanOrEqualTo(30));
+  });
 }

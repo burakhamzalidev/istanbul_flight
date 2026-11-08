@@ -20,6 +20,7 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
   Weather _target = Weather.clear;
   double _level = 0; // 0..1 (mevcut havanın yoğunluğu)
   final Paint _p = Paint()..isAntiAlias = false;
+  final List<Path> _rainPaths = [Path(), Path(), Path()];
 
   Weather get weather => _target;
 
@@ -70,6 +71,10 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
     // kapalı hava: hafif gri ton (engellerin arkasında; yalnızca arka planı soluklaştırır)
     _p.color = const Color(0xFF4A5A70).withValues(alpha: 0.14 * _level);
     canvas.drawRect(Rect.fromLTWH(0, 0, _w, _h), _p);
+    // üç saydamlık grubu → üç yol (kare başına 144 yerine 3 çizim çağrısı; docs/19 §8)
+    for (final p in _rainPaths) {
+      p.reset();
+    }
     for (var k = 0; k < rainDrops; k++) {
       final speed = 1500 + (k % 5) * 160;
       final x0 = ((k * 7919) % 1000) / 1000 * (_w + 300);
@@ -77,18 +82,20 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
       final x =
           (x0 - (y * 0.25) - t * 120) % (_w + 300) -
           150; // hafif eğik düşüş, akışla birlikte
-      _p.color = col.withValues(alpha: (0.3 + (k % 3) * 0.08) * _level);
       for (var s = 0; s < 3; s++) {
-        canvas.drawRect(
+        _rainPaths[k % 3].addRect(
           Rect.fromLTWH(
             snapPx(x - s * px * 0.75),
             snapPx(y + s * px * 3),
             px,
             px * 3,
           ),
-          _p,
         );
       }
+    }
+    for (var g = 0; g < 3; g++) {
+      _p.color = col.withValues(alpha: (0.3 + g * 0.08) * _level);
+      canvas.drawPath(_rainPaths[g], _p);
     }
   }
 
