@@ -658,6 +658,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           gapCenter: gap.center,
           gapHeight: gap.height,
           random: _pickupRandom,
+          previousCenter: _gaps.previousCenter,
         );
       }
       obstacles.add(o);

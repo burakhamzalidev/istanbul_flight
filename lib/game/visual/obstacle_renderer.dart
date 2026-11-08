@@ -84,7 +84,7 @@ class ObstaclePiecePlan {
 }
 
 /// Engel sprite çizicisi (pixel art). Kitler bölgenin ışığında boyalı olarak üretildiğinden tint
-/// uygulanmaz; atlas en yakın komşu örneklemeyle 4× büyütülür ([ObstacleKitLayout.atlasScale]).
+/// uygulanmaz; atlas en yakın komşu örneklemeyle 2× büyütülür ([ObstacleKitLayout.atlasScale]).
 /// Pencere ışıkları kitin içinde hazırdır; burada sadece hafif parıltı ve duman eklenir.
 class ObstacleRenderer {
   final Paint _color = Paint()
@@ -132,9 +132,10 @@ class ObstacleRenderer {
       for (var k = 0; k < 4; k++) {
         final ph = (time * 0.45 + k / 4 + seed * 0.37) % 1.0;
         _fx.color = _smoke.withValues(alpha: (1 - ph) * 0.35);
-        final s = ((12 + ph * 20) / 4).round() * 4.0;
-        final x = ((width * 0.4 - ph * 150) / 4).round() * 4.0,
-            y = ((capTop - 12 - ph * 80) / 4).round() * 4.0;
+        // atlas pikseli (2 birim) ızgarasına oturur
+        final s = ((12 + ph * 20) / 2).round() * 2.0;
+        final x = ((width * 0.4 - ph * 150) / 2).round() * 2.0,
+            y = ((capTop - 12 - ph * 80) / 2).round() * 2.0;
         canvas.drawRect(Rect.fromLTWH(x - s / 2, y - s / 2, s, s), _fx);
       }
     }

@@ -16,6 +16,7 @@ abstract final class PickupRules {
     required double gapCenter,
     required double gapHeight,
     required Random random,
+    double? previousCenter,
   }) {
     if (random.nextDouble() >= config.pickupChance) return null;
     final band = reachableBand(
@@ -24,10 +25,33 @@ abstract final class PickupRules {
       gapHeight: gapHeight,
     );
     if (band == null) return null;
-    // Bandın orta %70'i: kenara yapışık, riskli konumlar seçilmez
+    return positionInBand(
+      config: config,
+      band: band,
+      roll: random.nextDouble(),
+      gapCenter: gapCenter,
+      previousCenter: previousCenter,
+    );
+  }
+
+  /// [roll] (0..1) için bant içindeki konum. Bandın orta %70'i kullanılır: kenara yapışık, riskli
+  /// konumlar seçilmez. Önceki geçitten büyük bir sıçrama ([GameConfig.bigShift]) varsa simit, kuşun
+  /// geldiği tarafa yakın yarıda durur: oyuncu simit için kendini karşı duvara atmak zorunda kalmaz.
+  static double positionInBand({
+    required GameConfig config,
+    required ({double top, double bottom}) band,
+    required double roll,
+    required double gapCenter,
+    double? previousCenter,
+  }) {
     final mid = (band.top + band.bottom) / 2;
     final span = (band.bottom - band.top) * 0.7;
-    return mid + (random.nextDouble() - 0.5) * span;
+    if (previousCenter != null &&
+        (gapCenter - previousCenter).abs() > config.bigShift) {
+      final toward = previousCenter < gapCenter ? -1.0 : 1.0;
+      return mid + toward * roll * span / 2;
+    }
+    return mid + (roll - 0.5) * span;
   }
 
   /// Simit merkezinin bulunabileceği güvenli dikey bant (geçit çok darsa null).

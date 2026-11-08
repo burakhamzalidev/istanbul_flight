@@ -273,10 +273,25 @@ void main() {
       ));
       for (final k in ObstacleKitId.values) {
         final (w, h) = _pngSize('assets/images/${GameArt.kitPath(k)}');
-        // Atlas = yerleşim × atlasScale: en sağdaki parça (taban) ve en uzun parça sığmalı
-        expect(w * 4, greaterThanOrEqualTo(ObstacleKitLayout.bottomBase.right));
-        expect(h * 4, greaterThanOrEqualTo(ObstacleKitLayout.baseHeight));
-        expect(ObstacleKitLayout.atlasScale, 1 / kArtPx);
+        // Engel atlası 2× ayrıntılı (docs/18): 1 px = 2 dünya birimi. Atlas = yerleşim × atlasScale.
+        expect(ObstacleKitLayout.atlasScale, 2 / kArtPx);
+        const s = ObstacleKitLayout.atlasScale;
+        for (final r in [
+          ObstacleKitLayout.bottomBodyA,
+          ObstacleKitLayout.bottomBodyB,
+          ObstacleKitLayout.topBodyA,
+          ObstacleKitLayout.topBodyB,
+          ObstacleKitLayout.bottomCap,
+          ObstacleKitLayout.topCap,
+          ObstacleKitLayout.bottomBase,
+        ]) {
+          expect(r.right * s, lessThanOrEqualTo(w), reason: '$r');
+          expect(r.bottom * s, lessThanOrEqualTo(h), reason: '$r');
+        }
+        expect(
+          (w, h),
+          ((800 * s).toInt(), (ObstacleKitLayout.lightsOffsetY * s).toInt()),
+        );
       }
       for (final l in Landmark.values) {
         final (w, h) = _pngSize('assets/images/${GameArt.landmarkPath(l)}');

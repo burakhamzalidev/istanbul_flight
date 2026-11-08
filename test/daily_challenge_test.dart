@@ -6,12 +6,12 @@ import 'package:istanbul_flight/game/logic/pickup_rules.dart';
 
 // Phase 2.5: deterministik günlük parkur (docs/17 §3–§4).
 
-DailyChallengeDefinition _def(int seed, {DateTime? day}) =>
+DailyChallengeDefinition _def(int seed, {DateTime? day, int version = 1}) =>
     DailyChallengeDefinition(
       challengeId: 'daily_2026_10_24',
       dateUtc: day ?? DateTime.utc(2026, 10, 24),
       seed: seed,
-      generatorVersion: 1,
+      generatorVersion: version,
       candidate: 0,
       validatedDepth: 0,
     );
@@ -101,7 +101,7 @@ void main() {
       expect(DailyGenerators.forDay(istanbul).challengeId, 'daily_2026_10_24');
     });
 
-    test('altın değerler: üretici v1 çıktısı sessizce değişmez', () {
+    test('altın değerler: üretici v1 ve v2 çıktısı sessizce değişmez', () {
       // Bu değerler değişirse süren ve geçmiş günlerin parkurları değişmiş demektir: üretici kodunu
       // değiştirmek yerine yeni bir sürüm açılmalı (DailyGenerators.schedule).
       final d = DailyGenerators.forDay(DateTime.utc(2026, 10, 24));
@@ -126,6 +126,19 @@ void main() {
           '1140.072681',
         ],
       );
+      final v2 = DailyGenerators.forDay(DateTime.utc(2026, 11, 10));
+      expect(v2.generatorVersion, 2);
+      expect(v2.seed, 970615250);
+      expect(v2.candidate, 0);
+      final c2 = DailyCourse(v2);
+      expect(
+        [for (var i = 0; i < 5; i++) c2.at(i).gapCenter.toStringAsFixed(6)],
+        ['679.393971', '517.072988', '556.795350', '847.567064', '942.897023'],
+      );
+      expect(
+        [for (var i = 0; i < 8; i++) c2.at(i).pickupY?.toStringAsFixed(6)],
+        [null, '566.754195', null, null, null, null, null, '619.503279'],
+      );
       final next = DailyGenerators.forDay(DateTime.utc(2026, 10, 25));
       expect(next.seed, 1637703470);
       expect(
@@ -134,17 +147,19 @@ void main() {
       );
     });
 
-    test(
-      'ilk engelde simit yok; geçit eğrisi klasikle aynı (n. engel = skor n)',
-      () {
-        final c = DailyCourse(_def(5));
-        const cfg = GameConfig();
-        expect(c.at(0).pickupY, isNull);
-        for (var i = 0; i < 120; i++) {
-          expect(c.at(i).gapHeight, cfg.gapForScore(i));
-        }
-      },
-    );
+    test('ilk engelde simit yok; geçit eğrisi: v1 dondurulmuş eğri, v2 klasikle aynı (n. engel = skor n)', () {
+      final v1 = DailyCourse(_def(5));
+      final v2 = DailyCourse(_def(5, version: 2));
+      const cfg = GameConfig();
+      expect(v1.at(0).pickupY, isNull);
+      expect(v2.at(0).pickupY, isNull);
+      for (var i = 0; i < 120; i++) {
+        expect(v1.at(i).gapHeight, LegacyGapBalanceV1.gapForScore(i));
+        expect(v2.at(i).gapHeight, cfg.gapForScore(i));
+      }
+      expect(v1.spacing, 560);
+      expect(v2.spacing, cfg.obstacleSpacing);
+    });
   });
 
   group('Oynanabilirlik doğrulaması', () {
@@ -152,8 +167,10 @@ void main() {
       'kurallar: geçit güvenli bantta, kayma sınırlı, simit ulaşılabilir',
       () {
         const cfg = GameConfig();
-        for (final seed in [1, 2, 3, 99, 4242]) {
-          final c = DailyCourse(_def(seed));
+        for (final (seed, version) in [
+          for (final s in [1, 2, 3, 99, 4242]) ...[(s, 1), (s, 2)],
+        ]) {
+          final c = DailyCourse(_def(seed, version: version));
           for (var i = 0; i < 150; i++) {
             final s = c.at(i);
             expect(
@@ -164,11 +181,22 @@ void main() {
               s.gapCenter + s.gapHeight / 2,
               lessThanOrEqualTo(cfg.worldHeight - cfg.gapMarginBottom + 1e-6),
             );
+            final range = c.centerRange(i, s.gapHeight);
+            expect(
+              s.gapCenter,
+              inInclusiveRange(range.low - 1e-6, range.high + 1e-6),
+            );
             if (i > 0) {
-              expect(
-                (s.gapCenter - c.at(i - 1).gapCenter).abs(),
-                lessThanOrEqualTo(cfg.maxGapShift + 1e-6),
-              );
+              final shift = s.gapCenter - c.at(i - 1).gapCenter;
+              if (version == 1) {
+                expect(
+                  shift.abs(),
+                  lessThanOrEqualTo(LegacyGapBalanceV1.maxGapShift + 1e-6),
+                );
+              } else {
+                expect(-shift, lessThanOrEqualTo(cfg.maxGapRise + 1e-6));
+                expect(shift, lessThanOrEqualTo(cfg.maxGapDrop + 1e-6));
+              }
             }
             final py = s.pickupY;
             if (py != null) {
@@ -204,27 +232,31 @@ void main() {
     });
 
     test('imkânsız parkur reddedilir: geçidi kuştan dar bir parkur 0 engelde kalır', () {
-      const narrow = GameConfig(startGap: 60, minGap: 60);
-      final check = CourseValidator.check(DailyCourse(_def(3), config: narrow));
+      const narrow = GameConfig(gapCurve: [(0, 60)]);
+      final check = CourseValidator.check(
+        DailyCourse(_def(3, version: 2), config: narrow),
+      );
       expect(check.passes, isFalse);
       expect(check.depth, 0);
     });
 
     test('aşırı dar boğaz reddedilir (geçilebilse bile piksel hassasiyeti isteyen parkur)', () {
       // geçit kuş çapından yalnızca biraz büyük: geçilebilir ama güvenli aralık çok dar
-      const tight = GameConfig(startGap: 84, minGap: 84);
-      final check = CourseValidator.check(DailyCourse(_def(3), config: tight));
+      const tight = GameConfig(gapCurve: [(0, 84)]);
+      final check = CourseValidator.check(
+        DailyCourse(_def(3, version: 2), config: tight),
+      );
       expect(check.passes, isFalse);
     });
 
     test('aday seçimi deterministik: ilk aday reddedilen gün her seferinde aynı yedeğe düşer', () {
-      // 12 Aralık 2026: ilk aday dar boğaz yüzünden elenir, 1. aday seçilir
-      final a = DailyGenerators.forDay(DateTime.utc(2026, 12, 12));
+      // 29 Eylül 2026 (v1): ilk aday dar boğaz yüzünden elenir, 1. aday seçilir
+      final a = DailyGenerators.forDay(DateTime.utc(2026, 9, 29));
       expect(a.candidate, 1);
       final first = DailyChallengeDefinition(
         challengeId: a.challengeId,
         dateUtc: a.dateUtc,
-        seed: DailyRng.hash('istanbul_flight/daily/v1/2026-12-12/0'),
+        seed: DailyRng.hash('istanbul_flight/daily/v1/2026-09-29/0'),
         generatorVersion: 1,
         candidate: 0,
         validatedDepth: 0,
@@ -243,12 +275,18 @@ void main() {
   });
 
   group('Üretici sürümü', () {
-    test('takvim: bilinen her gün v1; sürüm tanımla birlikte saklanır', () {
+    test('takvim: 9 Kasım 2026 dahil v1, 10 Kasım\'dan itibaren v2; sürüm tanımla birlikte saklanır', () {
       expect(DailyGenerators.versionFor('2026-10-24'), 1);
-      expect(DailyGenerators.versionFor('2030-01-01'), 1);
+      expect(DailyGenerators.versionFor('2026-11-09'), 1);
+      expect(DailyGenerators.versionFor('2026-11-10'), 2);
+      expect(DailyGenerators.versionFor('2030-01-01'), 2);
       expect(
         DailyGenerators.forDay(DateTime.utc(2026, 10, 24)).generatorVersion,
         1,
+      );
+      expect(
+        DailyGenerators.forDay(DateTime.utc(2026, 11, 10)).generatorVersion,
+        2,
       );
     });
 

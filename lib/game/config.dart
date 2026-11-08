@@ -21,14 +21,15 @@ class GameConfig {
     this.maxSpeed = 440,
     this.speedPerPoint = 2.5,
     this.obstacleWidth = 196,
-    this.obstacleSpacing = 560,
+    this.obstacleSpacing = 600,
     this.firstObstacleOffset = 260,
-    this.startGap = 340,
-    this.minGap = 265,
-    this.gapShrinkPerPoint = 1.6,
+    this.gapCurve = defaultGapCurve,
     this.gapMarginTop = 230,
     this.gapMarginBottom = 230,
-    this.maxGapShift = 430,
+    this.maxGapRise = 330,
+    this.maxGapDrop = 390,
+    this.bigShift = 260,
+    this.afterBigShiftScale = 0.6,
     this.gameOverCardDelay = 0.7,
     this.restartLockTime = 0.6,
     this.pickupChance = 0.45,
@@ -70,16 +71,41 @@ class GameConfig {
 
   // Engeller
   final double obstacleWidth;
+  /// Ardışık iki engelin sol kenarları arası (560 → 600, docs/18 §2). Üst sınır: kuş bir engelin
+  /// ortasındayken sıradaki engelin ağzı en uzun iPhone ekranında (9:19,5) görünmeli (~620).
   final double obstacleSpacing;
   final double firstObstacleOffset;
-  final double startGap;
-  final double minGap;
-  final double gapShrinkPerPoint;
+
+  /// Geçit yüksekliği eğrisi: (skor, yükseklik) noktaları, aralarda doğrusal; son noktadan sonra sabit.
+  /// Noktalar bölge sınırlarında (Haliç 0, Galata 15, Kız Kulesi 35, Boğaz 60, Rumeli 90): her bölge
+  /// kendi daralma hızıyla gelir, en dar geçit (300) bile bir çırpış yayından (~217 birim) belirgin geniştir.
+  final List<(int, double)> gapCurve;
   final double gapMarginTop;
   final double gapMarginBottom;
 
-  /// Ardışık iki geçidin merkezleri arasındaki en büyük dikey fark (adil geçiş).
-  final double maxGapShift;
+  /// Ardışık iki geçit arasında yukarı (çırparak tırmanma) ve aşağı (süzülme) en büyük merkez farkı.
+  /// Tırmanma düşmekten zordur, bu yüzden yukarı sınır daha küçüktür.
+  final double maxGapRise;
+  final double maxGapDrop;
+
+  /// Bu değerden büyük bir sıçramadan sonraki geçidin kayma sınırları [afterBigShiftScale] ile küçülür:
+  /// art arda iki büyük zikzak (yukarı-aşağı-yukarı) üretilmez.
+  final double bigShift;
+  final double afterBigShiftScale;
+
+  /// Varsayılan geçit eğrisi (docs/18 §4).
+  static const defaultGapCurve = <(int, double)>[
+    (0, 370),
+    (15, 350),
+    (35, 330),
+    (60, 310),
+    (90, 300),
+  ];
+
+  /// Eğrinin en geniş ve en dar geçidi.
+  double get startGap => gapCurve.first.$2;
+  double get minGap =>
+      gapCurve.fold(double.infinity, (m, p) => p.$2 < m ? p.$2 : m);
 
   // Oyun sonu
   final double gameOverCardDelay;
@@ -109,6 +135,16 @@ class GameConfig {
   double speedForScore(int score) =>
       (startSpeed + score * speedPerPoint).clamp(startSpeed, maxSpeed);
 
-  double gapForScore(int score) =>
-      (startGap - score * gapShrinkPerPoint).clamp(minGap, startGap);
+  double gapForScore(int score) {
+    final c = gapCurve;
+    if (score <= c.first.$1) return c.first.$2;
+    for (var i = 1; i < c.length; i++) {
+      final (s1, g1) = c[i];
+      if (score <= s1) {
+        final (s0, g0) = c[i - 1];
+        return g0 + (g1 - g0) * (score - s0) / (s1 - s0);
+      }
+    }
+    return c.last.$2;
+  }
 }

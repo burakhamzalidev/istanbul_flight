@@ -86,7 +86,7 @@ class GameArt {
   final Map<String, ZoneArt> zones;
   final Map<Landmark, Image> landmarks;
 
-  /// Engel kitleri (1/4 çözünürlüklü atlas, bkz. ObstacleKitLayout.atlasScale).
+  /// Engel kitleri (1/2 çözünürlüklü atlas, bkz. ObstacleKitLayout.atlasScale).
   final Map<ObstacleKitId, Image> kits;
 
   /// Efekt atlası: toplanabilir simit, parıltı, tüy, damla, halkalar.

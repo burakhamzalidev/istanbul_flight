@@ -66,7 +66,7 @@ void main() {
   group('GapGenerator', () {
     test('geçitler güvenli bantta ve ardışık fark sınırlı', () {
       final g = GapGenerator(config, random: Random(1));
-      double? last;
+      double? last, lastShift;
       for (var score = 0; score < 2000; score++) {
         final gap = g.next(score % 150);
         expect(
@@ -78,19 +78,67 @@ void main() {
           lessThanOrEqualTo(config.worldHeight - config.gapMarginBottom + 1e-9),
         );
         if (last != null) {
+          // yukarı (merkez küçülür) tırmanma, aşağı süzülme sınırı
           expect(
-            (gap.center - last).abs(),
-            lessThanOrEqualTo(config.maxGapShift + 1e-9),
+            last - gap.center,
+            lessThanOrEqualTo(config.maxGapRise + 1e-9),
           );
+          expect(
+            gap.center - last,
+            lessThanOrEqualTo(config.maxGapDrop + 1e-9),
+          );
+          if (lastShift != null && lastShift.abs() > config.bigShift) {
+            final calm = config.afterBigShiftScale;
+            expect(
+              last - gap.center,
+              lessThanOrEqualTo(config.maxGapRise * calm + 1e-9),
+            );
+            expect(
+              gap.center - last,
+              lessThanOrEqualTo(config.maxGapDrop * calm + 1e-9),
+            );
+          }
+          lastShift = gap.center - last;
         }
         last = gap.center;
       }
     });
 
-    test('geçit skorla daralır ama minGap altına inmez', () {
+    test('art arda iki büyük sıçrama yok (zikzak)', () {
+      final g = GapGenerator(config, random: Random(7));
+      final centers = [for (var i = 0; i < 5000; i++) g.next(i % 150).center];
+      final calmLimit = config.maxGapDrop * config.afterBigShiftScale;
+      for (var i = 2; i < centers.length; i++) {
+        final a = centers[i - 1] - centers[i - 2],
+            b = centers[i] - centers[i - 1];
+        if (a.abs() > config.bigShift) {
+          expect(b.abs(), lessThanOrEqualTo(calmLimit + 1e-9));
+        }
+      }
+    });
+
+    test('geçit eğrisi: bölge sınırlarında tanımlı, monoton daralır, en dar geçit sabit', () {
       expect(config.gapForScore(0), config.startGap);
-      expect(config.gapForScore(10), lessThan(config.startGap));
+      expect(config.gapForScore(0), 370);
+      expect(config.gapForScore(15), 350);
+      expect(config.gapForScore(35), 330);
+      expect(config.gapForScore(60), 310);
+      expect(config.gapForScore(90), 300);
       expect(config.gapForScore(10000), config.minGap);
+      expect(config.minGap, 300);
+      var prev = double.infinity;
+      for (var s = 0; s <= 200; s++) {
+        final g = config.gapForScore(s);
+        expect(g, lessThanOrEqualTo(prev));
+        prev = g;
+      }
+      // en dar geçit bir çırpış yayından (zirve yüksekliği + kuş çapı) en az 70 birim geniş
+      final arc =
+          config.flapVelocity * config.flapVelocity / (2 * config.gravity);
+      expect(
+        config.minGap - (arc + 2 * config.birdHitRadius),
+        greaterThanOrEqualTo(70),
+      );
     });
 
     test('hız skorla artar ama sınırlı', () {

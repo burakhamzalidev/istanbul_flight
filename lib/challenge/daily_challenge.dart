@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../game/config.dart';
 import '../game/day_cycle.dart';
+import '../game/logic/gap_generator.dart';
 import '../game/logic/pickup_rules.dart';
 import 'daily_rng.dart';
 
@@ -64,8 +65,13 @@ class DailyDifficultyProfile {
   final int gapScoreOffset;
   final double pickupChanceScale;
 
+  /// n. engelin geçidi (üretici v2: [GameConfig.gapCurve]).
   double gapHeight(GameConfig c, int index) =>
       c.gapForScore(index + gapScoreOffset);
+
+  /// n. engelin geçidi, üretici v1'in dondurulmuş eğrisiyle ([LegacyGapBalanceV1]).
+  double gapHeightV1(int index) =>
+      LegacyGapBalanceV1.gapForScore(index + gapScoreOffset);
   double pickupChance(GameConfig c) =>
       (c.pickupChance * pickupChanceScale).clamp(0.0, 1.0);
 }
@@ -162,11 +168,28 @@ class ObstacleSpec {
   final double? pickupY;
 }
 
+/// Üretici v1'in geçit dengesi (1.5.0 (7) ile yayımlanan): parkurlar değişmesin diye dondurulmuştur.
+/// Klasik mod ve v2 artık [GameConfig.gapCurve] ve [GapRules] kullanır (docs/18 §4).
+abstract final class LegacyGapBalanceV1 {
+  static const startGap = 340.0;
+  static const minGap = 265.0;
+  static const gapShrinkPerPoint = 1.6;
+  static const gapMarginTop = 230.0;
+  static const gapMarginBottom = 230.0;
+  static const maxGapShift = 430.0;
+  static const obstacleSpacing = 560.0;
+
+  static double gapForScore(int score) =>
+      (startGap - score * gapShrinkPerPoint).clamp(minGap, startGap);
+}
+
 /// Günlük parkur: n. engel yalnızca tohuma, üretici sürümüne ve n'ye bağlıdır. Kare hızı, ekran
 /// genişliği, oyuncunun skoru ya da görsel efektlerin rastgeleliği sonucu değiştirmez.
 class DailyCourse {
   DailyCourse(this.definition, {this.config = const GameConfig()})
-    : assert(definition.generatorVersion == 1),
+    : assert(
+        definition.generatorVersion == 1 || definition.generatorVersion == 2,
+      ),
       _gaps = DailyRng(DailyRng.hash('gaps:${definition.seed}')),
       _pickups = DailyRng(DailyRng.hash('pickups:${definition.seed}'));
 
@@ -176,8 +199,12 @@ class DailyCourse {
   final DailyRng _pickups;
   final List<ObstacleSpec> _specs = [];
 
-  /// Engeller arası yatay mesafe (klasikle aynı).
-  double get spacing => config.obstacleSpacing;
+  int get version => definition.generatorVersion;
+
+  /// Engeller arası yatay mesafe (v2: klasikle aynı; v1: dondurulmuş).
+  double get spacing => version == 1
+      ? LegacyGapBalanceV1.obstacleSpacing
+      : config.obstacleSpacing;
 
   /// İlk engelin kuşa uzaklığı: her ekranda aynı (klasikte ekran genişliğine bağlıdır). En geniş
   /// desteklenen ekranda (3:4) bile engel görünür alanın dışında doğar.
@@ -198,20 +225,35 @@ class DailyCourse {
     return _specs[index];
   }
 
-  // Üretici v1. Bu fonksiyonun çıktısı değişirse yeni bir üretici sürümü açılmalıdır (DailyGenerators).
+  /// n. engelin geçit merkezinin seçilebileceği aralık (üretim ve doğrulama aynı kuralı kullanır).
+  ({double low, double high}) centerRange(int i, double height) {
+    if (version == 1) {
+      var low = LegacyGapBalanceV1.gapMarginTop + height / 2;
+      var high =
+          config.worldHeight - LegacyGapBalanceV1.gapMarginBottom - height / 2;
+      if (i > 0) {
+        final last = at(i - 1).gapCenter;
+        low = math.max(low, last - LegacyGapBalanceV1.maxGapShift);
+        high = math.min(high, last + LegacyGapBalanceV1.maxGapShift);
+      }
+      return (low: low, high: high);
+    }
+    return GapRules.centerRange(
+      config,
+      height,
+      lastCenter: i > 0 ? at(i - 1).gapCenter : null,
+      lastShift: i > 1 ? at(i - 1).gapCenter - at(i - 2).gapCenter : null,
+    );
+  }
+
+  // Bir sürümün çıktısı değişirse yeni bir üretici sürümü açılmalıdır (DailyGenerators). v1 dondurulmuş
+  // dengeyle, v2 klasik modun güncel kurallarıyla ([GapRules]) üretir; tohum akışı ikisinde aynıdır.
   ObstacleSpec _generate(int i) {
     final c = config;
     final p = definition.difficultyProfile;
-    final height = p.gapHeight(c, i);
-    final minCenter = c.gapMarginTop + height / 2;
-    final maxCenter = c.worldHeight - c.gapMarginBottom - height / 2;
-    var low = minCenter, high = maxCenter;
-    if (i > 0) {
-      final last = _specs[i - 1].gapCenter;
-      low = math.max(low, last - c.maxGapShift);
-      high = math.min(high, last + c.maxGapShift);
-    }
-    final center = low + _gaps.nextDouble() * (high - low);
+    final height = version == 1 ? p.gapHeightV1(i) : p.gapHeight(c, i);
+    final range = centerRange(i, height);
+    final center = range.low + _gaps.nextDouble() * (range.high - range.low);
     // Her engel için iki sayı her zaman çekilir: simit olsa da olmasa da akış hizalı kalır
     final roll = _pickups.nextDouble();
     final pos = _pickups.nextDouble();
@@ -223,8 +265,16 @@ class DailyCourse {
         gapHeight: height,
       );
       if (band != null) {
-        final mid = (band.top + band.bottom) / 2;
-        pickupY = mid + (pos - 0.5) * (band.bottom - band.top) * 0.7;
+        pickupY = version == 1
+            ? (band.top + band.bottom) / 2 +
+                  (pos - 0.5) * (band.bottom - band.top) * 0.7
+            : PickupRules.positionInBand(
+                config: c,
+                band: band,
+                roll: pos,
+                gapCenter: center,
+                previousCenter: _specs[i - 1].gapCenter,
+              );
       }
     }
     return ObstacleSpec(gapCenter: center, gapHeight: height, pickupY: pickupY);
@@ -273,15 +323,9 @@ abstract final class CourseValidator {
     final problems = <String>[];
     for (var i = 0; i < maxScore + 2; i++) {
       final s = course.at(i);
-      if (s.gapCenter - s.gapHeight / 2 < c.gapMarginTop - 0.001 ||
-          s.gapCenter + s.gapHeight / 2 >
-              c.worldHeight - c.gapMarginBottom + 0.001) {
-        problems.add('gap_out_of_band@$i');
-      }
-      if (i > 0 &&
-          (s.gapCenter - course.at(i - 1).gapCenter).abs() >
-              c.maxGapShift + 0.001) {
-        problems.add('gap_shift@$i');
+      final range = course.centerRange(i, s.gapHeight);
+      if (s.gapCenter < range.low - 0.001 || s.gapCenter > range.high + 0.001) {
+        problems.add(i == 0 ? 'gap_out_of_band@$i' : 'gap_shift@$i');
       }
       final py = s.pickupY;
       if (py != null) {
@@ -305,9 +349,12 @@ abstract final class CourseValidator {
   /// fiziksel olarak geçilemez demektir. Dönen değer: geçilebildiği kanıtlanan engel sayısı (en fazla
   /// [maxScore]) ve engel yanındaki en dar güvenli yükseklik aralığı. Aynı 4 birimlik yükseklik kutusunda yalnızca en küçük ve en büyük hızlı durum tutulur; bu yalnızca
   /// temkinli yönde hata yapabilir (çok nadiren geçilebilir bir parkuru reddetmek).
+  ///
+  /// [bands] verilirse her engelin yanındaki en dar güvenli aralık sırayla eklenir (denge ölçümü).
   static ({int depth, double tightest}) explore(
     DailyCourse course, {
     int maxScore = requiredDepth,
+    List<double>? bands,
   }) {
     final c = course.config;
     final r = c.birdHitRadius;
@@ -402,6 +449,12 @@ abstract final class CourseValidator {
           if (y > maxY) maxY = y;
         }
         tightest = math.min(tightest, maxY - minY);
+        if (bands != null) {
+          while (bands.length <= score) {
+            bands.add(double.infinity);
+          }
+          bands[score] = math.min(bands[score], maxY - minY);
+        }
       }
       if (first + score * course.spacing - scroll + c.obstacleWidth < birdX) {
         score++;
@@ -421,7 +474,10 @@ abstract final class DailyGenerators {
   /// Sürüm takvimi: (bu UTC gününden itibaren, sürüm). Yeni bir sürüm yalnızca uygulamanın yayımlandığı
   /// günden SONRA başlayan bir günden itibaren eklenir; böylece süren bir günün yarışı uygulama
   /// güncellense de değişmez. Eski sürümlerin kodu silinmez.
-  static const schedule = <(String, int)>[('2026-01-01', 1)];
+  ///
+  /// v2 (docs/18): klasik modun yeni geçit dengesi. 1.5.0 (7) yalnızca TestFlight'ta olduğu için
+  /// başlangıcı bu sürümün hazırlandığı günden sonraki ilk gündür.
+  static const schedule = <(String, int)>[('2026-01-01', 1), ('2026-11-10', 2)];
 
   /// Aynı gün için denenecek en fazla aday tohum.
   static const maxCandidates = 16;
@@ -508,7 +564,7 @@ abstract final class DailyGenerators {
     DailyChallengeDefinition def, {
     GameConfig config = const GameConfig(),
   }) => switch (def.generatorVersion) {
-    1 => DailyCourse(def, config: config),
+    1 || 2 => DailyCourse(def, config: config),
     _ => throw UnsupportedError('generator v${def.generatorVersion}'),
   };
 
