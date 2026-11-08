@@ -408,4 +408,4 @@ Dinamik engeller ve hava (2.6.3; oyunun kendisi, gerçek asset'lerle test ortam�
 - **Adalet ölçümü:** Simülatör alt sınır verir; gerçek oyuncu hissi cihaz testinde doğrulanmalı.
 - **Ölçüm:** Performans yalnızca masaüstünde ölçüldü (§8); gerçek cihaz testi yok.
 - **Game Center:** Yeni bölgeler için başarım yok; Game Center öğeleri değişmedi.
-- **Commit:** 2.6.1–2.6.3 `f9f5703` (push yok). 2.6.4 değişiklikleri henüz commit edilmedi. TestFlight yüklemesi yok.
+- **Commit:** 2.6.1–2.6.3 `f9f5703` (push yok). 2.6.4 `e08283c`. TestFlight yüklemesi yok.
