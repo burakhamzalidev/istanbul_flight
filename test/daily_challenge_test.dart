@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/challenge/daily_challenge.dart';
 import 'package:istanbul_flight/challenge/daily_rng.dart';
 import 'package:istanbul_flight/game/config.dart';
+import 'package:istanbul_flight/game/logic/gap_generator.dart';
 import 'package:istanbul_flight/game/logic/pickup_rules.dart';
 
 // Phase 2.5: deterministik günlük parkur (docs/17 §3–§4).
@@ -62,6 +63,23 @@ void main() {
   });
 
   group('Determinizm', () {
+    test(
+      'v2 parkuru klasik modun üreticisiyle aynı: ayrı bir günlük üretici yok',
+      () {
+        final def = _def(77, version: 2);
+        final course = DailyCourse(def);
+        final classic = GapGenerator.seeded(
+          const GameConfig(),
+          DailyRng(DailyRng.hash('gaps:${def.seed}')).nextDouble,
+        );
+        for (var i = 0; i < 150; i++) {
+          final g = classic.next(i);
+          expect(course.at(i).gapCenter, g.center);
+          expect(course.at(i).gapHeight, g.height);
+        }
+      },
+    );
+
     test('aynı tohum aynı parkuru üretir (engel, açıklık, simit)', () {
       final a = DailyCourse(_def(42)), b = DailyCourse(_def(42));
       for (var i = 0; i < 150; i++) {

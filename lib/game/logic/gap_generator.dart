@@ -32,12 +32,18 @@ abstract final class GapRules {
   }
 }
 
-/// Engel çiftleri arasındaki geçitleri üretir ([GapRules]).
+/// Engel çiftleri arasındaki geçitleri üretir ([GapRules]). Klasik mod ve Günün Uçuşu (v2) aynı
+/// üreticiyi kullanır: klasikte [Random], günlükte tohumlu deterministik kaynak ([GapGenerator.seeded]).
 class GapGenerator {
-  GapGenerator(this.config, {Random? random}) : _random = random ?? Random();
+  GapGenerator(this.config, {Random? random})
+    : _next = (random ?? Random()).nextDouble;
+
+  /// [nextDouble] [0,1) aralığında, tohuma bağlı deterministik sayı üretir (ör. DailyRng).
+  GapGenerator.seeded(this.config, double Function() nextDouble)
+    : _next = nextDouble;
 
   final GameConfig config;
-  final Random _random;
+  final double Function() _next;
   double? _lastCenter;
   double? _lastShift;
 
@@ -50,7 +56,7 @@ class GapGenerator {
       lastCenter: _lastCenter,
       lastShift: _lastShift,
     );
-    final center = range.low + _random.nextDouble() * (range.high - range.low);
+    final center = range.low + _next() * (range.high - range.low);
     final last = _lastCenter;
     _lastShift = last == null ? null : center - last;
     _lastCenter = center;

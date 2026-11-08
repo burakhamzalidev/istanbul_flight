@@ -1,6 +1,6 @@
 # Phase 2.5: Günün Uçuşu (Daily Challenge)
 
-> Dal: `feature/phase2-5-daily-challenge` (Phase 2.4 dalının üzerine) · Sürüm önerisi: **1.5.0+7** (hazır, **yüklenmedi**) · Tarih: 24 Ekim 2026
+> Dal: `feature/phase2-5-daily-challenge` (Phase 2.4 dalının üzerine) · İlk sürüm: 1.5.0 (7), 24 Ekim 2026 · **Güncelleme 8 Kasım 2026:** dal, yeni engel görsellerini ve geçit dengesini ([docs/18](18_engel_gorselleri_ve_gecit_dengesi.md)) içeriyor. Günlük parkur bunları üretici v2 ile kullanıyor (§3–§5). Bu güncelleme TestFlight'a **yüklenmedi**; 1.5.0 (7) derlemesi eski engelleri ve v1 parkurunu içerir.
 
 ## 0. Yayın güvenliği
 
@@ -17,7 +17,7 @@
 | Sistem | Bulgu | Phase 2.5'te |
 |---|---|---|
 | `IstanbulFlightGame` | Tek durum makinesi; sabit adımlı (1/120 sn) simülasyon, `maxFrameDt` 1/20 | Aynı motor. Mod `runMode` (`RunMode` enum) ile seçilir; fizik, çarpışma, çizim ortak |
-| Engel üretimi | `GapGenerator.next(score)`: geçit yüksekliği **o anki skora**, ilk engel **ekran genişliğine** bağlı; `dart:math Random` | Klasik yol **hiç değişmedi**. Günlükte yalnızca sıraya bağlı yeni üretici (§3) |
+| Engel üretimi | `GapGenerator.next(score)`: geçit yüksekliği **o anki skora**, ilk engel **ekran genişliğine** bağlı; `dart:math Random` | Klasik yol değişmedi. Günlük v2, **aynı `GapGenerator`'ı** tohumlu kaynakla (`GapGenerator.seeded`) ve engel sırasıyla (n) çağırır; ayrı bir üretici yok (§3). v1 dondurulmuş eski denge |
 | Rastgelelik | Oynanış: `_random`, `_pickupRandom` (klasik). Görsel: `FxLayer` `Random(5)`, ortam sesleri `Random(11)`, arka planlar kendi tohumlarıyla | Görsel rastgelelik zaten ayrı; günlük parkur kendi PRNG'sini kullanır, hiçbirini okumaz/değiştirmez |
 | Bölge geçişleri | `DayCycle` skorla (15/35/60/90) | Aynı (zoneSequence v1 = klasik sıra) |
 | `GameServices.emit` | progress → gameCenter → dinleyiciler | Aynı; `RunStarted` artık mod ve challengeId taşır, yeni `RunAbandoned` |
@@ -50,10 +50,13 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
   - `dart:math Random(seed)` kullanılmadı: algoritması Dart sürümleri arasında değişebilir.
 - **Tohum:** `FNV-1a("istanbul_flight/daily/v{sürüm}/{YYYY-MM-DD}/{aday}")`.
 - **Akışlar:** geçitler `hash("gaps:{seed}")`, simitler `hash("pickups:{seed}")`. Her engel için simit akışından her zaman iki sayı çekilir; simit olsa da olmasa da akış hizalı kalır.
-- **n. engel** (v1), klasik kurallarla aynı:
-  - geçit yüksekliği = klasik eğride skor n'nin geçidi;
-  - merkez güvenli bantta, önceki merkeze en fazla 430 birim uzaklıkta;
-  - simit %45 olasılıkla, ulaşılabilir bandın orta %70'inde; ilk engelde simit yok.
+- **n. engel, v2** (10 Kasım 2026'dan itibaren): klasik modun kendi üreticisi `GapGenerator.seeded(config, gapsRng)`, `next(n)` ile çağrılır. Güncel denge ([docs/18](18_engel_gorselleri_ve_gecit_dengesi.md)):
+  - geçit yüksekliği bölge eğrisinden: skor 0'da 370, 15'te 350, 35'te 330, 60'ta 310, 90'dan itibaren 300 birim;
+  - merkez güvenli bantta (230 / 230). Önceki merkeze göre yukarı en fazla 330, aşağı en fazla 390 birim kayar; 260 birimden büyük bir sıçramadan sonra bu sınırlar ×0,6 küçülür (zikzak yok);
+  - engeller arası yatay mesafe 600 birim;
+  - simit %45 olasılıkla, ulaşılabilir bandın orta %70'inde. Büyük sıçramadan sonra, kuşun geldiği tarafa yakın yarıda durur. İlk engelde simit yok;
+  - hitbox, engel sprite'ları (v3) ve fizik klasikle aynı.
+- **n. engel, v1** (9 Kasım 2026 dahil, dondurulmuş `LegacyGapBalanceV1`): geçit 340 − 1,6n (en az 265), kayma ±430, aralık 560. Bu, 1.5.0 (7) ile oynanan günlerin parkurlarını korur.
 - **Bağımsız olanlar:** kare hızı, ekran genişliği, oyuncunun skoru, görsel efektler ve erişim sırası (80. engeli önce istemek sonucu değiştirmez).
 - **Rastgele oyun içi olay:** oynanışta yok. Vapur, martı ve bulutlar yalnızca görseldir ve kendi tohumlarıyla çalışır.
 - **Tanım** (`DailyChallengeDefinition`): `challengeId` (`daily_2026_10_24`), `dateUtc`, `seed`, `generatorVersion`, `candidate`, `validatedDepth`, `difficultyProfile` (`standard`), `zoneSequence` (0–4), `rewardPolicy` (v1).
@@ -62,7 +65,7 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 
 `CourseValidator`, seçimden önce iki kontrol yapar:
 
-1. **Kurallar:** geçit güvenli bantta mı, ardışık kayma ≤ 430 mu, simit ulaşılabilir bantta mı.
+1. **Kurallar:** geçit merkezi, sürümün kural aralığında mı (`DailyCourse.centerRange`: güvenli bant, yön sınırları ve zikzak kuralı; v1'de ±430) ve simit ulaşılabilir bantta mı.
 2. **Erişilebilirlik simülasyonu:**
    - Oyunla aynı fizik (yerçekimi, çırpma hızı, düşüş sınırı, tavan) ve aynı daire–dikdörtgen çarpışma geometrisiyle, kuşun ulaşabileceği **bütün** (yükseklik, hız) durumları sabit adımla ilerletilir.
    - Saniyede 20 karar noktasında her durum için "çırp / çırpma" denenir.
@@ -77,19 +80,24 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 - Aday 0, 1, … 15 sırayla denenir; doğrulamayı **ilk geçen** seçilir.
 - Hiçbiri geçmezse yedek seçilir: kurallara uyan, en derine ulaşan (eşitlikte en geniş aralıklı) aday.
 
-**365 günlük ölçüm (24.10.2026'dan itibaren):**
+**v1 ölçümü (365 gün, 24.10.2026'dan itibaren):**
 - 354 günde aday 0, 11 günde aday 1 seçildi.
 - Hiçbir gün yedeğe düşmedi.
 - 100 rastgele tohumun 98'i doğrudan geçti.
+- Örnek: 29 Eylül 2026'nın ilk adayı dar boğaz yüzünden elenir (test).
 
-Örnek: 12 Aralık 2026'nın ilk adayı dar boğaz yüzünden elenir (test).
+**v2 ölçümü (yeni denge, docs/18):**
+- 60 günün hepsinde aday 0 seçildi; ilk aday hiç reddedilmedi.
+- 120 rastgele parkurda geçilemeyen ya da 24 birimden dar an yok.
+- En dar an ortancası 128 birim (v1'de 78); en kötü parkurda bile 91 birim (v1'de 0).
+- Test: 40 parkur × 100 engel, hepsi geçilebilir ve en dar bant ≥ 80 birim.
 
 ## 5. Tohum ve üretici sürümü
 
-- `DailyGenerators.schedule = [('2026-01-01', 1)]`.
+- `DailyGenerators.schedule = [('2026-01-01', 1), ('2026-11-10', 2)]`. v2'nin başlangıcı, bu sürümün hazırlandığı günden (8 Kasım) sonraki bir gün. 1.5.0 (7) hiçbir testçiye ulaşmadığı için yarışan iki sürüm yok; yeni sürüm yayımlanınca eski sürüm kullanımdan kalkmalı.
 - Yeni bir üretici sürümü yalnızca uygulamanın yayımlandığı günden **sonraki** bir UTC gününden itibaren takvime eklenir. Böylece süren bir günün parkuru uygulama güncellense de değişmez.
 - Eski sürümlerin kodu silinmez. Bilinmeyen sürüm sessizce başka parkur üretmez, hata verir (test).
-- **Altın değer testi:** 24 ve 25 Ekim 2026'nın tohumları, ilk 5 geçit merkezi ve ilk 8 simit konumu sabitlendi. Üretici kodu yanlışlıkla değişirse test kırılır.
+- **Altın değer testi:** 24 ve 25 Ekim 2026 (v1) ile 10 Kasım 2026'nın (v2) tohumları, ilk 5 geçit merkezi ve ilk 8 simit konumu sabitlendi. Üretici kodu ya da klasik denge değerleri yanlışlıkla değişirse test kırılır. Bu durumda yeni bir sürüm açılmalı.
 - Kayıt, ilk dereceli denemede kullanılan `seed` ve `generatorVersion`'ı saklar (tanılama ve denetim için).
 
 ## 6. Günlük deneme kuralları ve tarih güvenilirliği
@@ -194,6 +202,11 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 - Mevcut eşikler 100 skoru gerektiriyordu. 100, son bölge sınırını (90) aşar ve günlük görevlerin en zor tek uçuş hedefinden (45) iki kat yüksektir.
 - Yeni eşikler bölge sınırlarına eşit: oyuncu hedefi haritadan tanır.
 - Günde en fazla 45 simit + 5 XP. Bu miktar, en zor günlük görev seti (3 görev, 30 simit) ile aynı mertebede kalır ve en ucuz görünüm (50 simit) yine birkaç günde alınır.
+- **Yeni geçit dengesiyle (8 Kasım) yeniden değerlendirme:** Geçitler genişlediği için 35 ve 60 eşiklerine daha çok oyuncu ulaşacak. Eşikler ve miktarlar yine de değiştirilmedi:
+  - günlük üst sınır (45 simit) sabit, yani ekonomi taşmaz;
+  - 60 skor hâlâ Boğaz bölgesine ulaşmayı gerektiriyor.
+
+  Gerçek oyuncu dağılımı TestFlight verisiyle görülünce eşikler `DailyRewardPolicy` içinde yeni bir politika sürümüyle değiştirilebilir. Bunu yapmak için uygulama kodunu değiştirmeye gerek yok, yalnızca yeni bir politika eklenir.
 
 **Kurallar:**
 - Her ödül challenge başına bir kez (`claimed`). Farklı denemelerde aynı eşik tekrar ödül vermez.
@@ -238,11 +251,13 @@ Tek motor: `_prepareRun()` uçuş başında modu kesinleştirir; `_spawnIfNeeded
 
 ## 12. Otomatik test sonuçları
 
-`flutter analyze`: **No issues found.** · `flutter test`: **308 / 308 geçti** (234 mevcut + 74 yeni).
+**8 Kasım 2026 (engel v3 ve geçit dengesiyle birlikte):** `flutter analyze`: **No issues found.** · `flutter test`: **321 / 321 geçti.** Yeni engel ve denge testleri `test/obstacle_balance_test.dart` dosyasında (11 test; ayrıntı docs/18 §6).
+
+İlk sürüm (24 Ekim 2026): 308 / 308 (234 mevcut + 74 yeni).
 
 | Dosya | Test | Kapsam |
 |---|---|---|
-| `test/daily_challenge_test.dart` | 19 | PRNG'nin JS referansıyla eşliği, 32 bit taşma, aynı/farklı tohum, erişim sırası, UTC günü, altın değerler, kural ihlali yok, 14 gün geçilebilirlik, imkânsız ve dar parkur reddi, aday seçimi, isolate eşliği, sürüm takvimi, bilinmeyen sürüm hatası, kimlik ayrıştırma |
+| `test/daily_challenge_test.dart` | 20 | v2 parkurunun klasik `GapGenerator` ile birebir aynı olması (ayrı üretici yok), v1/v2 altın değerleri, iki sürümün kural uyumu, PRNG'nin JS referansıyla eşliği, 32 bit taşma, aynı/farklı tohum, erişim sırası, UTC günü, altın değerler, kural ihlali yok, 14 gün geçilebilirlik, imkânsız ve dar parkur reddi, aday seçimi, isolate eşliği, sürüm takvimi, bilinmeyen sürüm hatası, kimlik ayrıştırma |
 | `test/daily_rules_test.dart` | 36 | 1./2./3. deneme ve hak bitimi, hakkın anında kaydı, kapanma, yarıda bırakma, çift başlatma/bitirme, başlatılmamış sonuç, antrenman, gün değişimi, saati geri/ileri alma, Apple günü uyuşmazlığı, çevrimdışı, dönem biçimi, kalan süre, günlük rekor ve fark, tek seferlik ödüller, görev defteri ayrımı, negatif bakiye, klasik ayrım, JSON, v3 geçişi, yedekten geri yükleme, bozuk kayıt, 30 gün saklama, Game Center (yalnızca günlük tablo, antrenman yok, çevrimdışı kuyruk ve sonra gönderim, dönem değişimi, saat ileri, uygunsuz uçuş, gönderim tekrarı, dönem okuma, GameServices bağlantısı), GcRecord v2 |
 | `test/daily_game_test.dart` | 9 | Oyun motorunda **30/60/120 FPS** aynı olaylar; **3 ekran genişliğinde** aynı olaylar; klasik/görsel RNG bağımsızlığı; oyundaki parkur = tanımdaki parkur, sabit mesafe; hak dokunuşta harcanır; klasik rekor korunur; yarıda bırakma; hak bitince antrenman + bildirim; menüden klasik |
 | `test/daily_ui_test.dart` | 10 | Menü girişi ve ekran öğeleri, hazır şeridi ve hak harcanması, 0/3 + antrenman, saat uyarısı, Game Center dünya listesi ve internet hatası, VoiceOver, günlük oyun sonu ve "yeniden dene"; 320×568 / 375×667 / 430×932'de taşma yok |

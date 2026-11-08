@@ -246,14 +246,27 @@ class DailyCourse {
     );
   }
 
+  /// v2: klasik modun kendi üreticisi, günün tohumuyla (ikinci bir üretici yok).
+  late final GapGenerator _classic = GapGenerator.seeded(
+    config,
+    _gaps.nextDouble,
+  );
+
   // Bir sürümün çıktısı değişirse yeni bir üretici sürümü açılmalıdır (DailyGenerators). v1 dondurulmuş
-  // dengeyle, v2 klasik modun güncel kurallarıyla ([GapRules]) üretir; tohum akışı ikisinde aynıdır.
+  // dengeyle üretir; v2 klasik modun [GapGenerator]'ını tohumlu kaynakla kullanır. Tohum akışı ikisinde aynı.
   ObstacleSpec _generate(int i) {
     final c = config;
     final p = definition.difficultyProfile;
-    final height = version == 1 ? p.gapHeightV1(i) : p.gapHeight(c, i);
-    final range = centerRange(i, height);
-    final center = range.low + _gaps.nextDouble() * (range.high - range.low);
+    final double height, center;
+    if (version == 1) {
+      height = p.gapHeightV1(i);
+      final range = centerRange(i, height);
+      center = range.low + _gaps.nextDouble() * (range.high - range.low);
+    } else {
+      final gap = _classic.next(i + p.gapScoreOffset);
+      height = gap.height;
+      center = gap.center;
+    }
     // Her engel için iki sayı her zaman çekilir: simit olsa da olmasa da akış hizalı kalır
     final roll = _pickups.nextDouble();
     final pos = _pickups.nextDouble();

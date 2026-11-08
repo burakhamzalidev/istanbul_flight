@@ -71,6 +71,7 @@ class GameConfig {
 
   // Engeller
   final double obstacleWidth;
+
   /// Ardışık iki engelin sol kenarları arası (560 → 600, docs/18 §2). Üst sınır: kuş bir engelin
   /// ortasındayken sıradaki engelin ağzı en uzun iPhone ekranında (9:19,5) görünmeli (~620).
   final double obstacleSpacing;
