@@ -13,58 +13,6 @@ import 'menu_overlays.dart';
 // Oyuncu adları ve sıralama satırları yalnızca ekranda gösterilir, saklanmaz. Game Center'a bağlı olmayan
 // oyuncu anlaşılır bir boş durum görür; oyun her durumda çevrimdışı oynanır.
 
-/// Ana menüde "İstanbul'u Keşfet"in yanındaki giriş noktası.
-class LeaderboardMenuButton extends StatelessWidget {
-  const LeaderboardMenuButton({super.key, required this.game, this.compact});
-
-  final IstanbulFlightGame game;
-
-  /// Yalnızca ikon (dar menü). null: ekran genişliğinden karar verilir.
-  final bool? compact;
-
-  @override
-  Widget build(BuildContext context) {
-    final narrow = compact ?? MediaQuery.sizeOf(context).width < 360;
-    return Pressable(
-      key: const Key('leaderboardButton'),
-      game: game,
-      semanticLabel: 'Sıralama',
-      onTap: () => game.openModal(Overlays.leaderboard),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: narrow ? 8 : 12,
-            vertical: 8,
-          ),
-          decoration: pixelBox(
-            color: UiColors.scrim,
-            border: UiColors.mustard,
-            steps: 3,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const PixelIcon(
-                Icons.emoji_events_rounded,
-                color: UiColors.mustard,
-                size: 24,
-              ),
-              if (!narrow) ...[
-                const SizedBox(width: 6),
-                const Text(
-                  'Sıralama',
-                  style: TextStyle(color: UiColors.paper, fontSize: 15),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class LeaderboardOverlay extends StatefulWidget {
   const LeaderboardOverlay({super.key, required this.game});
 
@@ -232,7 +180,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             'Skorlar yalnızca Game Center’a giriş yaptıysan Apple’a gönderilir. '
             'Görünümler, XP ve simitler skoru etkilemez.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         ],
       ),
@@ -337,7 +285,7 @@ class _StatusCard extends StatelessWidget {
             Text(
               body,
               key: const Key('gcStatusBody'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ],
           if (state.connection == GcConnection.signedOut) ...[
@@ -474,7 +422,7 @@ class BoardList extends StatelessWidget {
               'Bugünün sıralaması ${end.toLocal().hour.toString().padLeft(2, '0')}:'
               '${end.toLocal().minute.toString().padLeft(2, '0')}’de kapanır.',
               key: const Key('dailyBoardEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
         if (board == GcBoard.weekly && end != null)
@@ -484,7 +432,7 @@ class BoardList extends StatelessWidget {
               'Bu haftanın yarışı ${end.toLocal().day}.${end.toLocal().month.toString().padLeft(2, '0')} '
               '${end.toLocal().hour.toString().padLeft(2, '0')}:${end.toLocal().minute.toString().padLeft(2, '0')}’de biter.',
               key: const Key('weeklyEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
         if (page.entries.isEmpty)
@@ -513,7 +461,7 @@ class BoardList extends StatelessWidget {
             child: Text(
               '${page.total} oyuncu',
               textAlign: TextAlign.right,
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
       ],

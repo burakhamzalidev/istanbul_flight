@@ -15,6 +15,7 @@ import '../events/event_definition.dart';
 import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../services/audio_service.dart';
+import '../services/ux_state.dart';
 import 'components/background.dart';
 import 'components/fx_layer.dart';
 import 'components/hazard_view.dart';
@@ -28,6 +29,7 @@ import 'day_cycle.dart';
 import 'game_art.dart';
 import 'game_phase.dart';
 import 'game_services.dart';
+import 'tutorial.dart';
 import 'weather.dart';
 import 'logic/bird_physics.dart';
 import 'logic/collision.dart';
@@ -149,6 +151,26 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Etkinlik parkuru: günlük parkur üreticisi + etkinliğin dinamik engelleri.
   EventCourse? _eventCourse;
 
+  // ---- İlk uçuş eğitimi (Phase 2.8) ----
+
+  /// Eğitimin durum makinesi (aşama, ipucu, engel isteği).
+  final TutorialFlow tutorialFlow = TutorialFlow();
+
+  /// Eğitimdeyken aşama (arayüz gösterir); eğitim dışında null.
+  final tutorialStage = ValueNotifier<TutorialStage?>(null);
+  final tutorialHint = ValueNotifier(TutorialHint.none);
+
+  /// Eğitimde her kanat çırpışında artar ("Güzel!" geri bildirimi).
+  final tutorialFlaps = ValueNotifier(0);
+
+  /// Eğitim az önce bitti: "uçmak için dokun" ekranı bunu kutlar (ilk gerçek uçuş başlayınca söner).
+  final tutorialJustCompleted = ValueNotifier(false);
+
+  /// Eğitimin son engeli geçildi: kısa bir kutlama süresi (sn), sonra normal uçuşa geçilir.
+  double _tutorialFinishT = 0;
+
+  bool get inTutorial => runMode.value == RunMode.tutorial;
+
   /// Günlük parkur (klasikte null: klasik üretici aynen çalışır).
   DailyCourse? _course;
   int _courseIndex = 0;
@@ -206,7 +228,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Oyun saati (sn): mikro animasyonlar buna bağlı, kare hızından bağımsız.
   double get time => _time;
 
-  bool get reduceMotion => services.settings.value.reduceMotion;
+  /// Azaltılmış hareket: oyun ayarı ya da iOS'un "Hareketi Azalt" tercihi (arayüz bildirir).
+  bool get reduceMotion =>
+      services.settings.value.reduceMotion || platformReduceMotion;
+
+  /// iOS / sistem "Hareketi Azalt" tercihi (MediaQuery.disableAnimations; Phase 2.8).
+  bool platformReduceMotion = false;
 
   /// Geliştirme: FPS ve nesne sayısı (`--dart-define=MARTI_STATS=true`).
   bool showStats = false;
@@ -311,6 +338,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     if (debugAutoStart) {
       startFromMenu();
       handleTap();
+    } else if (services.ux.value.tutorial == TutorialStatus.pending) {
+      // yeni oyuncu: ilk açılışta doğrudan eğitimin "uçmak için dokun" ekranı (menü yerine)
+      startTutorial();
     }
   }
 
@@ -377,9 +407,18 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _prepareRun();
     menuOpen.value = false;
     modal.value = null;
+    tutorialJustCompleted.value = false;
     _setPhase(GamePhase.playing);
     // ilk bölgenin havası (sonraki bölgeler girişte seçilir)
     _enterZoneWeather();
+    if (inTutorial) {
+      // eğitim gerçek bir uçuş değil: uçuş olayı yok, hesap yok, kayıt yok
+      _runTime = 0;
+      _runObstacles = 0;
+      _zoneStats.clear();
+      _flap();
+      return;
+    }
     if (debugStartScore > 0 && score.value == 0) {
       score.value = debugStartScore - 1;
       _addPoint();
@@ -404,6 +443,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// dereceli hak bu anda harcanır, hak yoksa ya da saat güvenilmezse uçuş antrenmana döner.
   void _prepareRun() {
     eventScore.value = 0;
+    if (inTutorial) {
+      // eğitim: engeller yalnızca eğitim akışı isteyince gelir; klasik üretici çalışmaz
+      _course = null;
+      _eventCourse = null;
+      dailyDefinition.value = null;
+      _runBest = 0;
+      _nextSpawnX = double.infinity;
+      return;
+    }
     if (runMode.value.isEvent) return _prepareEventRun();
     _eventCourse = null;
     if (!runMode.value.isDaily) {
@@ -453,6 +501,10 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   void _flap() {
+    if (inTutorial && phase.value == GamePhase.playing) {
+      tutorialFlow.onFlap();
+      tutorialFlaps.value = tutorialFlow.flaps;
+    }
     physics.flap();
     bird.onFlap();
     fx.feather(birdX, physics.y);
@@ -516,8 +568,87 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     if (hadRoute && phase.value == GamePhase.ready) restart();
   }
 
+  // ================= Eğitim (Phase 2.8) =================
+
+  /// İlk uçuş eğitimi: "uçmak için dokun" ekranına geçer (1/3 Uçmayı öğren). İlk açılışta kendiliğinden,
+  /// sonra "Nasıl oynanır"dan. Tekrar oynamak kayıtlı durumu değiştirmez.
+  void startTutorial() {
+    if (phase.value == GamePhase.gameOver && !canRestart.value) return;
+    if (phase.value != GamePhase.ready) restart();
+    _leaveEvent();
+    dailyDefinition.value = null;
+    dailyNotice.value = null;
+    tutorialFlow.reset();
+    _tutorialFinishT = 0;
+    tutorialFlaps.value = 0;
+    tutorialJustCompleted.value = false;
+    runMode.value = RunMode.tutorial;
+    _syncTutorial();
+    menuOpen.value = false;
+    modal.value = null;
+    _applyOverlays();
+  }
+
+  /// "Eğitimi atla": eğitim bir daha zorlanmaz; ana menü açılır.
+  void skipTutorial() {
+    services.ux.finishTutorial(TutorialStatus.skipped);
+    openMenu();
+  }
+
+  void _syncTutorial() {
+    tutorialStage.value = inTutorial ? tutorialFlow.stage : null;
+    tutorialHint.value = tutorialFlow.hint;
+  }
+
+  /// Eğitimde çarpma: oyun sonu yok; aynı aşama "uçmak için dokun" ekranından yeniden başlar.
+  void _tutorialCrash() {
+    tutorialFlow.onCrash();
+    services.audio.playSfx(Sfx.crash);
+    services.haptics.medium();
+    restart();
+    _syncTutorial();
+  }
+
+  /// Eğitimin son engeli geçildi: kayıt "tamamlandı", sonra normal uçuşun "uçmak için dokun" ekranı.
+  void _completeTutorial() {
+    services.ux.finishTutorial(TutorialStatus.completed);
+    restart(); // eğitim kipindeyken: yarıda bırakılan uçuş olayı yayınlanmaz
+    runMode.value = RunMode.classic;
+    tutorialStage.value = null;
+    tutorialJustCompleted.value = true;
+    _applyOverlays();
+    services.audio.playSfx(Sfx.zone);
+  }
+
+  /// Eğitim engeli: akış isterse, ekranın hemen sağında geniş bir geçit (Aşama 3'te ortasında simit).
+  void _spawnTutorial() {
+    if (!tutorialFlow.wantsObstacle) return;
+    final simit = tutorialFlow.obstacleHasSimit;
+    final center = config.worldHeight * 0.45;
+    final o = ObstaclePair(
+      x: visibleWidth + config.obstacleWidth + 40,
+      gapCenter: center,
+      gapHeight: simit ? TutorialFlow.simitGap : TutorialFlow.obstacleGap,
+      width: config.obstacleWidth,
+      worldHeight: config.worldHeight,
+      kit: dayCycle.zone.kit,
+      seed: _spawnCount++,
+    );
+    if (simit) o.pickupY = center;
+    obstacles.add(o);
+    world.add(o);
+    tutorialFlow.onObstacleSpawned();
+  }
+
   /// Ana menüye dön (duraklatma ya da oyun sonundan). Tur temizlenir.
   void openMenu() {
+    // eğitimden çıkış: yarıda bırakıldı sayılır (bir daha zorlanmaz; "Nasıl oynanır"dan açılabilir)
+    if (inTutorial) {
+      services.ux.finishTutorial(TutorialStatus.skipped);
+      if (phase.value != GamePhase.ready) restart(); // eğitim kipinde: uçuş olayı yok
+      tutorialStage.value = null;
+      runMode.value = RunMode.classic;
+    }
     if (phase.value != GamePhase.ready) restart();
     _leaveEvent();
     runMode.value = RunMode.classic;
@@ -628,7 +759,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Bölgeye girişte hava (görsel rastgelelik; Günün Uçuşu'nda hep açık) ve ona uygun ortam sesi.
   void _enterZoneWeather() {
     final z = dayCycle.zoneIndex;
-    final w = _course != null
+    final w = _course != null || inTutorial
         ? Weather.clear
         : debugWeather ??
               WeatherRules.pick(
@@ -666,6 +797,11 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           dt;
     }
     physics.step(dt);
+    if (inTutorial) {
+      final before = tutorialFlow.stage;
+      tutorialFlow.onStep(dt);
+      if (tutorialFlow.stage != before) _syncTutorial();
+    }
 
     _courseScroll += dx;
     final course = _course;
@@ -681,8 +817,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _spawnIfNeeded();
     _recycleOffscreen();
 
+    // Eğitimin bitiş kutlaması: kısa süre serbest uçuş, sonra normal uçuşa geçiş
+    if (_tutorialFinishT > 0) {
+      _tutorialFinishT -= dt;
+      if (_tutorialFinishT <= 0) _completeTutorial();
+      return;
+    }
     // Önce çarpışma, sonra toplama ve puan: aynı adımda çarpan oyuncu puan/simit almaz.
     if (!debugInvincible && (_collides() || physics.hitsWater)) {
+      if (inTutorial) return _tutorialCrash();
       _crash();
       return;
     }
@@ -711,6 +854,14 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
         );
         if (c < o.minClearance) o.minClearance = c;
       }
+      if (!o.scored && o.right < bx && inTutorial) {
+        // eğitim: puan ve olay yok; yalnızca akış ilerler
+        o.scored = true;
+        tutorialFlow.onObstaclePassed();
+        _syncTutorial();
+        if (tutorialFlow.isDone) _tutorialFinishT = 1.2;
+        continue;
+      }
       if (!o.scored && o.right < bx) {
         o.scored = true;
         _runObstacles++;
@@ -732,6 +883,14 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _collect(double x, double y) {
     runSimits.value++;
+    if (inTutorial) {
+      // eğitim simidi: aynı görsel ve işitsel geri bildirim, ama cüzdana ve görevlere gitmez
+      tutorialFlow.onSimitCollected();
+      fx.collect(x, y);
+      services.audio.playSfx(Sfx.collect);
+      services.haptics.light();
+      return;
+    }
     _updateEventScore();
     _countInZone(simits: 1);
     fx.collect(x, y);
@@ -741,6 +900,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   void _nearMiss() {
+    if (inTutorial) return; // eğitimde kıl payı sayılmaz
     nearMisses.value++;
     _countInZone(nearMisses: 1);
     fx.nearMiss(birdX, physics.y);
@@ -766,6 +926,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   void _spawnIfNeeded() {
+    if (inTutorial) return _spawnTutorial();
     // Engel görünür alanın hemen sağında, ekrana girmeden önce üretilir
     final course = _course;
     if (course != null) {
@@ -1057,9 +1218,11 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   void restart() {
     // Süren bir uçuş yarıda bırakılıyor: hesap yapılmaz; günlük dereceli hak harcanmış kalır
     if ((phase.value == GamePhase.playing || phase.value == GamePhase.paused) &&
-        _runId.isNotEmpty) {
+        _runId.isNotEmpty &&
+        !inTutorial) {
       services.emit(RunAbandoned(_runId));
     }
+    _tutorialFinishT = 0;
     _course = null;
     eventScore.value = 0;
     for (final o in obstacles) {

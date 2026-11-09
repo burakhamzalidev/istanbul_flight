@@ -11,10 +11,8 @@ import '../widgets/simit_icon.dart';
 import '../pixel.dart';
 import 'daily_overlays.dart';
 import 'event_overlays.dart';
-import 'discovery_overlays.dart';
-import 'leaderboard_overlay.dart';
+import 'tutorial_overlays.dart';
 import 'progression_overlays.dart';
-import 'shop_overlays.dart';
 
 /// Logo pulu: kartpostal pulu biçiminde, hafifçe süzülür (azaltılmış harekette sabit).
 class LogoStamp extends StatefulWidget {
@@ -106,26 +104,13 @@ class _LogoStampState extends State<LogoStamp>
   }
 }
 
-/// Sahne üstündeki küçük bilgi rozeti (rekor, toplam simit).
-class InfoChip extends StatelessWidget {
-  const InfoChip({super.key, required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: pixelBox(color: UiColors.scrim, steps: 3),
-    // merge: tema fontu (MartiPixel) korunur
-    child: DefaultTextStyle.merge(
-      style: const TextStyle(color: UiColors.paper, fontSize: 15),
-      child: child,
-    ),
-  );
-}
-
 /// Ana menü: canlı İstanbul sahnesinin (oyun READY'de süzülen Simit + akan şehir) üstünde.
 /// Tam ekran dokunuşu tutar: sadece düğmeler çalışır.
+///
+/// Phase 2.8 hiyerarşisi (docs/21 §5): üstte kimlik (logo, rekor) ve bugünün kısa özeti (görev, başarım);
+/// sahnenin altında ikincil eylemler (Günün Uçuşu, Etkinlikler), tek birincil eylem (Uçuşa başla), oyuncu
+/// alanı (Profil, Mağaza, Keşif, Sıralama: eşit karolar) ve en altta küçük yardımcı düğmeler. Her özellik
+/// menüden tek dokunuşla açılır; yeni bir şey varsa karonun köşesinde küçük işaret (açılır pencere yok).
 class MainMenuOverlay extends StatelessWidget {
   const MainMenuOverlay({super.key, required this.game});
 
@@ -142,9 +127,9 @@ class MainMenuOverlay extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, c) {
               final compact = c.maxHeight < 600;
-              // 4,7" ekran (iPhone SE 2/3, 667 pt): keşif ve Günün Uçuşu düğmelerine yer açmak için
-              // boşluklar, logo ve ana düğme biraz küçülür (Phase 2.3, 2.5)
+              // 4,7" ekran (iPhone SE 2/3, 667 pt): boşluklar, logo ve ana düğme biraz küçülür
               final tight = c.maxHeight < 720;
+              final side = (c.maxWidth - 24).clamp(0.0, 420.0);
               return Column(
                 children: [
                   SizedBox(
@@ -152,55 +137,49 @@ class MainMenuOverlay extends StatelessWidget {
                         ? 4
                         : tight
                         ? 8
-                        : 48,
+                        : 40,
                   ),
                   LogoStamp(
                     reduceMotion: reduce,
                     scale: compact
                         ? 0.6
                         : tight
-                        ? 0.85
+                        ? 0.8
                         : 1,
                   ),
-                  SizedBox(height: compact ? 6 : 14),
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 6,
-                    children: [
-                      ValueListenableBuilder<int>(
-                        valueListenable: game.best,
-                        builder: (_, b, _) => InfoChip(
-                          child: Text(
-                            b == 0
-                                ? 'Henüz rekor yok'
-                                : 'Rekor: ${zones[zoneIndexForScore(b)].name} · $b',
-                            key: const Key('bestText'),
-                          ),
-                        ),
+                  SizedBox(height: compact ? 6 : 10),
+                  // Rekor: düğme değil, bilgi (kutusuz yazı)
+                  ValueListenableBuilder<int>(
+                    valueListenable: game.best,
+                    builder: (_, b, _) => Text(
+                      b == 0
+                          ? 'Henüz rekor yok'
+                          : 'Rekor: ${zones[zoneIndexForScore(b)].name} · $b',
+                      key: const Key('bestText'),
+                      style: const TextStyle(
+                        color: UiColors.paper,
+                        fontSize: 15,
+                        shadows: kSceneTextShadow,
                       ),
-                      // Simit bakiyesi = mağaza girişi
-                      ShopChip(game: game),
-                    ],
+                    ),
                   ),
                   SizedBox(height: compact ? 4 : 8),
+                  // Geri dönen oyuncu için bugünün kısa özeti (görevler, başarımlar)
                   MenuProgressStrip(game: game),
                   const Spacer(),
-                  // Phase 2.5: Günün Uçuşu (keşif/sıralama satırının üstünde, ayrı satır)
-                  // Phase 2.7: Etkinlikler aynı satırda (tek giriş noktası; menü yüksekliği değişmez)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                  // ---- İkincil eylemler ----
+                  SizedBox(
+                    width: side,
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Flexible(
+                        Expanded(
                           child: DailyMenuButton(
                             game: game,
                             compact: c.maxWidth < 400,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Flexible(
+                        Expanded(
                           child: EventsMenuButton(
                             game: game,
                             compact: c.maxWidth < 360,
@@ -209,41 +188,14 @@ class MainMenuOverlay extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: compact ? 4 : 8),
-                  // Phase 2.3: keşif albümüne tek giriş noktası (ana eylemin hemen üstünde)
-                  // Phase 2.4: Sıralama aynı satırda (menü yüksekliği değişmez)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: DiscoveryMenuButton(
-                            game: game,
-                            compact: c.maxWidth < 400,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        LeaderboardMenuButton(
-                          game: game,
-                          compact: c.maxWidth < 360,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    height: compact
-                        ? 6
-                        : tight
-                        ? 8
-                        : 12,
-                  ),
+                  SizedBox(height: compact ? 6 : 10),
+                  // ---- Birincil eylem ----
                   MartiButton(
                     key: const Key('startButton'),
                     game: game,
-                    label: 'Uçmaya başla',
+                    label: 'Uçuşa başla',
                     icon: Icons.flight_takeoff_rounded,
-                    width: (c.maxWidth - 48).clamp(220, 340),
+                    width: side.clamp(220.0, 360.0),
                     height: compact
                         ? 56
                         : tight
@@ -251,13 +203,20 @@ class MainMenuOverlay extends StatelessWidget {
                         : 72,
                     onPressed: game.startFromMenu,
                   ),
+                  SizedBox(height: compact ? 6 : 10),
+                  // ---- Oyuncu alanı ----
+                  SizedBox(
+                    width: side,
+                    child: PlayerTiles(game: game),
+                  ),
                   SizedBox(
                     height: compact
-                        ? 6
+                        ? 4
                         : tight
-                        ? 10
-                        : 22,
+                        ? 6
+                        : 14,
                   ),
+                  // ---- Yardımcı ----
                   ValueListenableBuilder<GameSettings>(
                     valueListenable: game.services.settings,
                     builder: (_, s, _) => Row(
@@ -267,6 +226,7 @@ class MainMenuOverlay extends StatelessWidget {
                         RoundIconButton(
                           key: const Key('muteButton'),
                           game: game,
+                          compact: true,
                           icon: s.muted
                               ? Icons.volume_off_rounded
                               : Icons.volume_up_rounded,
@@ -278,6 +238,7 @@ class MainMenuOverlay extends StatelessWidget {
                         RoundIconButton(
                           key: const Key('settingsButton'),
                           game: game,
+                          compact: true,
                           icon: Icons.tune_rounded,
                           label: 'Ayarlar',
                           onPressed: () => game.openModal(Overlays.settings),
@@ -285,6 +246,7 @@ class MainMenuOverlay extends StatelessWidget {
                         RoundIconButton(
                           key: const Key('howToButton'),
                           game: game,
+                          compact: true,
                           icon: Icons.help_outline_rounded,
                           label: 'Nasıl oynanır',
                           onPressed: () => game.openModal(Overlays.howTo),
@@ -294,10 +256,10 @@ class MainMenuOverlay extends StatelessWidget {
                   ),
                   SizedBox(
                     height: compact
-                        ? 6
+                        ? 4
                         : tight
-                        ? 14
-                        : 36,
+                        ? 8
+                        : 24,
                   ),
                 ],
               );
@@ -309,6 +271,199 @@ class MainMenuOverlay extends StatelessWidget {
   }
 }
 
+/// Köşedeki "yeni" işareti: küçük kare (yalnızca renk değil, biçim; anlamı karonun sesli etiketinde).
+class NewDot extends StatelessWidget {
+  const NewDot({super.key});
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: Container(
+      width: 12,
+      height: 12,
+      decoration: pixelBox(
+        color: UiColors.mustard,
+        border: UiColors.navy,
+        borderWidth: kUiPx,
+        steps: 1,
+      ),
+    ),
+  );
+}
+
+/// Oyuncu alanı: dört eşit karo. Her biri tek dokunuşla kendi ekranını açar.
+class PlayerTiles extends StatelessWidget {
+  const PlayerTiles({super.key, required this.game});
+
+  final IstanbulFlightGame game;
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: Listenable.merge([game.services.progress, game.services.ux]),
+    builder: (context, _) {
+      final p = game.services.progress.value;
+      final ux = game.services.ux.value;
+      final level = p.levelInfo.level;
+      final pct = (p.discovery.albumFraction * 100).floor();
+      final newLook = p.unlockedCosmetics.any(
+        (id) => !ux.seenCosmetics.contains(id),
+      );
+      final newCard = p.discovery.firstSeen.keys.any(
+        (z) => !ux.seenPostcards.contains(z),
+      );
+      return Row(
+        children: [
+          Expanded(
+            child: MenuTile(
+              key: const Key('profileButton'),
+              game: game,
+              icon: const PixelIcon(
+                Icons.person_rounded,
+                color: UiColors.mustard,
+                size: 24,
+              ),
+              label: 'Profil',
+              value: Text('SV $level', key: const Key('menuLevel')),
+              semantic: 'Profil, seviye $level',
+              onTap: () => game.openModal(Overlays.profile),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: MenuTile(
+              key: const Key('shopButton'),
+              game: game,
+              icon: const SimitIcon(size: 24),
+              label: 'Mağaza',
+              value: Text('${p.simitBalance}', key: const Key('totalSimits')),
+              isNew: newLook,
+              semantic:
+                  'Simit mağazası, bakiye ${p.simitBalance}${newLook ? ', yeni görünüm var' : ''}',
+              onTap: () => game.openModal(Overlays.shop),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: MenuTile(
+              key: const Key('discoveryButton'),
+              game: game,
+              icon: const PixelIcon(
+                Icons.map_rounded,
+                color: UiColors.mustard,
+                size: 24,
+              ),
+              label: 'Keşif',
+              value: Text('%$pct', key: const Key('discoveryMenuCount')),
+              isNew: newCard,
+              semantic:
+                  "İstanbul'u Keşfet, albüm yüzde $pct${newCard ? ', yeni kartpostal var' : ''}",
+              onTap: () => game.openModal(Overlays.discovery),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: MenuTile(
+              key: const Key('leaderboardButton'),
+              game: game,
+              icon: const PixelIcon(
+                Icons.emoji_events_rounded,
+                color: UiColors.mustard,
+                size: 24,
+              ),
+              label: 'Sıralama',
+              semantic: 'Sıralama',
+              onTap: () => game.openModal(Overlays.leaderboard),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+/// Oyuncu alanı karosu: ikon, etiket, isteğe bağlı küçük değer ve "yeni" işareti. ≥ 56 pt yükseklik.
+class MenuTile extends StatelessWidget {
+  const MenuTile({
+    super.key,
+    required this.game,
+    required this.icon,
+    required this.label,
+    required this.semantic,
+    required this.onTap,
+    this.value,
+    this.isNew = false,
+  });
+
+  final IstanbulFlightGame game;
+  final Widget icon;
+  final String label;
+  final String semantic;
+  final VoidCallback onTap;
+  final Widget? value;
+  final bool isNew;
+
+  @override
+  Widget build(BuildContext context) => Pressable(
+    game: game,
+    onTap: onTap,
+    semanticLabel: semantic,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: UiSpace.tap + 12),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(4, 6, 4, 6),
+            decoration: pixelBox(
+              color: UiColors.scrim,
+              border: const Color(0x66FBF7EE),
+              steps: 3,
+            ),
+            child: DefaultTextStyle.merge(
+              style: const TextStyle(color: UiColors.paper, fontSize: 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      icon,
+                      if (value != null) ...[
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: DefaultTextStyle.merge(
+                            style: const TextStyle(color: UiColors.mustard),
+                            maxLines: 1,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: value!,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(label, maxLines: 1),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (isNew)
+            const Positioned(
+              right: -2,
+              top: -2,
+              child: NewDot(key: ValueKey('newDot')),
+            ),
+        ],
+      ),
+    ),
+  );
+}
+
 /// "Uçmak için dokun": dokunuşlar oyuna geçer (IgnorePointer).
 class ReadyOverlay extends StatelessWidget {
   const ReadyOverlay({super.key, required this.game});
@@ -317,54 +472,85 @@ class ReadyOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: SizedBox.expand(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              LogoStamp(reduceMotion: true, scale: 0.7),
-              const SizedBox(height: 12),
-              DailyReadyBanner(game: game),
-              EventReadyBanner(game: game),
-              const Spacer(),
-              _Pulse(
-                reduce: game.reduceMotion,
-                child: const Column(
-                  children: [
-                    PixelIcon(
-                      Icons.touch_app_rounded,
-                      color: UiColors.paper,
-                      size: 44,
-                      shadows: kSceneTextShadow,
+    final tutorial = game.inTutorial;
+    final prompt = Text(
+      // eğitimde açık yönerge; normal uçuşta oyuncuların bildiği kısa metin
+      tutorial ? 'Uçmak için ekrana dokun' : 'Uçmak için dokun',
+      key: const Key('readyPrompt'),
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        color: UiColors.paper,
+        fontSize: 25,
+        shadows: kSceneTextShadow,
+      ),
+    );
+    return Stack(
+      children: [
+        // dokunuşlar oyuna geçer: uçuş başlar ve ilk kanat çırpışı olur
+        IgnorePointer(
+          child: SizedBox.expand(
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // eğitimde sağ üstteki "Eğitimi atla" düğmesi logonun üstüne binmesin
+                  SizedBox(height: tutorial ? 68 : 40),
+                  LogoStamp(reduceMotion: true, scale: 0.7),
+                  const SizedBox(height: 12),
+                  DailyReadyBanner(game: game),
+                  EventReadyBanner(game: game),
+                  TutorialDoneBanner(game: game),
+                  // Phase 2.8: eğitim aşaması ve yönerge
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TutorialReadyBanner(game: game),
+                  ),
+                  const Spacer(),
+                  if (tutorial)
+                    TapHint(reduce: game.reduceMotion)
+                  else
+                    _Pulse(
+                      reduce: game.reduceMotion,
+                      child: const PixelIcon(
+                        Icons.touch_app_rounded,
+                        color: UiColors.paper,
+                        size: 44,
+                        shadows: kSceneTextShadow,
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Uçmak için dokun',
+                  const SizedBox(height: 8),
+                  prompt,
+                  if (!tutorial) ...[
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Altın simitleri topla · Engellere kıl payı yaklaş',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: UiColors.paper,
-                        fontSize: 25,
+                        fontSize: 15,
                         shadows: kSceneTextShadow,
                       ),
                     ),
                   ],
-                ),
+                  // eğitimde üst boşluk büyüdü; küçük ekranda sığması için alt boşluk biraz daha az
+                  SizedBox(height: tutorial ? 88 : 110),
+                ],
               ),
-              const SizedBox(height: 10),
-              const Text(
-                'Altın simitleri topla · Engellere kıl payı yaklaş',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: UiColors.paper,
-                  fontSize: 15,
-                  shadows: kSceneTextShadow,
-                ),
-              ),
-              const SizedBox(height: 110),
-            ],
+            ),
           ),
         ),
-      ),
+        // eğitimden çıkış: dokunuşu oyuna geçirmeyen tek öğe
+        Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: TutorialSkipButton(game: game),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -743,10 +929,22 @@ class HowToOverlay extends StatelessWidget {
   Widget build(BuildContext context) => ModalCard(
     game: game,
     title: 'Nasıl oynanır',
-    child: const Column(
+    child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _Tip(
+        // Phase 2.8: üç aşamalı etkileşimli eğitim istenince yeniden oynanır (kayıt ve ödül yok)
+        MartiButton(
+          key: const Key('replayTutorial'),
+          game: game,
+          label: 'Eğitimi oyna',
+          icon: Icons.school_rounded,
+          style: MartiButtonStyle.secondary,
+          width: double.infinity,
+          height: 56,
+          onPressed: game.startTutorial,
+        ),
+        const SizedBox(height: 6),
+        const _Tip(
           icon: PixelIcon(
             Icons.touch_app_rounded,
             color: UiColors.navy,
@@ -755,7 +953,7 @@ class HowToOverlay extends StatelessWidget {
           title: 'Dokun',
           text: 'Her dokunuşta Simit kanat çırpar ve yükselir. Bıraktığında yavaşça alçalır.',
         ),
-        _Tip(
+        const _Tip(
           icon: PixelIcon(
             Icons.view_column_rounded,
             color: UiColors.navy,
@@ -764,17 +962,17 @@ class HowToOverlay extends StatelessWidget {
           title: 'Geç',
           text: 'Engellerin arasındaki boşluktan geç. Her geçiş 1 puan.',
         ),
-        _Tip(
+        const _Tip(
           icon: SimitIcon(size: 32),
           title: 'Topla',
           text: 'Geçitlerdeki altın simitleri topla. Kırmızı-beyaz can simitleri sadece süs.',
         ),
-        _Tip(
+        const _Tip(
           icon: PixelIcon(Icons.bolt_rounded, color: UiColors.action, size: 32),
           title: 'Kıl payı',
           text: 'Bir engelin çok yakınından çarpmadan geç: "KIL PAYI!"',
         ),
-        _Tip(
+        const _Tip(
           icon: PixelIcon(
             Icons.wb_twilight_rounded,
             color: UiColors.navy,

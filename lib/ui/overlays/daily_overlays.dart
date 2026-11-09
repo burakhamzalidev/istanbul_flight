@@ -265,7 +265,7 @@ class _DailyOverlayState extends State<DailyOverlay> {
                   : 'Antrenman aynı parkurda uçar; sıralamaya ve günlük ödüllere sayılmaz.',
               key: const Key('dailyRuleNote'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ],
         );
@@ -312,7 +312,7 @@ class _Header extends StatelessWidget {
                   'Herkes aynı parkurda: ${names.first} – ${names.last}',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -321,7 +321,7 @@ class _Header extends StatelessWidget {
                   key: const Key('dailyCountdown'),
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -362,7 +362,7 @@ class _Fact extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     ),
@@ -384,7 +384,7 @@ class _Note extends StatelessWidget {
     ),
     child: Text(
       text,
-      style: const TextStyle(color: UiColors.navy, fontSize: 10),
+      style: const TextStyle(color: UiColors.navy, fontSize: 11),
     ),
   );
 }
@@ -520,7 +520,7 @@ class _DailyBoardState extends State<_DailyBoard> {
                   : 'Game Center’a bağlanınca dünya ve arkadaşlarınla aynı parkurda yarışırsın. '
                         'Bağlantısız da oynayabilirsin; skorun bu cihazda kalır.',
               key: const Key('dailyBoardOffline'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             )
           else ...[
             if (status != DailyGcStatus.none)
@@ -531,7 +531,7 @@ class _DailyBoardState extends State<_DailyBoard> {
                   key: const Key('dailyGcStatus'),
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -759,7 +759,7 @@ class _ResultRankState extends State<_ResultRank> {
       final gc = widget.game.services.gameCenter;
       final status =
           p.dailyChallenge[widget.challengeId]?.gcStatus ?? DailyGcStatus.none;
-      const style = TextStyle(color: UiColors.paper, fontSize: 10);
+      const style = TextStyle(color: UiColors.paper, fontSize: 11);
       if (!gc.value.signedIn) {
         return const Text(
           'Game Center bağlı değil: skor yalnızca bu cihazda.',

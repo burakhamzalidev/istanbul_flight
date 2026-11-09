@@ -96,10 +96,17 @@ class EventsMenuButton extends StatelessWidget {
   final bool? compact;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<PlayerProgress>(
-    valueListenable: game.services.progress,
-    builder: (context, p, _) {
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: Listenable.merge([game.services.progress, game.services.ux]),
+    builder: (context, _) {
+      final p = game.services.progress.value;
       final season = game.services.events.season();
+      // Phase 2.8: açık bir etkinlik henüz Etkinlik Merkezi'nde görülmediyse küçük "yeni" işareti
+      final seen = game.services.ux.value.seenEvents;
+      final newEvent = [
+        ?game.services.events.activeCup(),
+        ?game.services.events.activeSpecial(),
+      ].any((s) => !seen.contains(s.eventId));
       final sp = season == null ? null : p.events.season(season.seasonId);
       final level = season == null || sp == null
           ? null
@@ -108,50 +115,67 @@ class EventsMenuButton extends StatelessWidget {
       return Pressable(
         key: const Key('eventsButton'),
         game: game,
-        semanticLabel: level == null
-            ? 'Etkinlikler'
-            : 'Etkinlikler, sezon seviyesi $level / ${season!.levels.length}',
+        semanticLabel:
+            '${level == null ? 'Etkinlikler' : 'Etkinlikler, sezon seviyesi $level / ${season!.levels.length}'}'
+            '${newEvent ? ', yeni etkinlik var' : ''}',
         onTap: () => game.openModal(Overlays.events),
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: pixelBox(
-              color: UiColors.scrim,
-              border: UiColors.mustard,
-              steps: 3,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Sıralama düğmesinin kupa ikonundan ayrı: etkinlik / kutlama
-                const PixelIcon(
-                  Icons.celebration_rounded,
-                  color: UiColors.mustard,
-                  size: 24,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
                 ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    narrow ? 'Kupa' : 'Etkinlikler',
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: UiColors.paper, fontSize: 15),
-                  ),
+                decoration: pixelBox(
+                  color: UiColors.scrim,
+                  border: UiColors.mustard,
+                  steps: 3,
                 ),
-                // sezon seviyesi yalnızca ilk ödülden sonra ("S0" anlaşılmıyordu)
-                if (level != null && level > 0) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    '$level/${season!.levels.length}',
-                    key: const Key('eventsMenuLevel'),
-                    style: const TextStyle(
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Sıralama düğmesinin kupa ikonundan ayrı: etkinlik / kutlama
+                    const PixelIcon(
+                      Icons.celebration_rounded,
                       color: UiColors.mustard,
-                      fontSize: 15,
+                      size: 24,
                     ),
-                  ),
-                ],
-              ],
-            ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        narrow ? 'Kupa' : 'Etkinlikler',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: UiColors.paper,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    // sezon seviyesi yalnızca ilk ödülden sonra ("S0" anlaşılmıyordu)
+                    if (level != null && level > 0) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '$level/${season!.levels.length}',
+                        key: const Key('eventsMenuLevel'),
+                        style: const TextStyle(
+                          color: UiColors.mustard,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (newEvent)
+                const Positioned(
+                  right: -2,
+                  top: -2,
+                  child: NewDot(key: Key('eventsNewDot')),
+                ),
+            ],
           ),
         ),
       );
@@ -182,7 +206,16 @@ class _EventsOverlayState extends State<EventsOverlay> {
     super.initState();
     // hafta döndüyse görevler yenilenir (oluşturma bittikten sonra: dinleyiciler build sırasında uyarılmasın)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) game.services.progress.refreshWeek();
+      if (!mounted) return;
+      game.services.progress.refreshWeek();
+      // Phase 2.8: açık etkinlikler görüldü (menüdeki "yeni" işareti söner)
+      game.services.ux.markEventsSeen([
+        for (final s in [
+          ?game.services.events.activeCup(),
+          ?game.services.events.activeSpecial(),
+        ])
+          s.eventId,
+      ]);
     });
     unawaited(game.services.gameCenter.refreshCupOccurrence());
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -254,7 +287,7 @@ class _Note extends StatelessWidget {
     ),
     child: Text(
       text,
-      style: const TextStyle(color: UiColors.navy, fontSize: 10),
+      style: const TextStyle(color: UiColors.navy, fontSize: 11),
     ),
   );
 }
@@ -284,7 +317,7 @@ class _Fact extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     ),
@@ -341,15 +374,12 @@ class _EventHeader extends StatelessWidget {
                   style: TextStyle(color: st.ink, fontSize: 20),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: st.ink, fontSize: 10),
-                ),
+                Text(subtitle, style: TextStyle(color: st.ink, fontSize: 11)),
                 const SizedBox(height: 2),
                 Text(
                   timeText,
                   key: Key('eventTime_${slot.eventId}'),
-                  style: TextStyle(color: st.ink, fontSize: 10),
+                  style: TextStyle(color: st.ink, fontSize: 11),
                 ),
               ],
             ),
@@ -421,7 +451,7 @@ class _EventRewards extends StatelessWidget {
         const SizedBox(height: 2),
         const Text(
           'SP: sezon puanı. Ödüller sıralamadaki yere bağlı değildir; her etkinlikte bir kez verilir.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     );
@@ -462,13 +492,13 @@ class _ActiveEvent extends StatelessWidget {
         const SizedBox(height: 6),
         Text(
           slot.type.description,
-          style: const TextStyle(color: UiColors.navy, fontSize: 10),
+          style: const TextStyle(color: UiColors.navy, fontSize: 11),
         ),
         const SizedBox(height: 2),
         Text(
           'Parkur: ${_zonesText(zonesSel)} · Skor: ${slot.scoring.label.toLowerCase()}',
           key: Key('eventCourse_${slot.eventId}'),
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
         const SizedBox(height: 8),
         IntrinsicHeight(
@@ -517,7 +547,7 @@ class _ActiveEvent extends StatelessWidget {
         const Text(
           'Deneme sınırı yok: haftanın en iyi tek uçuşu sayılır.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     );
@@ -537,9 +567,7 @@ class _CupTab extends StatelessWidget {
     final svc = game.services.events;
     final cup = svc.activeCup();
     if (cup == null) {
-      final next = EventCalendar.cupFor(
-        EventCalendar.weekIndex(svc.now()) + 1,
-      );
+      final next = EventCalendar.cupFor(EventCalendar.weekIndex(svc.now()) + 1);
       return _Note(
         key: const Key('cupNone'),
         text: next == null
@@ -613,7 +641,7 @@ class _CupBoardState extends State<_CupBoard> {
                   : 'Game Center’a bağlanınca dünya ve arkadaşlarınla aynı parkurda yarışırsın. '
                         'Bağlantısız da oynayabilirsin; skorun bu cihazda kalır.',
               key: const Key('cupBoardOffline'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             )
           else ...[
             if (status != DailyGcStatus.none)
@@ -624,7 +652,7 @@ class _CupBoardState extends State<_CupBoard> {
                   key: const Key('cupGcStatus'),
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -677,11 +705,9 @@ class _CupBoardState extends State<_CupBoard> {
 
 String cupGcStatusText(DailyGcStatus s) => switch (s) {
   DailyGcStatus.none => '',
-  DailyGcStatus.pending =>
-    'Kupa skorun Game Center’a gönderilmeyi bekliyor; bağlantı gelince gönderilir.',
+  DailyGcStatus.pending => 'Kupa skorun Game Center’a gönderilmeyi bekliyor; bağlantı gelince gönderilir.',
   DailyGcStatus.submitted => 'Kupa skorun Game Center’a gönderildi.',
-  DailyGcStatus.expired =>
-    'Bu skor haftanın sıralaması kapandıktan sonra gönderilebildiği için sıralamaya girmedi.',
+  DailyGcStatus.expired => 'Bu skor haftanın sıralaması kapandıktan sonra gönderilebildiği için sıralamaya girmedi.',
   DailyGcStatus.notEligible => 'Bu uçuş sıralamaya uygun değildi.',
 };
 
@@ -714,8 +740,7 @@ class _EventsTab extends StatelessWidget {
         else
           const _Note(
             key: Key('specialNone'),
-            text:
-                'Özel etkinlikler hafta sonu açılır (cuma 00:00 – pazartesi 00:00 UTC). Kupa her hafta açık.',
+            text: 'Özel etkinlikler hafta sonu açılır (cuma 00:00 – pazartesi 00:00 UTC). Kupa her hafta açık.',
           ),
         const SizedBox(height: 12),
         const _SectionTitle('Yaklaşan'),
@@ -738,7 +763,7 @@ class _EventsTab extends StatelessWidget {
         const SizedBox(height: 6),
         const Text(
           'Takvim uygulamayla gelir ve UTC haftasına göre herkes için aynıdır.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     );
@@ -759,24 +784,34 @@ class _SlotRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: pixelBox(color: st.bg, border: st.border, steps: 1),
-        child: Row(
-          children: [
-            slot.type == EventType.simitFestival
-                ? const SimitIcon(size: 20)
-                : PixelIcon(st.icon, color: st.border, size: 20),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                slot.kind == EventKind.weeklyCup
-                    ? 'Kupa · ${slot.type.title}'
-                    : slot.type.title,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: st.ink, fontSize: 15),
+        // küçük ekranda süre ("4 gün 12 sa sonra") başlığı itmesin: satırın %40'ıyla sınırlı, gerekirse iki satır
+        child: LayoutBuilder(
+          builder: (context, c) => Row(
+            children: [
+              slot.type == EventType.simitFestival
+                  ? const SimitIcon(size: 20)
+                  : PixelIcon(st.icon, color: st.border, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  slot.kind == EventKind.weeklyCup
+                      ? 'Kupa · ${slot.type.title}'
+                      : slot.type.title,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: st.ink, fontSize: 15),
+                ),
               ),
-            ),
-            const SizedBox(width: 6),
-            Text(trailing, style: TextStyle(color: st.ink, fontSize: 10)),
-          ],
+              const SizedBox(width: 6),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: c.maxWidth * 0.4),
+                child: Text(
+                  trailing,
+                  textAlign: TextAlign.right,
+                  style: TextStyle(color: st.ink, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -864,12 +899,12 @@ class _SeasonTab extends StatelessWidget {
                     ? '${sp.points} SP · bütün ödüller açıldı'
                     : '${sp.points} / ${next.points} SP · sonraki ödül: ${_levelText(next)}',
                 key: const Key('seasonPoints'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               Text(
                 'Sezonun bitişi: ${formatLongCountdown(left.isNegative ? Duration.zero : left)} sonra',
                 key: const Key('seasonTime'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
             ],
           ),
@@ -885,7 +920,7 @@ class _SeasonTab extends StatelessWidget {
         const SizedBox(height: 2),
         const Text(
           'Ödüller ücretsizdir ve kalıcıdır; sezon bitince geri alınmaz. Sezon puanı XP’den ayrıdır.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
         if (progress.events.frames.contains('kupa')) ...[
           const SizedBox(height: 10),
@@ -899,7 +934,7 @@ class _SeasonTab extends StatelessWidget {
         Text(
           'Her görev bir kez: +${WeeklyMissionCatalog.seasonPoints} SP ve +${WeeklyMissionCatalog.simits} simit. '
           'Görevler pazartesi 00:00 UTC’de yenilenir.',
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
       ],
     );
@@ -970,7 +1005,7 @@ class _SeasonRewardRow extends StatelessWidget {
                   'Seviye ${level.level} · ${level.points} SP',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -1009,7 +1044,8 @@ class _FrameToggle extends StatelessWidget {
           key: const Key('kupaFrameSwitch'),
           value: on,
           activeThumbColor: UiColors.mustard,
-          onChanged: (v) => game.services.progress.selectFrame(v ? 'kupa' : null),
+          onChanged: (v) =>
+              game.services.progress.selectFrame(v ? 'kupa' : null),
         ),
       ],
     );
@@ -1139,13 +1175,19 @@ class EventReadyBanner extends StatelessWidget {
       return Container(
         key: const Key('eventReadyBanner'),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: pixelBox(color: UiColors.scrim, border: st.border, steps: 3),
+        decoration: pixelBox(
+          color: UiColors.scrim,
+          border: st.border,
+          steps: 3,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               trUpper(
-                def.kind == EventKind.weeklyCup ? 'İstanbul Kupası' : def.type.title,
+                def.kind == EventKind.weeklyCup
+                    ? 'İstanbul Kupası'
+                    : def.type.title,
               ),
               style: const TextStyle(
                 color: UiColors.mustard,
@@ -1176,7 +1218,9 @@ class EventResultPanel extends StatelessWidget {
   final IstanbulFlightGame game;
 
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<EventRunOutcome?>(
+  Widget build(
+    BuildContext context,
+  ) => ValueListenableBuilder<EventRunOutcome?>(
     valueListenable: game.services.progress.lastEvent,
     builder: (context, o, _) {
       if (o == null) return const SizedBox.shrink();
@@ -1305,7 +1349,7 @@ class _CupResultRankState extends State<_CupResultRank> {
     builder: (context, p, _) {
       final gc = widget.game.services.gameCenter;
       final status = p.events[widget.eventId]?.gcStatus ?? DailyGcStatus.none;
-      const style = TextStyle(color: UiColors.paper, fontSize: 10);
+      const style = TextStyle(color: UiColors.paper, fontSize: 11);
       if (!gc.value.signedIn) {
         return const Text(
           'Game Center bağlı değil: skor yalnızca bu cihazda.',

@@ -50,14 +50,14 @@ Future<void> _dieAndShowCard(
 
 void main() {
   testWidgets(
-    'ana menü: kimlik, rekor, toplam simit, düğmeler; UÇMAYA BAŞLA → uçmak için dokun',
+    'ana menü: kimlik, rekor, toplam simit, düğmeler; UÇUŞA BAŞLA → uçmak için dokun',
     (tester) async {
       final (game, t) = await _pumpApp(tester, best: 37);
       expect(find.text('MARTI'), findsOneWidget);
       expect(find.text('Rekor: Kız Kulesi · 37'), findsOneWidget);
       expect(find.byKey(const Key('totalSimits')), findsOneWidget);
       expect(
-        find.text('UÇMAYA BAŞLA'),
+        find.text('UÇUŞA BAŞLA'),
         findsOneWidget,
         reason: 'Türkçe büyük harf: Ç, Ş korunur',
       );

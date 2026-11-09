@@ -20,69 +20,6 @@ import 'shop_overlays.dart';
 // Kartpostal görselleri oyunun zaten yüklü pixel art katmanlarından çizilir (ZonePostcardPainter);
 // yalnızca harita görseli (160×160) bu ekran açılınca yüklenir.
 
-/// Ana menüdeki tek giriş noktası: "İstanbul'u Keşfet" + albüm ilerlemesi.
-class DiscoveryMenuButton extends StatelessWidget {
-  const DiscoveryMenuButton({super.key, required this.game, this.compact});
-
-  final IstanbulFlightGame game;
-
-  /// Kısa etiket ("Keşfet"). null: ekran genişliğinden karar verilir.
-  final bool? compact;
-
-  @override
-  Widget build(BuildContext context) => ValueListenableBuilder<PlayerProgress>(
-    valueListenable: game.services.progress,
-    builder: (context, p, _) {
-      final cards = p.discoveredZones.length;
-      final pct = (p.discovery.albumFraction * 100).floor();
-      // dar ekranda kısa etiket (yanında Sıralama düğmesi var, Phase 2.4)
-      final narrow = compact ?? MediaQuery.sizeOf(context).width < 400;
-      return Pressable(
-        key: const Key('discoveryButton'),
-        game: game,
-        semanticLabel:
-            "İstanbul'u Keşfet, $cards / ${routeZones.length} kartpostal, albüm yüzde $pct",
-        onTap: () => game.openModal(Overlays.discovery),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: pixelBox(
-              color: UiColors.scrim,
-              border: UiColors.mustard,
-              steps: 3,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const PixelIcon(
-                  Icons.map_rounded,
-                  color: UiColors.mustard,
-                  size: 24,
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    narrow ? 'Keşfet' : "İstanbul'u Keşfet",
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: UiColors.paper, fontSize: 15),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '%$pct',
-                  key: const Key('discoveryMenuCount'),
-                  style: const TextStyle(color: UiColors.mustard, fontSize: 15),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    },
-  );
-}
-
 enum _Tab { map, album }
 
 class DiscoveryOverlay extends StatefulWidget {
@@ -102,6 +39,19 @@ class _DiscoveryOverlayState extends State<DiscoveryOverlay> {
   late int? _zone = widget.initialZone;
 
   IstanbulFlightGame get g => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    // Phase 2.8: açılmış kartpostallar görüldü (menüdeki "yeni" işareti söner)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        g.services.ux.markPostcardsSeen(
+          g.services.progress.value.discovery.firstSeen.keys,
+        );
+      }
+    });
+  }
 
   void _open(int zone) => setState(() => _zone = zone);
 
@@ -163,7 +113,7 @@ class _DiscoveryOverlayState extends State<DiscoveryOverlay> {
                 'yerleri gösterir.',
                 key: Key('mapLegend'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               const SizedBox(height: 8),
               for (final z in routeZones)
@@ -236,7 +186,7 @@ class _AlbumHeader extends StatelessWidget {
           Text(
             'Kartpostal ${progress.discoveredZones.length}/${routeZones.length} · '
             'Hedef ${d.goalsDone}/${DiscoveryState.goalsTotal}',
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         ],
       ),
@@ -426,7 +376,7 @@ class IstanbulMap extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 11,
           letterSpacing: 1,
           color: land ? const Color(0xFF6E5236) : const Color(0xFFDDF0F6),
         ),
@@ -635,7 +585,7 @@ class _ZoneRow extends StatelessWidget {
                   '${zones[zone].startScore} puanda açılır',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 )
               else ...[
@@ -654,7 +604,7 @@ class _ZoneRow extends StatelessWidget {
                       '${progress.discovery.doneInZone(zone)}/3',
                       style: const TextStyle(
                         color: UiColors.navySoft,
-                        fontSize: 10,
+                        fontSize: 11,
                       ),
                     ),
                   ),
@@ -790,7 +740,7 @@ class _PostcardTile extends StatelessWidget {
                   locked ? '${zones[zone].startScore} puanda açılır' : '%$pct',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -846,7 +796,7 @@ class _AlbumReward extends StatelessWidget {
                   key: const Key('albumRewardText'),
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -951,7 +901,7 @@ class _ZoneDetail extends StatelessWidget {
           Text(
             dz.place,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         const SizedBox(height: 4),
         Text(
@@ -987,7 +937,7 @@ class _ZoneDetail extends StatelessWidget {
           'KEŞİF HEDEFLERİ',
           style: TextStyle(
             color: UiColors.navySoft,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -998,7 +948,7 @@ class _ZoneDetail extends StatelessWidget {
           'İSTANBUL NOTLARI',
           style: TextStyle(
             color: UiColors.navySoft,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -1110,7 +1060,7 @@ class _GoalRow extends StatelessWidget {
               Text(
                 done ? 'Tamam' : '$value/${goal.target}',
                 key: Key('goalValue_${goal.id}'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1119,7 +1069,7 @@ class _GoalRow extends StatelessWidget {
                   const SizedBox(width: 2),
                   Text(
                     '+${goal.rewardSimits}',
-                    style: const TextStyle(color: UiColors.navy, fontSize: 10),
+                    style: const TextStyle(color: UiColors.navy, fontSize: 11),
                   ),
                 ],
               ),

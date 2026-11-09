@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../challenge/daily_challenge.dart';
+import '../../events/event_definition.dart';
 import '../../game/day_cycle.dart';
 import '../../game/istanbul_flight_game.dart';
+import '../../progression/progression_config.dart';
 import '../theme.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
+import 'tutorial_overlays.dart';
 
 /// Oyun içi HUD: duraklat (sol üst), rota çubuğu, skor (orta), simit sayacı (sağ üst),
 /// bölge damgası, KIL PAYI! ve rekor rozeti. Tümü üst bölgede ve güvenli alan içinde:
@@ -17,9 +21,27 @@ class HudOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduce = game.reduceMotion;
+    // Phase 2.8: eğitimde skor, rota ve uçuş vurguları yerine yalnızca eğitim ipuçları
+    final tutorial = game.inTutorial;
     return SafeArea(
       child: Stack(
         children: [
+          // aşama üstte, yönerge altta: geçitlerin bulunduğu orta bant (≈ %30–60) boş kalır
+          if (tutorial)
+            Positioned(
+              left: 16,
+              right: 16,
+              top: 64,
+              bottom: 32,
+              child: IgnorePointer(child: TutorialHud(game: game)),
+            ),
+          if (!tutorial)
+            Positioned(
+              left: 70,
+              right: 100,
+              top: 2,
+              child: IgnorePointer(child: _ModeTag(game: game)),
+            ),
           Positioned(
             left: 6,
             top: 4,
@@ -74,103 +96,211 @@ class HudOverlay extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            left: 70,
-            right: 100,
-            top: 24,
-            child: IgnorePointer(
-              child: ValueListenableBuilder<int>(
-                valueListenable: game.score,
-                builder: (_, s, _) =>
-                    RouteBar(score: s, stages: game.dayCycle.stages),
+          if (!tutorial) ...[
+            Positioned(
+              left: 70,
+              right: 100,
+              top: 24,
+              child: IgnorePointer(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: game.score,
+                  builder: (_, s, _) =>
+                      RouteBar(score: s, stages: game.dayCycle.stages),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 60,
-            child: IgnorePointer(
-              child: ValueListenableBuilder<int>(
-                valueListenable: game.score,
-                builder: (_, s, _) => Bump(
-                  value: s,
-                  enabled: !reduce,
-                  scale: 1.18,
-                  child: Text(
-                    '$s',
-                    key: const Key('scoreText'),
-                    textAlign: TextAlign.center,
-                    style: UiText.score,
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 60,
+              child: IgnorePointer(
+                child: ValueListenableBuilder<int>(
+                  valueListenable: game.score,
+                  builder: (_, s, _) => Bump(
+                    value: s,
+                    enabled: !reduce,
+                    scale: 1.18,
+                    child: Text(
+                      '$s',
+                      key: const Key('scoreText'),
+                      textAlign: TextAlign.center,
+                      style: UiText.score,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 170,
+              child: IgnorePointer(child: ZoneStamp(zone: game.zoneIndex)),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 236,
+              child: IgnorePointer(
+                child: EventPopup(
+                  key: const Key('nearMissPopup'),
+                  trigger: game.nearMisses,
+                  reduceMotion: reduce,
+                  child: const Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'KIL PAYI!',
+                        style: TextStyle(
+                          fontSize: 30,
+                          color: UiColors.mustard,
+                          letterSpacing: 2,
+                          shadows: kSceneTextShadow,
+                        ),
+                      ),
+                      // Phase 2.8: ödülü belli olsun (uçuş sonunda XP olarak eklenir)
+                      Text(
+                        '+${ProgressionConfig.xpPerNearMiss} XP',
+                        key: Key('nearMissXp'),
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: UiColors.paper,
+                          shadows: kSceneTextShadow,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 140,
+              child: IgnorePointer(
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: game.recordPassed,
+                  builder: (_, passed, _) => passed
+                      ? OneShotFade(
+                          key: const Key('recordBadge'),
+                          duration: const Duration(milliseconds: 1800),
+                          child: Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 3,
+                              ),
+                              decoration: pixelBox(
+                                color: UiColors.action,
+                                border: UiColors.actionPressed,
+                                shadow: kUiPx,
+                              ),
+                              child: const Text(
+                                'REKOR GEÇİLDİ!',
+                                style: TextStyle(
+                                  color: UiColors.paper,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ],
+          // Phase 2.8: simit toplanınca sayacın altında kısa "+1" (ses kapalıyken de görülür)
           Positioned(
-            left: 0,
-            right: 0,
-            top: 170,
-            child: IgnorePointer(child: ZoneStamp(zone: game.zoneIndex)),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 236,
+            right: 8,
+            top: 54,
             child: IgnorePointer(
               child: EventPopup(
-                key: const Key('nearMissPopup'),
-                trigger: game.nearMisses,
+                key: const Key('simitPlusOne'),
+                trigger: game.runSimits,
                 reduceMotion: reduce,
-                child: const Text(
-                  'KIL PAYI!',
-                  style: TextStyle(
-                    fontSize: 30,
+                child: Text(
+                  tutorial ||
+                          (game.eventDefinition.value?.scoring.simitWeight ??
+                                  0) ==
+                              0
+                      ? '+1'
+                      : '+1 · +2 puan',
+                  style: const TextStyle(
                     color: UiColors.mustard,
-                    letterSpacing: 2,
+                    fontSize: 20,
                     shadows: kSceneTextShadow,
                   ),
                 ),
               ),
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 140,
-            child: IgnorePointer(
-              child: ValueListenableBuilder<bool>(
-                valueListenable: game.recordPassed,
-                builder: (_, passed, _) => passed
-                    ? OneShotFade(
-                        key: const Key('recordBadge'),
-                        duration: const Duration(milliseconds: 1800),
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 3,
-                            ),
-                            decoration: pixelBox(
-                              color: UiColors.action,
-                              border: UiColors.actionPressed,
-                              shadow: kUiPx,
-                            ),
-                            child: const Text(
-                              'REKOR GEÇİLDİ!',
-                              style: TextStyle(
-                                color: UiColors.paper,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : const SizedBox.shrink(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Üst kenarda küçük mod etiketi: Günün Uçuşu, etkinlik ya da antrenman (klasikte boş). Simit
+/// Festivali'nde canlı festival puanı. Oyun alanına inmez (rota çubuğunun üstündeki ince şerit).
+class _ModeTag extends StatelessWidget {
+  const _ModeTag({required this.game});
+
+  final IstanbulFlightGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = game.runMode.value;
+    final def = game.eventDefinition.value;
+    final String label;
+    if (mode == RunMode.dailyRanked) {
+      label = 'GÜNÜN UÇUŞU';
+    } else if (mode == RunMode.dailyPractice) {
+      label = 'GÜNÜN UÇUŞU · ANTRENMAN';
+    } else if (mode == RunMode.event && def != null) {
+      label = def.kind == EventKind.weeklyCup
+          ? 'KUPA · ${trUpper(def.type.title)}'
+          : trUpper(def.type.title);
+    } else if (mode == RunMode.eventPractice) {
+      label = 'ETKİNLİK · ANTRENMAN';
+    } else {
+      return const SizedBox.shrink();
+    }
+    final festival = (def?.scoring.simitWeight ?? 0) > 0 && mode.isEvent;
+    return Center(
+      child: Semantics(
+        label: 'Mod: $label',
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Text(
+                label,
+                key: const Key('hudModeTag'),
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: UiColors.paper,
+                  fontSize: 11,
+                  letterSpacing: 1,
+                  shadows: kSceneTextShadow,
+                ),
               ),
             ),
-          ),
-        ],
+            if (festival)
+              ValueListenableBuilder<int>(
+                valueListenable: game.eventScore,
+                builder: (_, v, _) => Text(
+                  ' · $v PUAN',
+                  key: const Key('hudFestivalScore'),
+                  style: const TextStyle(
+                    color: UiColors.mustard,
+                    fontSize: 11,
+                    letterSpacing: 1,
+                    shadows: kSceneTextShadow,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

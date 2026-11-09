@@ -8,6 +8,7 @@ import 'package:istanbul_flight/services/haptics_service.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:istanbul_flight/services/settings.dart';
 import 'package:istanbul_flight/services/share_service.dart';
+import 'package:istanbul_flight/services/ux_state.dart';
 
 /// Ses çağrılarını kaydeder (oyun hangi anda ne çaldı).
 class RecordingAudio implements AudioService {
@@ -86,6 +87,7 @@ class TestServices {
     PlayerProgress progress = const PlayerProgress(),
     GameCenterController Function(ProgressController progress)? gameCenter,
     DateTime Function()? clock,
+    UxController? ux,
   }) : settingsRepo = InMemorySettingsRepository(settings),
        progressRepo = InMemoryProgressRepository(progress) {
     // saat verilirse ilerleme ve Günün Uçuşu servisi onu kullanır (GameServices varsayılanı)
@@ -101,6 +103,7 @@ class TestServices {
       progress: progressController,
       share: share,
       gameCenter: gameCenter?.call(progressController),
+      ux: ux,
     );
   }
 

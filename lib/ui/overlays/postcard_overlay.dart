@@ -112,96 +112,128 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
       onTap: () {},
       child: ColoredBox(
         color: const Color(0x80000000),
+        // Phase 2.8: kartpostal ve özet kaydırılabilir alanda; "Tekrar uç" altta sabit eylem çubuğunda,
+        // her ekran boyutunda kaydırmadan görünür (oyun bitişinden yeniden uçuşa tek dokunuş)
         child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 380),
-                child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: reduce ? 1 : 0, end: 1),
-                  duration: const Duration(milliseconds: 420),
-                  curve: Curves.easeOutBack,
-                  builder: (context, t, child) => Transform.translate(
-                    offset: Offset(0, (1 - t) * 140),
-                    child: Opacity(opacity: t.clamp(0, 1), child: child),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          RepaintBoundary(
-                            key: _cardKey,
-                            child: Postcard(game: g),
-                          ),
-                          if ((g.isNewRecord.value || dailyBest) && !reduce)
-                            const Positioned.fill(
-                              child: IgnorePointer(child: SesameConfetti()),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 380),
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(begin: reduce ? 1 : 0, end: 1),
+                            duration: const Duration(milliseconds: 420),
+                            curve: Curves.easeOutBack,
+                            builder: (context, t, child) => Transform.translate(
+                              offset: Offset(0, (1 - t) * 140),
+                              child: Opacity(
+                                opacity: t.clamp(0, 1),
+                                child: child,
+                              ),
                             ),
-                        ],
-                      ),
-                      // Uçuş özeti paylaşılan kartpostalın dışında: kart kompozisyonu değişmez
-                      const SizedBox(height: 12),
-                      if (daily) ...[
-                        DailyResultPanel(game: g),
-                        const SizedBox(height: 8),
-                      ],
-                      if (event) ...[
-                        EventResultPanel(game: g),
-                        const SizedBox(height: 8),
-                      ],
-                      RunSummaryPanel(game: g),
-                      const SizedBox(height: 16),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: g.canRestart,
-                        builder: (_, ok, _) => daily
-                            ? _dailyAgain(g, ok)
-                            : MartiButton(
-                                key: Key(
-                                  event ? 'eventRetry' : 'restartButton',
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    RepaintBoundary(
+                                      key: _cardKey,
+                                      child: Postcard(game: g),
+                                    ),
+                                    if ((g.isNewRecord.value || dailyBest) &&
+                                        !reduce)
+                                      const Positioned.fill(
+                                        child: IgnorePointer(
+                                          child: SesameConfetti(),
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                                game: g,
-                                label: 'Tekrar uç',
-                                icon: Icons.replay_rounded,
-                                width: double.infinity,
-                                onPressed: ok ? g.restart : null,
-                              ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Esnek genişlik: 320 px'lik ekranlarda da taşmaz
-                      Row(
-                        children: [
-                          Expanded(
-                            child: KeyedSubtree(
-                              key: _shareAnchor,
-                              child: MartiButton(
-                                key: const Key('shareButton'),
-                                game: g,
-                                label: _sharing ? 'Hazırlanıyor' : 'Paylaş',
-                                icon: Icons.ios_share_rounded,
-                                style: MartiButtonStyle.secondary,
-                                onPressed: _sharing ? null : _share,
-                              ),
+                                // Uçuş özeti paylaşılan kartpostalın dışında: kart kompozisyonu değişmez
+                                const SizedBox(height: 12),
+                                if (daily) ...[
+                                  DailyResultPanel(game: g),
+                                  const SizedBox(height: 8),
+                                ],
+                                if (event) ...[
+                                  EventResultPanel(game: g),
+                                  const SizedBox(height: 8),
+                                ],
+                                RunSummaryPanel(game: g),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: MartiButton(
-                              key: const Key('menuButton'),
-                              game: g,
-                              label: 'Ana menü',
-                              icon: Icons.home_rounded,
-                              style: MartiButtonStyle.secondary,
-                              onPressed: g.openMenu,
-                            ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // ---- Sabit eylem çubuğu ----
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 380),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ValueListenableBuilder<bool>(
+                            valueListenable: g.canRestart,
+                            builder: (_, ok, _) => daily
+                                ? _dailyAgain(g, ok)
+                                : MartiButton(
+                                    key: Key(
+                                      event ? 'eventRetry' : 'restartButton',
+                                    ),
+                                    game: g,
+                                    label: 'Tekrar uç',
+                                    icon: Icons.replay_rounded,
+                                    width: double.infinity,
+                                    onPressed: ok ? g.restart : null,
+                                  ),
+                          ),
+                          const SizedBox(height: 8),
+                          // İkinci plan: daha alçak düğmeler; 320 pt'de de taşmaz
+                          Row(
+                            children: [
+                              Expanded(
+                                child: KeyedSubtree(
+                                  key: _shareAnchor,
+                                  child: MartiButton(
+                                    key: const Key('shareButton'),
+                                    game: g,
+                                    label: _sharing ? 'Hazırlanıyor' : 'Paylaş',
+                                    icon: Icons.ios_share_rounded,
+                                    style: MartiButtonStyle.secondary,
+                                    height: 48,
+                                    onPressed: _sharing ? null : _share,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: MartiButton(
+                                  key: const Key('menuButton'),
+                                  game: g,
+                                  label: 'Ana menü',
+                                  icon: Icons.home_rounded,
+                                  style: MartiButtonStyle.secondary,
+                                  height: 48,
+                                  onPressed: g.openMenu,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ),

@@ -159,7 +159,7 @@ class MartiButton extends StatelessWidget {
   }
 }
 
-/// Pixel ikon düğmesi + altında etiket (menü). Dokunma alanı 64×64.
+/// Pixel ikon düğmesi + altında etiket (menü). Dokunma alanı 64×64 ([compact]: 48×48, yardımcı düğmeler).
 class RoundIconButton extends StatelessWidget {
   const RoundIconButton({
     super.key,
@@ -167,6 +167,7 @@ class RoundIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.compact = false,
   });
 
   final IstanbulFlightGame game;
@@ -174,19 +175,22 @@ class RoundIconButton extends StatelessWidget {
   final String label;
   final VoidCallback onPressed;
 
+  /// Phase 2.8: ana menünün yardımcı düğmeleri (Ses, Ayarlar, Nasıl oynanır) birincil eylemden küçük.
+  final bool compact;
+
   @override
   Widget build(BuildContext context) => Pressable(
     game: game,
     onTap: onPressed,
     semanticLabel: label,
     child: SizedBox(
-      width: 96,
+      width: compact ? 84 : 96,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: compact ? 48 : 60,
+            height: compact ? 48 : 60,
             decoration: pixelBox(
               color: UiColors.paper,
               border: UiColors.navy,
@@ -194,9 +198,13 @@ class RoundIconButton extends StatelessWidget {
               shadow: kUiPx * 2,
               steps: 4,
             ),
-            child: PixelIcon(icon, color: UiColors.navy, size: 28),
+            child: PixelIcon(
+              icon,
+              color: UiColors.navy,
+              size: compact ? 24 : 28,
+            ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: compact ? 4 : 6),
           Text(
             label,
             textAlign: TextAlign.center,

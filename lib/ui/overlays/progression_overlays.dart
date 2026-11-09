@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
@@ -6,6 +7,7 @@ import '../../game/day_cycle.dart';
 import '../../game/istanbul_flight_game.dart';
 import '../../progression/achievements.dart';
 import '../../progression/missions.dart';
+import '../../progression/progression_config.dart';
 import '../../progression/run_settlement.dart';
 import '../../services/progress.dart';
 import '../pixel.dart';
@@ -68,26 +70,20 @@ class MenuProgressStrip extends StatelessWidget {
       final info = p.levelInfo;
       final done = p.daily?.completedCount ?? 0;
       final total = p.daily?.missions.length ?? MissionCatalog.perDay;
+      // Phase 2.8: seviye "Profil" karosuna taşındı; burada bugünün kısa özeti (seviye ilerlemesi + görevler
+      // + başarımlar) kalır
       return Wrap(
         alignment: WrapAlignment.center,
         spacing: 8,
         runSpacing: 6,
         children: [
-          _StripChip(
-            key: const Key('profileButton'),
-            game: game,
-            semantic: 'Profil, seviye ${info.level}',
-            onTap: () => game.openModal(Overlays.profile),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('SV ${info.level}', key: const Key('menuLevel')),
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: narrow ? 36 : 56,
-                  child: XpBar(fraction: info.fraction),
-                ),
-              ],
+          Semantics(
+            label:
+                'Seviye ${info.level}, sonraki seviyeye yüzde ${(info.fraction * 100).floor()}',
+            child: SizedBox(
+              width: narrow ? 44 : 64,
+              height: 44,
+              child: Center(child: XpBar(fraction: info.fraction)),
             ),
           ),
           _StripChip(
@@ -213,7 +209,7 @@ class ProfileOverlay extends StatelessWidget {
                             : 'Sonraki seviyeye ${info.xpRemaining} XP',
                         style: const TextStyle(
                           color: UiColors.navySoft,
-                          fontSize: 10,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -326,7 +322,7 @@ class _LevelBadge extends StatelessWidget {
           'SEVİYE',
           style: TextStyle(
             color: UiColors.mustard,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -394,7 +390,7 @@ class _ZoneTrail extends StatelessWidget {
           child: Text(
             discovered.contains(i) ? zones[i].name : '???',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: discovered.contains(i)
                   ? UiColors.paper
                   : UiColors.navySoft,
@@ -422,7 +418,10 @@ class _MissionsOverlayState extends State<MissionsOverlay> {
   @override
   void initState() {
     super.initState();
-    widget.game.services.progress.refreshDay();
+    // gün döndüyse görevler yenilenir (oluşturma bittikten sonra: dinleyiciler build sırasında uyarılmasın)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.game.services.progress.refreshDay();
+    });
     // Kalan süre dakikada bir güncellenir; gece yarısı geçerse görevler yenilenir
     _tick = Timer.periodic(const Duration(seconds: 30), (_) {
       if (!mounted) return;
@@ -455,7 +454,7 @@ class _MissionsOverlayState extends State<MissionsOverlay> {
               const Text(
                 'Uçtukça kendiliğinden ilerler. Ödül, görev biter bitmez verilir.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               const SizedBox(height: 10),
               for (final (i, m) in missions.indexed) ...[
@@ -525,7 +524,7 @@ class _MissionTile extends StatelessWidget {
                           : '${m.progress}/${m.target}',
                       key: Key('missionProgress$index'),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: m.completed
                             ? UiColors.action
                             : UiColors.navySoft,
@@ -538,7 +537,7 @@ class _MissionTile extends StatelessWidget {
                   '+${m.rewardXp} XP · +${m.rewardSimits} simit',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -621,7 +620,7 @@ class _AchievementTile extends StatelessWidget {
                   def.description,
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -630,7 +629,7 @@ class _AchievementTile extends StatelessWidget {
                     'Kazanıldı: ${formatDate(at)} · +${def.rewardXp} XP · +${def.rewardSimits} simit',
                     style: const TextStyle(
                       color: UiColors.action,
-                      fontSize: 10,
+                      fontSize: 11,
                     ),
                   )
                 else ...[
@@ -647,7 +646,7 @@ class _AchievementTile extends StatelessWidget {
                         '%${(def.fractionIn(progress) * 100).floor()}',
                         style: const TextStyle(
                           color: UiColors.navySoft,
-                          fontSize: 10,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -658,7 +657,7 @@ class _AchievementTile extends StatelessWidget {
                         : '${def.progressIn(progress)}/${def.target} · Ödül: +${def.rewardXp} XP · +${def.rewardSimits} simit',
                     style: const TextStyle(
                       color: UiColors.navySoft,
-                      fontSize: 10,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -706,19 +705,67 @@ class _Badge extends StatelessWidget {
 
 /// Kartpostalın altında, paylaşılan görselin dışında: kazanılan XP, seviye, simit, görev ve
 /// başarımlar. Tek bir sakin panel; ayrı açılır pencere yok.
-class RunSummaryPanel extends StatelessWidget {
+///
+/// Phase 2.8: üstte en önemli üç bilgi (XP, seviye, simit); XP çubuğu uçuş öncesi değerden dolar ve seviye
+/// atlanınca kısa bir damga çıkar. Görev, başarım ve keşif satırlarının ilk ikisi görünür, gerisi
+/// "Ayrıntılar"da (aynı anda çok istatistik yok). Başarım satırına dokununca başarımlar açılır.
+class RunSummaryPanel extends StatefulWidget {
   const RunSummaryPanel({super.key, required this.game});
 
   final IstanbulFlightGame game;
+
+  @override
+  State<RunSummaryPanel> createState() => _RunSummaryPanelState();
+}
+
+class _RunSummaryPanelState extends State<RunSummaryPanel> {
+  bool _expanded = false;
+
+  IstanbulFlightGame get game => widget.game;
 
   @override
   Widget build(BuildContext context) => ValueListenableBuilder<RunSummary?>(
     valueListenable: game.services.progress.lastRun,
     builder: (_, s, _) {
       if (s == null) return const SizedBox.shrink();
-      final info = game.services.progress.value.levelInfo;
+      final p = game.services.progress.value;
+      final info = p.levelInfo;
+      final before = LevelInfo.fromXp(math.max(0, p.xp - s.xpTotal));
+      final reduce = game.reduceMotion;
       const small = TextStyle(color: UiColors.paper, fontSize: 15);
       const accent = TextStyle(color: UiColors.mustard, fontSize: 15);
+      // öncelik sırası: görevler, başarımlar, yeni bölgeler, keşif
+      final lines = <Widget>[
+        for (final m in s.completedMissions)
+          _line(Icons.wb_twilight_rounded, 'Görev tamam: ${m.title}'),
+        for (final a in s.unlockedAchievements)
+          _line(
+            Icons.star_rounded,
+            'Başarım: ${a.title}',
+            key: Key('summaryAchievement_${a.id}'),
+            onTap: () => game.openModal(Overlays.achievements),
+          ),
+        for (final z in s.newZones)
+          _line(Icons.flight_takeoff_rounded, 'Yeni bölge: ${zones[z].name}'),
+        // Phase 2.3: keşif albümü
+        if (s.discovery.newPostcards.isNotEmpty)
+          _line(
+            Icons.map_rounded,
+            'Albüme yeni kartpostal: ${s.discovery.newPostcards.map((z) => zones[z].name).join(', ')}',
+          ),
+        for (final g in s.discovery.completedGoals)
+          _line(Icons.check_rounded, 'Keşif: ${g.title} (+${g.rewardSimits})'),
+        for (final z in s.discovery.newBadges)
+          _line(Icons.military_tech_rounded, 'Rozet: ${zones[z].name}'),
+        if (s.discovery.rewardCosmetic != null)
+          _line(
+            Icons.military_tech_rounded,
+            'Albüm tamam! İznik Martısı açıldı.',
+          ),
+      ];
+      const visible = 2;
+      final shown = _expanded ? lines : lines.take(visible).toList();
+      final hidden = lines.length - shown.length;
       return Container(
         key: const Key('runSummary'),
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -761,33 +808,43 @@ class RunSummaryPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            XpBar(fraction: info.fraction, height: 10),
-            for (final z in s.newZones)
-              _line(
-                Icons.flight_takeoff_rounded,
-                'Yeni bölge: ${zones[z].name}',
+            // XP çubuğu uçuş öncesinden dolar; seviye atlandıysa sıfırdan yeni seviyeye
+            TweenAnimationBuilder<double>(
+              key: ValueKey(s.runId),
+              tween: Tween(
+                begin: reduce
+                    ? info.fraction
+                    : (s.leveledUp ? 0 : before.fraction),
+                end: info.fraction,
               ),
-            for (final m in s.completedMissions)
-              _line(Icons.wb_twilight_rounded, 'Görev tamam: ${m.title}'),
-            for (final a in s.unlockedAchievements)
-              _line(Icons.star_rounded, 'Başarım: ${a.title}'),
-            // Phase 2.3: keşif albümü
-            if (s.discovery.newPostcards.isNotEmpty)
-              _line(
-                Icons.map_rounded,
-                'Albüme yeni kartpostal: ${s.discovery.newPostcards.map((z) => zones[z].name).join(', ')}',
+              duration: UiDur.fill,
+              curve: Curves.easeOutCubic,
+              builder: (_, f, _) => XpBar(fraction: f, height: 10),
+            ),
+            if (s.leveledUp)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Center(
+                  child: _LevelUpStamp(level: s.levelAfter, reduce: reduce),
+                ),
               ),
-            for (final g in s.discovery.completedGoals)
-              _line(
-                Icons.check_rounded,
-                'Keşif: ${g.title} (+${g.rewardSimits})',
-              ),
-            for (final z in s.discovery.newBadges)
-              _line(Icons.military_tech_rounded, 'Rozet: ${zones[z].name}'),
-            if (s.discovery.rewardCosmetic != null)
-              _line(
-                Icons.military_tech_rounded,
-                'Albüm tamam! İznik Martısı açıldı.',
+            ...shown,
+            if (lines.length > visible)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton(
+                  key: const Key('summaryMore'),
+                  onPressed: () => setState(() => _expanded = !_expanded),
+                  style: TextButton.styleFrom(
+                    foregroundColor: UiColors.mustard,
+                    minimumSize: const Size(44, 44),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                  child: Text(
+                    _expanded ? 'Daha az' : 'Ayrıntılar (+$hidden)',
+                    style: const TextStyle(fontSize: 15),
+                  ),
+                ),
               ),
           ],
         ),
@@ -795,19 +852,81 @@ class RunSummaryPanel extends StatelessWidget {
     },
   );
 
-  Widget _line(IconData icon, String text) => Padding(
-    padding: const EdgeInsets.only(top: 6),
-    child: Row(
-      children: [
-        PixelIcon(icon, color: UiColors.mustard, size: 24),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(color: UiColors.paper, fontSize: 15),
+  Widget _line(IconData icon, String text, {Key? key, VoidCallback? onTap}) {
+    final row = Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          PixelIcon(icon, color: UiColors.mustard, size: 24),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(color: UiColors.paper, fontSize: 15),
+            ),
+          ),
+          if (onTap != null)
+            const PixelIcon(
+              Icons.chevron_right_rounded,
+              color: UiColors.paper,
+              size: 24,
+            ),
+        ],
+      ),
+    );
+    if (onTap == null) return KeyedSubtree(key: key, child: row);
+    return Semantics(
+      key: key,
+      button: true,
+      label: '$text, ayrıntıyı aç',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: ExcludeSemantics(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 44),
+            child: row,
           ),
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
+}
+
+/// Seviye atlama damgası: kısa bir büyüyüp oturma (azaltılmış harekette sabit).
+class _LevelUpStamp extends StatelessWidget {
+  const _LevelUpStamp({required this.level, required this.reduce});
+
+  final int level;
+  final bool reduce;
+
+  @override
+  Widget build(BuildContext context) {
+    final stamp = Container(
+      key: const Key('levelUpStamp'),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+      decoration: pixelBox(
+        color: UiColors.mustard,
+        border: UiColors.navy,
+        borderWidth: kUiPx * 2,
+        steps: 1,
+      ),
+      child: Text(
+        'SEVİYE $level!',
+        style: const TextStyle(
+          color: UiColors.navy,
+          fontSize: 20,
+          letterSpacing: 2,
+        ),
+      ),
+    );
+    if (reduce) return stamp;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.6, end: 1),
+      duration: UiDur.emphasis,
+      curve: Curves.easeOutBack,
+      builder: (_, s, c) => Transform.scale(scale: s, child: c),
+      child: stamp,
+    );
+  }
 }

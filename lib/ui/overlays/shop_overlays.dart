@@ -107,10 +107,30 @@ class _Stage extends StatelessWidget {
   );
 }
 
-class _Balance extends StatelessWidget {
-  const _Balance({required this.balance});
+/// Bakiye. Phase 2.8: satın alınca sayı eski değerden yenisine sayar ve yanında kısa süre harcanan miktar
+/// ("−50") görünür: bakiyenin nereye gittiği anlaşılır (azaltılmış harekette sayma yok, fark yine yazılır).
+class _Balance extends StatefulWidget {
+  const _Balance({required this.balance, required this.reduce});
 
   final int balance;
+  final bool reduce;
+
+  @override
+  State<_Balance> createState() => _BalanceState();
+}
+
+class _BalanceState extends State<_Balance> {
+  late int _from = widget.balance;
+  int? _delta;
+
+  @override
+  void didUpdateWidget(_Balance old) {
+    super.didUpdateWidget(old);
+    if (old.balance != widget.balance) {
+      _from = old.balance;
+      _delta = widget.balance - old.balance;
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Container(
@@ -127,10 +147,28 @@ class _Balance extends StatelessWidget {
         const Expanded(
           child: Text('Simit bakiyen', style: TextStyle(color: UiColors.navy)),
         ),
-        Text(
-          '$balance',
-          key: const Key('shopBalance'),
-          style: const TextStyle(color: UiColors.navy, fontSize: 20),
+        if (_delta != null && _delta != 0)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(
+              _delta! < 0 ? '−${-_delta!}' : '+${_delta!}',
+              key: const Key('shopBalanceDelta'),
+              style: const TextStyle(color: UiColors.action, fontSize: 15),
+            ),
+          ),
+        TweenAnimationBuilder<double>(
+          key: ValueKey(widget.balance),
+          tween: Tween(
+            begin: (widget.reduce ? widget.balance : _from).toDouble(),
+            end: widget.balance.toDouble(),
+          ),
+          duration: UiDur.emphasis,
+          curve: Curves.easeOut,
+          builder: (_, v, _) => Text(
+            '${v.round()}',
+            key: const Key('shopBalance'),
+            style: const TextStyle(color: UiColors.navy, fontSize: 20),
+          ),
         ),
       ],
     ),
@@ -158,6 +196,19 @@ class _ShopOverlayState extends State<ShopOverlay> {
   bool _messageIsError = false;
 
   IstanbulFlightGame get g => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    // Phase 2.8: sahip olunan görünümler görüldü (menüdeki "yeni" işareti söner)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        g.services.ux.markCosmeticsSeen(
+          g.services.progress.value.unlockedCosmetics,
+        );
+      }
+    });
+  }
 
   void _select(String id) => setState(() {
     _focus = id;
@@ -243,7 +294,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Balance(balance: p.simitBalance),
+            _Balance(balance: p.simitBalance, reduce: g.reduceMotion),
             const SizedBox(height: 10),
             _FocusPanel(
               key: _panelKey,
@@ -287,7 +338,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
               'Simitler yalnızca oyunda kazanılır. Görünümler sadece görseldir; '
               'uçuşu, çarpışmayı ve skoru etkilemez.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ],
         );
@@ -361,7 +412,7 @@ class _FocusPanel extends StatelessWidget {
         Text(
           '${item.category.label} · ${item.description}',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
         const SizedBox(height: 8),
         if (confirming)
@@ -386,7 +437,7 @@ class _FocusPanel extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -610,7 +661,7 @@ class _ShopCard extends StatelessWidget {
                             statusText,
                             key: Key('shopStatus_${item.id}'),
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: status == CosmeticStatus.tooExpensive
                                   ? UiColors.action
                                   : UiColors.navySoft,
@@ -674,7 +725,7 @@ class WardrobeOverlay extends StatelessWidget {
             const Text(
               'Seçimin menüde hemen, uçuşta bir sonraki turda görünür.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -757,64 +808,17 @@ class _OwnedTile extends StatelessWidget {
             item.name,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: const TextStyle(color: UiColors.navy, fontSize: 10),
+            style: const TextStyle(color: UiColors.navy, fontSize: 11),
           ),
           Text(
             selected ? 'KULLANILIYOR' : 'KULLAN',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: selected ? UiColors.action : UiColors.navySoft,
             ),
           ),
         ],
       ),
     ),
-  );
-}
-
-/// Menüdeki simit rozeti: bakiyeyi gösterir, dokununca mağazayı açar.
-class ShopChip extends StatelessWidget {
-  const ShopChip({super.key, required this.game});
-
-  final IstanbulFlightGame game;
-
-  @override
-  Widget build(BuildContext context) => ValueListenableBuilder<PlayerProgress>(
-    valueListenable: game.services.progress,
-    builder: (context, p, _) {
-      final narrow = MediaQuery.sizeOf(context).width < 360;
-      return Pressable(
-        key: const Key('shopButton'),
-        game: game,
-        semanticLabel: 'Simit mağazası, bakiye ${p.simitBalance}',
-        onTap: () => game.openModal(Overlays.shop),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: pixelBox(
-            color: UiColors.scrim,
-            border: const Color(0x66FBF7EE),
-            steps: 3,
-          ),
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(color: UiColors.paper, fontSize: 15),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SimitIcon(size: 18),
-                const SizedBox(width: 6),
-                Text('${p.simitBalance}', key: const Key('totalSimits')),
-                if (!narrow) ...[
-                  const SizedBox(width: 6),
-                  const Text(
-                    '· Mağaza',
-                    style: TextStyle(color: UiColors.mustard),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    },
   );
 }
