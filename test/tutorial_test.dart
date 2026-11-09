@@ -10,7 +10,6 @@ import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
 import 'package:istanbul_flight/game/tutorial.dart';
 import 'package:istanbul_flight/progression/game_events.dart';
-import 'package:istanbul_flight/services/game_center/game_center.dart';
 import 'package:istanbul_flight/services/game_center/game_center_controller.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:istanbul_flight/services/ux_state.dart';
