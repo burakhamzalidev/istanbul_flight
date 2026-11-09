@@ -50,7 +50,8 @@ class CosmeticDef {
   /// Kartlarda gösterilen sabit kare (6 = süzülme).
   final int previewFrame;
 
-  /// Mağazada satılmaz; yalnızca bir ödülle açılır (İznik Martısı: keşif albümü, Phase 2.3).
+  /// Mağazada satılmaz; yalnızca bir ödülle açılır (İznik Martısı: keşif albümü, Phase 2.3; Kupa Martısı:
+  /// sezon ödülü, Phase 2.7).
   final bool rewardOnly;
 
   int get price => ShopConfig.prices[id] ?? 0;
@@ -109,6 +110,15 @@ const cosmeticCatalog = <CosmeticDef>[
         'Çini mavisi kanatlar, başında kırmızı lale. Keşif albümü ödülü.',
     category: CosmeticCategory.plumage,
     sheetAsset: 'pixel_art/characters/skins/iznik.png',
+    rewardOnly: true,
+  ),
+  CosmeticDef(
+    id: 'kupa',
+    name: 'Kupa Martısı',
+    description:
+        'Başında defne tacı, göğsünde kurdeleli altın madalya. Sezon ödülü.',
+    category: CosmeticCategory.outfit,
+    sheetAsset: 'pixel_art/characters/skins/kupa.png',
     rewardOnly: true,
   ),
 ];

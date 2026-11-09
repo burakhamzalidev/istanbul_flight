@@ -24,9 +24,20 @@ enum RunMode {
   dailyRanked,
 
   /// Günün Uçuşu, antrenman: aynı parkur; hak, günlük ödül ve günlük sıralama yok.
-  dailyPractice;
+  dailyPractice,
 
-  bool get isDaily => this != classic;
+  /// Etkinlik uçuşu (Phase 2.7: İstanbul Kupası ya da özel etkinlik): sınırsız deneme, etkinliğin en iyi tek
+  /// uçuşu sayılır; etkinlik ödülleri, sezon puanı ve (kupada) haftalık sıralama.
+  event,
+
+  /// Etkinlik parkurunda dereceye girmeyen uçuş (cihaz saati güvenilmez): ödül ve sıralama yok.
+  eventPractice;
+
+  bool get isDaily => this == dailyRanked || this == dailyPractice;
+  bool get isEvent => this == event || this == eventPractice;
+
+  /// Parkur deterministik bir tanımdan gelir (günlük ya da etkinlik): kuşun yatay konumu sabit.
+  bool get usesCourse => this != classic;
 }
 
 /// UTC gün anahtarı (`2026-10-24`). Günlük challenge bütün dünyada aynı anda başlar ve biter.
@@ -333,7 +344,12 @@ abstract final class CourseValidator {
   /// Kuş çapının ~üçte biri.
   static const minSafeBand = 24.0;
 
-  static CourseCheck check(DailyCourse course, {int maxScore = requiredDepth}) {
+  /// [hazardAt] verilirse (Phase 2.7 etkinlikleri) dinamik engellerle birlikte sınanır.
+  static CourseCheck check(
+    DailyCourse course, {
+    int maxScore = requiredDepth,
+    Hazard? Function(int corridor)? hazardAt,
+  }) {
     final c = course.config;
     final problems = <String>[];
     for (var i = 0; i < maxScore + 2; i++) {
@@ -354,7 +370,11 @@ abstract final class CourseValidator {
         }
       }
     }
-    final (:depth, :tightest) = explore(course, maxScore: maxScore);
+    final (:depth, :tightest) = explore(
+      course,
+      maxScore: maxScore,
+      hazardAt: hazardAt,
+    );
     return CourseCheck(depth: depth, tightest: tightest, problems: problems);
   }
 

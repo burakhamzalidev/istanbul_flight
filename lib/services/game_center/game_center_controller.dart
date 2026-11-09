@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../challenge/daily_challenge.dart';
 import '../../challenge/daily_state.dart';
 import '../../data/score_repository.dart';
+import '../../events/event_calendar.dart';
+import '../../events/event_definition.dart';
 import '../../game/config.dart';
 import '../../progression/achievements.dart';
 import '../../progression/game_events.dart';
@@ -54,6 +56,21 @@ abstract final class GcScorePolicy {
     if (r.flightMs < minMs * timingTolerance) return 'too_fast';
     return null;
   }
+
+  /// Etkinlik skoru (Phase 2.7): uçuş klasik kurallardan geçmeli; Simit Festivali'nde simit sayısı geçilen
+  /// engelden fazla olamaz (her geçitte en fazla bir simit, ilk geçitte hiç).
+  static String? rejectEventReason(
+    RunResult r,
+    ScoringPolicy scoring, {
+    GameConfig config = const GameConfig(),
+  }) {
+    final base = rejectReason(r, config: config);
+    if (base != null) return base;
+    if (r.simits < 0 || r.simits > r.obstaclesPassed) return 'simit_mismatch';
+    final s = scoring.score(obstacles: r.obstaclesPassed, simits: r.simits);
+    if (s > maxScore) return 'too_high';
+    return null;
+  }
 }
 
 /// Kalıcı Game Center kaydı: kimlik içermez (oyuncu adı, kimlik, avatar saklanmaz).
@@ -72,6 +89,7 @@ class GcRecord {
     this.pendingBest = 0,
     this.legacyExported = false,
     this.dailyPending = const {},
+    this.eventPending = const {},
   });
 
   /// Henüz gönderilemeyen en iyi tüm zamanlar skoru (0 = yok). Daha düşük skorlar ayrıca tutulmaz.
@@ -83,58 +101,75 @@ class GcRecord {
   /// challengeId → günün en iyi gönderilmemiş dereceli skoru (en fazla birkaç gün; eskiler düşer).
   final Map<String, GcDailyPending> dailyPending;
 
+  /// eventId → kupanın en iyi gönderilmemiş skoru (Phase 2.7; kendi haftasının dönemine gider).
+  final Map<String, GcDailyPending> eventPending;
+
   GcRecord copyWith({
     int? pendingBest,
     bool? legacyExported,
     Map<String, GcDailyPending>? dailyPending,
+    Map<String, GcDailyPending>? eventPending,
   }) => GcRecord(
     pendingBest: pendingBest ?? this.pendingBest,
     legacyExported: legacyExported ?? this.legacyExported,
     dailyPending: dailyPending ?? this.dailyPending,
+    eventPending: eventPending ?? this.eventPending,
   );
 
+  static Map<String, Object> _pendingJson(Map<String, GcDailyPending> m) => {
+    for (final e in m.entries)
+      e.key: {
+        'score': e.value.score,
+        'achievedAt': e.value.achievedAt.toUtc().toIso8601String(),
+      },
+  };
+
+  static Map<String, GcDailyPending> _pendingFrom(
+    Object? raw,
+    bool Function(String key) valid,
+  ) {
+    final pending = <String, GcDailyPending>{};
+    if (raw is! Map) return pending;
+    for (final e in raw.entries) {
+      final key = e.key, v = e.value;
+      if (key is! String || !valid(key) || v is! Map) continue;
+      final score = v['score'], at = v['achievedAt'];
+      final when = at is String ? DateTime.tryParse(at) : null;
+      if (score is int && score > 0 && when != null) {
+        pending[key] = GcDailyPending(
+          score: math.min(score, GcScorePolicy.maxScore),
+          achievedAt: when,
+        );
+      }
+    }
+    return pending;
+  }
+
   Map<String, Object> toJson() => {
-    'v': 2,
+    'v': 3,
     'pendingBest': pendingBest,
     'legacyExported': legacyExported,
-    'dailyPending': {
-      for (final e in dailyPending.entries)
-        e.key: {
-          'score': e.value.score,
-          'achievedAt': e.value.achievedAt.toUtc().toIso8601String(),
-        },
-    },
+    'dailyPending': _pendingJson(dailyPending),
+    'eventPending': _pendingJson(eventPending),
   };
 
   factory GcRecord.fromJson(Object? j) {
     if (j is! Map) return const GcRecord();
     final best = j['pendingBest'];
-    final daily = j['dailyPending'];
-    final pending = <String, GcDailyPending>{};
-    if (daily is Map) {
-      for (final e in daily.entries) {
-        final key = e.key, v = e.value;
-        if (key is! String ||
-            DailyChallengeDefinition.dayKeyOf(key) == null ||
-            v is! Map) {
-          continue;
-        }
-        final score = v['score'], at = v['achievedAt'];
-        final when = at is String ? DateTime.tryParse(at) : null;
-        if (score is int && score > 0 && when != null) {
-          pending[key] = GcDailyPending(
-            score: math.min(score, GcScorePolicy.maxScore),
-            achievedAt: when,
-          );
-        }
-      }
-    }
     return GcRecord(
       pendingBest: best is int && best > 0
           ? math.min(best, GcScorePolicy.maxScore)
           : 0,
       legacyExported: j['legacyExported'] == true,
-      dailyPending: pending,
+      dailyPending: _pendingFrom(
+        j['dailyPending'],
+        (k) => DailyChallengeDefinition.dayKeyOf(k) != null,
+      ),
+      // yalnızca tablosu olan etkinlikler (kupa)
+      eventPending: _pendingFrom(
+        j['eventPending'],
+        (k) => EventCalendar.slotById(k)?.leaderboardId != null,
+      ),
     );
   }
 }
@@ -195,6 +230,7 @@ class GameCenterState {
     this.pendingBest = 0,
     this.weeklyPending = false,
     this.dailyPending = 0,
+    this.eventPending = 0,
   });
 
   final GcConnection connection;
@@ -209,9 +245,15 @@ class GameCenterState {
   /// Günlük tabloya gönderilmeyi bekleyen gün sayısı.
   final int dailyPending;
 
+  /// Kupa tablosuna gönderilmeyi bekleyen hafta sayısı (Phase 2.7).
+  final int eventPending;
+
   bool get signedIn => connection == GcConnection.signedIn;
   int get pendingCount =>
-      (pendingBest > 0 ? 1 : 0) + (weeklyPending ? 1 : 0) + dailyPending;
+      (pendingBest > 0 ? 1 : 0) +
+      (weeklyPending ? 1 : 0) +
+      dailyPending +
+      eventPending;
 
   GameCenterState copyWith({
     GcConnection? connection,
@@ -223,6 +265,7 @@ class GameCenterState {
     int? pendingBest,
     bool? weeklyPending,
     int? dailyPending,
+    int? eventPending,
   }) => GameCenterState(
     connection: connection ?? this.connection,
     alias: clearAlias ? null : alias ?? this.alias,
@@ -231,6 +274,7 @@ class GameCenterState {
     pendingBest: pendingBest ?? this.pendingBest,
     weeklyPending: weeklyPending ?? this.weeklyPending,
     dailyPending: dailyPending ?? this.dailyPending,
+    eventPending: eventPending ?? this.eventPending,
   );
 }
 
@@ -283,6 +327,12 @@ class GameCenterController extends ValueNotifier<GameCenterState>
   /// Apple'ın günlük tablo dönemi okununca (saat denetimi; GameServices bağlar).
   void Function(GcOccurrence? occurrence)? onDailyOccurrence;
 
+  /// Kupa skorunun durumu değişince (etkinlik kaydına yazılır; Phase 2.7).
+  void Function(String eventId, DailyGcStatus status)? onEventStatus;
+
+  /// Apple'ın kupa tablosu dönemi okununca (haftalık saat denetimi; Phase 2.7).
+  void Function(GcOccurrence? occurrence)? onCupOccurrence;
+
   bool _started = false;
   bool _flushing = false;
   bool _flushAgain = false;
@@ -301,6 +351,7 @@ class GameCenterController extends ValueNotifier<GameCenterState>
     value = value.copyWith(
       pendingBest: _record.pendingBest,
       dailyPending: _record.dailyPending.length,
+      eventPending: _record.eventPending.length,
     );
     if (!api.isSupported) return;
     _sub = api.statusChanges.listen(_applyStatus);
@@ -349,8 +400,10 @@ class GameCenterController extends ValueNotifier<GameCenterState>
       _reported.clear(); // hesap değişmiş olabilir: başarımlar baştan eşitlenir
       unawaited(_exportLegacyBest().then((_) => flush()));
       unawaited(refreshDailyOccurrence());
+      unawaited(refreshCupOccurrence());
     } else if (!s.authenticated) {
       onDailyOccurrence?.call(null);
+      onCupOccurrence?.call(null);
     }
   }
 
@@ -385,10 +438,12 @@ class GameCenterController extends ValueNotifier<GameCenterState>
     if (_handledRuns.length > 50) _handledRuns.remove(_handledRuns.first);
     final reject = GcScorePolicy.rejectReason(r, config: config);
     switch (r.mode) {
-      case RunMode.dailyPractice:
+      case RunMode.dailyPractice || RunMode.eventPractice:
         return; // antrenman hiçbir tabloya gitmez
       case RunMode.dailyRanked:
         return _queueDaily(r, reject);
+      case RunMode.event:
+        return _queueEvent(r);
       case RunMode.classic:
         break;
     }
@@ -444,11 +499,107 @@ class GameCenterController extends ValueNotifier<GameCenterState>
   /// Bu oturumda günlük tabloya gönderilen challenge'lar.
   final Set<String> _dailySent = {};
 
+  /// Bu oturumda kupa tablosuna gönderilen etkinlikler.
+  final Set<String> _eventSent = {};
+
+  /// Kupa skoru: yalnızca kupa tablosu, yalnızca kendi haftasının dönemi. Özel etkinliklerin tablosu yok.
+  Future<void> _queueEvent(RunResult r) async {
+    final id = r.eventId;
+    final slot = id == null ? null : EventCalendar.slotById(id);
+    if (id == null || slot == null || slot.leaderboardId == null) return;
+    final had = _record.eventPending[id];
+    final reject = GcScorePolicy.rejectEventReason(
+      r,
+      slot.scoring,
+      config: config,
+    );
+    if (reject != null) {
+      if (had == null && !_eventSent.contains(id)) {
+        onEventStatus?.call(id, DailyGcStatus.notEligible);
+      }
+      return;
+    }
+    final now = _clock();
+    // uçuş haftanın dışında bitti: o haftanın tablosu kapanmıştır
+    if (!slot.isActiveAt(now)) {
+      if (had == null && !_eventSent.contains(id)) {
+        onEventStatus?.call(id, DailyGcStatus.expired);
+      }
+      return;
+    }
+    final score = slot.scoring.score(
+      obstacles: r.obstaclesPassed,
+      simits: r.simits,
+    );
+    if (had != null && had.score >= score) return;
+    await _save(
+      _record.copyWith(
+        eventPending: {
+          ..._record.eventPending,
+          id: GcDailyPending(score: score, achievedAt: now),
+        },
+      ),
+    );
+    onEventStatus?.call(id, DailyGcStatus.pending);
+    await flush();
+  }
+
+  /// Bekleyen kupa skorları kendi haftalarının Apple dönemine gönderilir; dönem kapandıysa düşer.
+  Future<void> _flushEvents() async {
+    for (final e in _record.eventPending.entries.toList()) {
+      final id = e.key;
+      final slot = EventCalendar.slotById(id);
+      DailyGcStatus? outcome;
+      if (slot == null ||
+          _clock().isAfter(slot.endAtUtc.add(const Duration(days: 1)))) {
+        outcome = DailyGcStatus.expired;
+      } else {
+        try {
+          await api.submitScore(
+            GcBoard.weeklyCup,
+            e.value.score,
+            achievedAt: e.value.achievedAt,
+            occurrenceStart: slot.startAtUtc,
+          );
+          outcome = DailyGcStatus.submitted;
+          value = value.copyWith(clearError: true);
+        } on GameCenterException catch (x) {
+          if (x.code == 'inactive' || x.code == 'expired') {
+            outcome = DailyGcStatus.expired;
+          } else {
+            value = value.copyWith(lastError: x.code);
+          }
+        } catch (_) {
+          value = value.copyWith(lastError: 'failed');
+        }
+      }
+      if (outcome == null) continue;
+      if (identical(_record.eventPending[id], e.value)) {
+        await _save(
+          _record.copyWith(eventPending: {..._record.eventPending}..remove(id)),
+        );
+      }
+      if (outcome == DailyGcStatus.submitted) _eventSent.add(id);
+      onEventStatus?.call(id, outcome);
+    }
+  }
+
+  /// Apple'ın kupa tablosu dönemini okur (haftalık saat denetimi). Hata ya da oturum yok: bilinmiyor.
+  Future<void> refreshCupOccurrence() async {
+    if (!value.signedIn) return onCupOccurrence?.call(null);
+    try {
+      onCupOccurrence?.call(await api.loadOccurrence(GcBoard.weeklyCup));
+    } catch (_) {
+      onCupOccurrence?.call(null);
+    }
+  }
+
   Future<void> _save(GcRecord r) async {
     _record = r;
     value = value.copyWith(
       pendingBest: r.pendingBest,
       dailyPending: r.dailyPending.length,
+      eventPending: r.eventPending.length,
     );
     try {
       await _store.save(r);
@@ -472,6 +623,7 @@ class GameCenterController extends ValueNotifier<GameCenterState>
         await _flushBest();
         await _flushWeekly();
         await _flushDaily();
+        await _flushEvents();
         await _syncAchievements();
       } while (_flushAgain && value.signedIn);
     } finally {

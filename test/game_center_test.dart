@@ -341,10 +341,11 @@ void main() {
       await gc1.handleRun(_run('r1', 27));
       await Future<void>.delayed(Duration.zero);
       expect(jsonDecode(prefs.getString('game_center_v1')!), {
-        'v': 2, // Phase 2.5: dailyPending alanı eklendi
+        'v': 3, // Phase 2.5: dailyPending; Phase 2.7: eventPending
         'pendingBest': 27,
         'legacyExported': true,
         'dailyPending': <String, Object>{},
+        'eventPending': <String, Object>{},
       });
       // yeniden açılış, internet var
       final api2 = FakeGameCenterApi();

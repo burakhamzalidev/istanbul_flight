@@ -1,6 +1,8 @@
 # TestFlight beta: İstanbul Flight 1.6.0 (Phase 2.6, Genişleyen İstanbul)
 
-> **Durum: HAZIRLANDI, henüz yüklenmedi.** Kullanıcı 1.6.0 sürümünü ve TestFlight yüklemesini onayladı (9 Kasım 2026). Codemagic `ios-testflight`, dal `feature/phase2-6-expanded-istanbul`. Derleme numarasını Codemagic verir (TestFlight'taki son numara + 1).
+> **Durum: TestFlight'a YÜKLENDİ (9 Kasım 2026 01:50, kullanıcı onayıyla).** 1.6.0 (9): Codemagic `ios-testflight` derleme #10, dal `feature/phase2-6-expanded-istanbul` (commit `2f95459`), 5 dk 4 sn. Analiz ve testler Codemagic'te geçti; IPA App Store Connect'e yüklendi. Apple derlemeyi işledi (yükleme 01:56); "Ekip" (dahili) ve "Test Kullanıcıları" (harici) gruplarına eklendi, 2 davet. "What to Test" (TR) App Store Connect'te girildi ve kaydedildi.
+> - Harici grup için durum "Ready to Submit": beta incelemesine gönderilemedi. Codemagic'in son adımı (post-processing) önceki derlemelerdeki gibi başarısız oldu (hesap sorunu sürüyor).
+> - Not: Codemagic'te yanlışlıkla `main` dalında "Doğrulama" iş akışı da başlatıldı (#1); yükleme yapmayan bir iş akışı, makine türü planda olmadığı için hemen başarısız oldu. Etkisi yok.
 > - Dahili "Ekip" grubu test eder.
 > - "Test Kullanıcıları" (harici) grubuna eklenir; yeni sürümün ilk derlemesi olduğu için beta incelemesi gerekir. Hesap sorunu (Apple talebi 103007198858) sürerse 422 ile takılabilir.
 > - App Store sürüm kaydına dokunulmaz; App Review'a gönderim yok.

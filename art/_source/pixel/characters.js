@@ -187,6 +187,35 @@ const tulip = {
   },
 };
 
+/** Kupa Martısı (Phase 2.7 sezon ödülü): başta defne tacı, göğüste kırmızı-beyaz kurdeleli altın madalya. */
+const champion = {
+  chest(cv, sway) {
+    // kurdele: boyundan madalyaya V biçiminde iki şerit (kırmızı, ortası beyaz), hafifçe salınır
+    const k = Math.round(sway * 0.6);
+    cv.poly([[29, 20], [31, 20], [34, 26 + k], [32, 26 + k]], '#c42f36');
+    cv.poly([[37, 20], [39, 20], [36, 26 + k], [34, 26 + k]], '#a32530');
+    cv.set(30, 21, '#fbf7ee'); cv.set(31, 23, '#fbf7ee'); cv.set(37, 21, '#fbf7ee'); cv.set(36, 23, '#fbf7ee');
+    // madalya: altın daire, parlak sol üst, koyu alt kenar; ortada yıldız kabartması
+    const cx = 34.5, cy = 29 + k;
+    cv.ellipse(cx, cy, 3.6, 3.6, (nx, ny) => (nx + ny < -0.7 ? '#fff3b0' : nx + ny > 0.6 ? '#b07b18' : '#f2c23a'));
+    const x = Math.round(cx), y = Math.round(cy);
+    cv.set(x - 1, y - 2, '#fffbe6');
+    cv.set(x, y - 1, '#c98f26'); cv.set(x - 1, y, '#c98f26'); cv.set(x, y, '#c98f26'); cv.set(x + 1, y, '#c98f26'); cv.set(x, y + 1, '#c98f26');
+  },
+  head(cv) {
+    // defne tacı: başın üst çizgisine oturan iki sıra yaprak (arka dal koyu, ön dal açık), önde altın düğüm
+    for (let x = 21; x <= 36; x++) {
+      const t = (x - 29) / 9.2;
+      const top = Math.round(16 - Math.sqrt(Math.max(0, 1 - t * t)) * 8.6);
+      const even = x % 2 === 0;
+      cv.set(x, top - 1, even ? '#5fae4f' : '#3f8a3a');
+      cv.set(x, top, even ? '#3f8a3a' : '#2c6a2c');
+      if (even) cv.set(x, top - 2, '#7cc46a'); // yaprak ucu, dışa doğru
+    }
+    cv.set(36, 10, '#f2c23a'); cv.set(37, 10, '#d99a1c'); cv.set(36, 11, '#d99a1c');
+  },
+};
+
 const SKINS = {
   classic: { palette: C },
   denizci: { palette: C, acc: sailor },
@@ -222,6 +251,7 @@ const SKINS = {
     },
     acc: tulip,
   },
+  kupa: { palette: C, acc: champion },
 };
 
 function frame(spec, skin = SKINS.classic) {

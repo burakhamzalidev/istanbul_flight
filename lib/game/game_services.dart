@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import '../challenge/daily_challenge.dart';
 import '../challenge/daily_service.dart';
 import '../challenge/daily_state.dart';
+import '../events/event_service.dart';
+import '../events/event_state.dart';
+import 'day_cycle.dart';
 import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../progression/run_settlement.dart';
@@ -32,6 +35,15 @@ class ProgressController extends ValueNotifier<PlayerProgress>
   /// Son günlük uçuşun özeti (Günün Uçuşu oyun sonu ekranı; klasik uçuşta null).
   final lastDaily = ValueNotifier<DailyRunOutcome?>(null);
 
+  /// Son etkinlik uçuşunun özeti (Phase 2.7; etkinlik dışı uçuşta null).
+  final lastEvent = ValueNotifier<EventRunOutcome?>(null);
+
+  /// Son uçuşta tamamlanan haftalık görevler (Phase 2.7).
+  final lastWeekly = ValueNotifier<WeeklyOutcome?>(null);
+
+  /// Apple'ın kupa tablosu dönemine göre güvenilir hafta (GameServices bağlar; yoksa null).
+  int? Function()? trustedWeek;
+
   Future<void> _saving = Future.value();
 
   DateTime now() => _clock();
@@ -42,6 +54,8 @@ class ProgressController extends ValueNotifier<PlayerProgress>
       case RunStarted():
         lastRun.value = null;
         lastDaily.value = null;
+        lastEvent.value = null;
+        lastWeekly.value = null;
       case RunAbandoned(:final runId):
         _closeDaily(runId, DailyAttemptStatus.abandoned);
       case RunFinished(:final result):
@@ -57,15 +71,69 @@ class ProgressController extends ValueNotifier<PlayerProgress>
   /// Uçuşu hesaplar ve kaydeder. Aynı uçuş ikinci kez gelirse hiçbir şey yapmaz (null).
   RunSummary? settle(RunResult result) {
     final now = _clock();
-    final s = settleRun(value, result, now);
+    // Simit Festivali: uçuşta toplanan simitlerin cüzdana geçen kısmı etkinlik başına sınırlı (docs/20 §8)
+    final credited = eventWalletSimits(value, result);
+    // Etkinlik bölge dizisi rotanın ortasından başlayabilir (ör. Gece Uçuşu: Rumeli Hisarı). Keşif ve
+    // görevler için uçuş, klasik rotadaki karşılığıyla sayılır: bölge, skoru o bölgenin eşiğine ulaşınca
+    // keşfedilir (etkinlik bölge atlamayı ödüle çevirmez; docs/20 §13).
+    final wallet = result.copyWith(
+      simits: credited,
+      maxZone: result.mode.isEvent ? zoneIndexForScore(result.score) : null,
+    );
+    final s = settleRun(value, wallet, now);
     if (s == null) return null;
     // Günün Uçuşu: denemenin kapanışı, günlük rekor ve tek seferlik günlük ödüller (aynı kayıtta)
-    final (progress, daily) = settleDailyRun(s.progress, result, now);
+    final (afterDaily, daily) = settleDailyRun(s.progress, result, now);
+    // Etkinlik ve haftalık görevler (Phase 2.7): aynı kayıtta, aynı uçuş olayından
+    final week = trustedWeek?.call();
+    final (afterEvent, event) = settleEventRun(
+      afterDaily,
+      result,
+      now,
+      creditedSimits: credited,
+      trustedWeek: week,
+    );
+    final (progress, weekly) = settleWeekly(
+      afterEvent,
+      result,
+      now,
+      eventOutcome: event,
+      trustedWeek: week,
+    );
     value = progress;
     lastDaily.value = daily;
+    lastEvent.value = event;
+    lastWeekly.value = weekly;
     lastRun.value = s.summary;
     _persist();
     return s.summary;
+  }
+
+  /// Kupa skorunun Game Center durumunu etkinlik kaydına yazar.
+  void markEventGc(String eventId, DailyGcStatus status) {
+    final next = applyEventGcStatus(value, eventId, status);
+    if (identical(next, value)) return;
+    value = next;
+    _persist();
+  }
+
+  /// Hafta değiştiyse haftalık görevleri yeniler (etkinlik ekranı açılınca).
+  void refreshWeek() {
+    final next = ensureWeekly(value, _clock());
+    if (identical(next, value)) return;
+    value = next;
+    _persist();
+  }
+
+  /// Kartpostal çerçevesi (null: klasik). Sahip olunmayan çerçevede false.
+  bool selectFrame(String? id) {
+    final next = selectPostcardFrame(value, id);
+    if (next == null) return false;
+    if (!identical(next, value)) {
+      value = next;
+      _persist();
+    }
+    return true;
   }
 
   /// Dereceli günlük denemeyi başlatır; başladıysa hak harcanmıştır ve hemen kaydedilir.
@@ -177,6 +245,8 @@ class ProgressController extends ValueNotifier<PlayerProgress>
   void dispose() {
     lastRun.dispose();
     lastDaily.dispose();
+    lastEvent.dispose();
+    lastWeekly.dispose();
     super.dispose();
   }
 }
@@ -192,11 +262,17 @@ class GameServices {
     required this.share,
     GameCenterController? gameCenter,
     DailyChallengeService? daily,
+    EventService? events,
   }) : gameCenter = gameCenter ?? GameCenterController.disabled(),
-       daily = daily ?? DailyChallengeService(clock: progress.now) {
+       daily = daily ?? DailyChallengeService(clock: progress.now),
+       events = events ?? EventService(clock: progress.now) {
     // Günlük skorların Game Center durumu günlük kayda yazılır; Apple'ın günlük dönemi saat denetimine girer
     this.gameCenter.onDailyStatus = progress.markDailyGc;
     this.gameCenter.onDailyOccurrence = this.daily.setOccurrence;
+    // Phase 2.7: kupa skorunun durumu etkinlik kaydına; kupa tablosunun dönemi haftalık saat denetimine
+    this.gameCenter.onEventStatus = progress.markEventGc;
+    this.gameCenter.onCupOccurrence = this.events.setOccurrence;
+    progress.trustedWeek = () => this.events.trustedWeek;
   }
 
   /// Testler ve servislerin kurulamadığı durum: ses ve titreşim yok, kayıt bellekte.
@@ -226,6 +302,9 @@ class GameServices {
 
   /// Günün Uçuşu: bugünün challenge tanımı, saat denetimi (Phase 2.5).
   final DailyChallengeService daily;
+
+  /// Etkinlikler: haftalık kupa, özel etkinlik, sezon, saat denetimi (Phase 2.7).
+  final EventService events;
 
   /// Ek dinleyiciler (testler, ileride analitik olmayan yerel sistemler).
   final List<GameEventListener> listeners = [];

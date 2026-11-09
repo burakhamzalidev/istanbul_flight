@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../game/day_cycle.dart';
 import '../challenge/daily_state.dart';
+import '../events/event_state.dart';
 import '../progression/discovery.dart';
 import '../progression/missions.dart';
 import '../progression/progression_config.dart';
@@ -19,6 +20,8 @@ import '../progression/progression_config.dart';
 /// [migrateDiscovery] ile geçirilir; eski sürüm bu alanı tanımaz ama diğer alanları aynen okur.
 /// Sürüm 4 (aynı anahtar, Phase 2.5): `dailyChallenge` alanı (Günün Uçuşu kayıtları). Alan yoksa boş
 /// başlar (ya da yedekten gelir); eski sürümler alanı tanımaz, diğer alanları aynen okur.
+/// Sürüm 5 (aynı anahtar, Phase 2.7): `events` alanı (etkinlik rekorları, sezon, haftalık görevler, rozet
+/// ve çerçeveler). Aynı kural: alan yoksa yedekten ya da boş; diğer alanlar değişmez.
 @immutable
 class PlayerProgress {
   const PlayerProgress({
@@ -42,9 +45,10 @@ class PlayerProgress {
     this.settledRuns = const [],
     this.discovery = DiscoveryState.empty,
     this.dailyChallenge = DailyChallengeState.empty,
+    this.events = EventProgressState.empty,
   });
 
-  static const version = 4;
+  static const version = 5;
 
   /// Uçuşlarda toplanan simit (tüm zamanlar). Ödül simitleri [bonusSimits]'te ayrı tutulur.
   final int totalSimits;
@@ -92,6 +96,9 @@ class PlayerProgress {
   /// Günün Uçuşu: denemeler, günlük rekorlar, alınan günlük ödüller (Phase 2.5).
   final DailyChallengeState dailyChallenge;
 
+  /// Etkinlikler ve sezon (Phase 2.7).
+  final EventProgressState events;
+
   LevelInfo get levelInfo => LevelInfo.fromXp(xp);
   int get level => levelInfo.level;
 
@@ -135,6 +142,7 @@ class PlayerProgress {
     List<String>? settledRuns,
     DiscoveryState? discovery,
     DailyChallengeState? dailyChallenge,
+    EventProgressState? events,
   }) => PlayerProgress(
     totalSimits: totalSimits ?? this.totalSimits,
     bestRunSimits: bestRunSimits ?? this.bestRunSimits,
@@ -156,6 +164,7 @@ class PlayerProgress {
     settledRuns: settledRuns ?? this.settledRuns,
     discovery: discovery ?? this.discovery,
     dailyChallenge: dailyChallenge ?? this.dailyChallenge,
+    events: events ?? this.events,
   );
 
   Map<String, Object> toJson() => {
@@ -183,6 +192,7 @@ class PlayerProgress {
     'settledRuns': settledRuns,
     'discovery': discovery.toJson(),
     'dailyChallenge': dailyChallenge.toJson(),
+    'events': events.toJson(),
   };
 
   /// Sürüm 1 ve 2 kayıtlarını okur. Eksik, yanlış türde ya da negatif alanlar varsayılana düşer;
@@ -238,6 +248,7 @@ class PlayerProgress {
           ? DiscoveryState.fromJson(disc)
           : DiscoveryState.empty,
       dailyChallenge: DailyChallengeState.fromJson(daily),
+      events: EventProgressState.fromJson(j['events']),
     );
   }
 
@@ -247,6 +258,9 @@ class PlayerProgress {
   /// Kayıtta Günün Uçuşu alanı var mı (yoksa yedekten kurulur: eski bir sürüm alanı düşürmüş olabilir).
   static bool hasDailyChallenge(Map<String, Object?> j) =>
       j['dailyChallenge'] is Map;
+
+  /// Kayıtta etkinlik alanı var mı (yoksa yedekten kurulur; Phase 2.7).
+  static bool hasEvents(Map<String, Object?> j) => j['events'] is Map;
 
   /// Sürüm 1 → 2 geçişi. 1.0.0'da uçuş sayısı ve skor toplamı tutulmuyordu; bunlar 0'dan başlar.
   /// Rekordan (`best_score_v1`) geçilmiş bölgeler türetilir ve ilk keşif XP'si verilir: TestFlight
@@ -289,6 +303,10 @@ class SharedPrefsProgressRepository implements ProgressRepository {
   /// ve alınan günlük ödüller buradan geri gelir (haklar ve ödüller ikinci kez açılmaz).
   static const dailyBackupKey = 'daily_challenge_backup_v1';
 
+  /// Etkinlik ve sezon yedeği (Phase 2.7): alanı tanımayan eski bir sürüm (ör. 1.6.0) ana kaydı yazarsa
+  /// sezon puanı, ödül defteri, rozet ve çerçeveler buradan geri gelir (ödüller ikinci kez verilmez).
+  static const eventsBackupKey = 'events_backup_v1';
+
   /// Okunamayan v2 kaydının ham kopyası (veri asla sessizce silinmez).
   static const corruptBackupKey = 'progress_v2_corrupt';
   static const bestScoreKey = 'best_score_v1';
@@ -305,6 +323,10 @@ class SharedPrefsProgressRepository implements ProgressRepository {
         if (!PlayerProgress.hasDailyChallenge(j)) {
           final daily = _dailyBackup();
           if (daily != null) p = p.copyWith(dailyChallenge: daily);
+        }
+        if (!PlayerProgress.hasEvents(j)) {
+          final events = _eventsBackup();
+          if (events != null) p = p.copyWith(events: events);
         }
         if (PlayerProgress.hasDiscovery(j)) return p;
         // v2 → v3: keşif albümü bir kez kurulur ve kaydedilir (yedek varsa ondan)
@@ -361,6 +383,17 @@ class SharedPrefsProgressRepository implements ProgressRepository {
     return null;
   }
 
+  EventProgressState? _eventsBackup() {
+    final raw = _prefs.getString(eventsBackupKey);
+    if (raw == null) return null;
+    try {
+      return EventProgressState.fromJson(jsonDecode(raw));
+    } catch (e) {
+      debugPrint('Etkinlik yedeği okunamadı: $e');
+    }
+    return null;
+  }
+
   Map<String, Object?>? _decodeMap(String raw) {
     try {
       final j = jsonDecode(raw);
@@ -399,6 +432,11 @@ class SharedPrefsProgressRepository implements ProgressRepository {
       );
     } catch (e) {
       debugPrint('Günün Uçuşu yedeği yazılamadı: $e');
+    }
+    try {
+      await _prefs.setString(eventsBackupKey, jsonEncode(p.events.toJson()));
+    } catch (e) {
+      debugPrint('Etkinlik yedeği yazılamadı: $e');
     }
   }
 }

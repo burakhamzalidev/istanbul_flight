@@ -21,6 +21,10 @@ abstract final class GameCenterIds {
   /// Tekrarlayan tablo: Günün Uçuşu (1 gün süre, her gün 00:00 UTC'de yeniden başlar; Phase 2.5).
   static const dailyChallenge = 'istanbul_flight_daily_challenge';
 
+  /// Tekrarlayan tablo: haftalık İstanbul Kupası (Phase 2.7). App Store Connect'te pazartesi 00:00 UTC'de
+  /// başlayan 7 günlük dönemlerle kurulmalı (docs/20 §6). Kurulana kadar GameKit tanımaz; oyun etkilenmez.
+  static const weeklyCup = 'istanbul_flight_weekly_cup';
+
   /// Yerel başarım kimliği → Game Center başarım kimliği. Yerel sistem esas kaynaktır.
   static const achievements = <String, String>{
     'first_flap': 'istanbul_flight_first_flap',
@@ -38,7 +42,8 @@ abstract final class GameCenterIds {
 enum GcBoard {
   allTime(GameCenterIds.bestScore, recurring: false),
   weekly(GameCenterIds.weeklyScore, recurring: true),
-  daily(GameCenterIds.dailyChallenge, recurring: true);
+  daily(GameCenterIds.dailyChallenge, recurring: true),
+  weeklyCup(GameCenterIds.weeklyCup, recurring: true);
 
   const GcBoard(this.id, {required this.recurring});
   final String id;

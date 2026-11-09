@@ -441,6 +441,31 @@ class DayCycle {
 
   final double transitionTime;
   int _zone = 0;
+
+  /// Etkinlik bölge dizisi (Phase 2.7): (bölge, bu skordan itibaren). null: klasik rota.
+  List<(int, int)>? _route;
+
+  List<(int, int)>? get route => _route;
+
+  /// Bölge dizisini değiştirir; görünüm bir sonraki [reset] ile dizinin ilk bölgesine geçer.
+  set route(List<(int, int)>? r) => _route = r == null || r.isEmpty ? null : r;
+
+  /// Uçuşun başladığı bölge.
+  int get startZone => _route?.first.$1 ?? 0;
+
+  /// Rotadaki duraklar ve eşikleri (HUD rota çubuğu).
+  List<(int, int)> get stages =>
+      _route ?? [for (final z in routeZones) (z, zones[z].startScore)];
+
+  int _zoneFor(int score, int? maxZone) {
+    final r = _route;
+    if (r == null) return zoneIndexForScore(score, maxZone: maxZone);
+    var z = r.first.$1;
+    for (final (zone, from) in r) {
+      if (score >= from) z = zone;
+    }
+    return z;
+  }
   PhasePalette _from = zones[0].palette;
   double _t = 1;
   PhasePalette _current = zones[0].palette;
@@ -454,7 +479,7 @@ class DayCycle {
 
   /// Skor yeni bir bölgeye geçtiyse true döner. [maxZone]: rotanın biteceği bölge (Günün Uçuşu).
   bool updateScore(int score, {int? maxZone}) {
-    final next = zoneIndexForScore(score, maxZone: maxZone);
+    final next = _zoneFor(score, maxZone);
     if (next == _zone) return false;
     _from = _current;
     _zone = next;
@@ -470,9 +495,9 @@ class DayCycle {
   }
 
   void reset() {
-    _zone = 0;
-    _from = zones[0].palette;
-    _current = zones[0].palette;
+    _zone = startZone;
+    _from = zones[_zone].palette;
+    _current = zones[_zone].palette;
     _t = 1;
   }
 }

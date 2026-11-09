@@ -20,6 +20,7 @@ import 'services/settings.dart';
 import 'services/share_service.dart';
 import 'ui/overlays/daily_overlays.dart';
 import 'ui/overlays/discovery_overlays.dart';
+import 'ui/overlays/event_overlays.dart';
 import 'ui/overlays/hud_overlay.dart';
 import 'ui/overlays/leaderboard_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
@@ -94,6 +95,7 @@ Future<void> main() async {
   services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
   // Günün Uçuşu: önceki oturumda yarıda kalan dereceli deneme "kesildi" olur (hak geri verilmez)
   services.progress.recoverDaily();
+  services.progress.refreshWeek(); // haftalık görevler (hafta değiştiyse yenilenir; Phase 2.7)
 
   // Geliştirme bayrakları (normal derlemede kapalı):
   //   MARTI_AUTOPILOT=true  → Simit kendi uçar
@@ -129,6 +131,8 @@ Future<void> main() async {
     unawaited(gameCenter.start());
     // Bugünün parkuru arka planda doğrulanır (ilk "Günün Uçuşu" ekranı beklemesin)
     unawaited(DailyGenerators.prepare(services.daily.now()));
+    // Açık kupa ve özel etkinliğin parkuru arka planda doğrulanır (Phase 2.7)
+    unawaited(services.events.prepareActive());
   });
   AppLifecycleListener(onResume: () => unawaited(gameCenter.flush()));
 }
@@ -204,6 +208,7 @@ class GameScreen extends StatelessWidget {
                   Overlays.discovery: (_, g) => DiscoveryOverlay(game: g),
                   Overlays.leaderboard: (_, g) => LeaderboardOverlay(game: g),
                   Overlays.daily: (_, g) => DailyOverlay(game: g),
+                  Overlays.events: (_, g) => EventsOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

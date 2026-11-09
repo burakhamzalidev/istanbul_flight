@@ -121,14 +121,71 @@ abstract final class HazardRules {
   }
 }
 
+/// Dinamik engellerin sıklığı ve gücü. Klasik mod [GameConfig] değerlerini kullanır; etkinlikler (Phase 2.7,
+/// ör. Rüzgâr Ustası) kendi profillerini verir. Profil, bir etkinlik başladıktan sonra değişmez: değişirse
+/// yeni bir etkinlik üretici sürümü açılır (docs/20 §5).
+@immutable
+class HazardProfile {
+  const HazardProfile({
+    required this.fromScore,
+    required this.flockChance,
+    required this.gustChance,
+    required this.cooldown,
+    required this.gustAccel,
+  });
+
+  factory HazardProfile.classic(GameConfig c) => HazardProfile(
+    fromScore: c.hazardsFromScore,
+    flockChance: c.flockChance,
+    gustChance: c.gustChance,
+    cooldown: c.hazardCooldown,
+    gustAccel: c.gustAccel,
+  );
+
+  /// Bu engel sırasından (klasikte skor) itibaren tehlike konabilir.
+  final int fromScore;
+  final double flockChance, gustChance;
+
+  /// Bir tehlikeden sonra en az bu kadar koridor boş kalır.
+  final int cooldown;
+
+  /// Hava akımının koridor ortasındaki en büyük ivmesi.
+  final double gustAccel;
+
+  Map<String, Object> toJson() => {
+    'fromScore': fromScore,
+    'flockChance': flockChance,
+    'gustChance': gustChance,
+    'cooldown': cooldown,
+    'gustAccel': gustAccel,
+  };
+
+  static HazardProfile? fromJson(Object? j) {
+    if (j is! Map) return null;
+    final from = j['fromScore'], cool = j['cooldown'];
+    final flock = j['flockChance'], gust = j['gustChance'], acc = j['gustAccel'];
+    if (from is! int || cool is! int) return null;
+    if (flock is! num || gust is! num || acc is! num) return null;
+    return HazardProfile(
+      fromScore: from,
+      flockChance: flock.toDouble().clamp(0, 1),
+      gustChance: gust.toDouble().clamp(0, 1),
+      cooldown: cool.clamp(0, 10),
+      gustAccel: acc.toDouble().clamp(0, 800),
+    );
+  }
+}
+
 /// Tehlike planlayıcısı: her yeni engel çifti için önündeki koridora tehlike koyar mı karar verir.
 ///
 /// Deterministik: aynı sayı kaynağı aynı kararları verir. Her çağrıda kaynaktan her zaman üç sayı çekilir
 /// (tehlike olsa da olmasa da akış hizalı kalır).
 class HazardPlanner {
-  HazardPlanner(this.config, this._next);
+  HazardPlanner(this.config, this._next, {HazardProfile? profile})
+    : profile = profile ?? HazardProfile.classic(config);
 
   final GameConfig config;
+  final HazardProfile profile;
   final double Function() _next;
   int _cooldown = 0;
 
@@ -139,13 +196,14 @@ class HazardPlanner {
     required ({double center, double height}) gap,
   }) {
     final roll = _next(), side = _next(), phase = _next();
-    if (score < config.hazardsFromScore) return null;
+    final pr = profile;
+    if (score < pr.fromScore) return null;
     if (_cooldown > 0) {
       _cooldown--;
       return null;
     }
-    if (roll < config.flockChance) {
-      _cooldown = config.hazardCooldown;
+    if (roll < pr.flockChance) {
+      _cooldown = pr.cooldown;
       final env = HazardRules.envelope(previous, gap);
       // Geçit belirgin biçimde kayıyorsa sürü, kuşun terk ettiği tarafta durur (tırmanışta altta, inişte
       // üstte): kuşun gittiği yolu daraltmaz. Hizalı geçitlerde taraf rastgele.
@@ -159,12 +217,12 @@ class HazardPlanner {
         phase: phase,
       );
     }
-    if (roll < config.flockChance + config.gustChance) {
-      _cooldown = config.hazardCooldown;
+    if (roll < pr.flockChance + pr.gustChance) {
+      _cooldown = pr.cooldown;
       // rüzgâr kuşu sonraki geçide doğru iter ya da hafifçe karşı koyar (ikisi de yumuşak)
       return Hazard.gust(
         corridor: corridor,
-        accel: (side < 0.5 ? -1 : 1) * config.gustAccel,
+        accel: (side < 0.5 ? -1 : 1) * pr.gustAccel,
       );
     }
     return null;

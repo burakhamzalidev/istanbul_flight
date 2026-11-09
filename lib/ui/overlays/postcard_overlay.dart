@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../challenge/daily_state.dart';
+import '../../events/event_definition.dart';
 import '../../game/components/landmark_layer.dart';
 import '../../game/day_cycle.dart';
 import '../../game/game_art.dart';
@@ -17,6 +18,7 @@ import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import 'daily_overlays.dart';
+import 'event_overlays.dart';
 import 'progression_overlays.dart';
 
 /// Oyun sonu: düşülen bölgenin kartpostalı (yolculuğun hatırası) + Tekrar uç / Paylaş / Ana menü.
@@ -101,7 +103,10 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
     final g = widget.game;
     final reduce = g.reduceMotion;
     final daily = g.runMode.value.isDaily;
-    final dailyBest = g.services.progress.lastDaily.value?.newBest ?? false;
+    final event = g.runMode.value.isEvent;
+    final dailyBest =
+        (g.services.progress.lastDaily.value?.newBest ?? false) ||
+        (g.services.progress.lastEvent.value?.newBest ?? false);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {},
@@ -143,6 +148,10 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                         DailyResultPanel(game: g),
                         const SizedBox(height: 8),
                       ],
+                      if (event) ...[
+                        EventResultPanel(game: g),
+                        const SizedBox(height: 8),
+                      ],
                       RunSummaryPanel(game: g),
                       const SizedBox(height: 16),
                       ValueListenableBuilder<bool>(
@@ -150,7 +159,9 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                         builder: (_, ok, _) => daily
                             ? _dailyAgain(g, ok)
                             : MartiButton(
-                                key: const Key('restartButton'),
+                                key: Key(
+                                  event ? 'eventRetry' : 'restartButton',
+                                ),
                                 game: g,
                                 label: 'Tekrar uç',
                                 icon: Icons.replay_rounded,
@@ -217,10 +228,29 @@ class Postcard extends StatelessWidget {
     final dailyDate = game.runMode.value.isDaily
         ? game.dailyDefinition.value?.dateUtc
         : null;
-    final newRecord = daily != null ? daily.newBest : game.isNewRecord.value;
+    // Phase 2.7: etkinlikte puan etkinliğin kuralıyla, en iyi etkinliğin en iyisi
+    final event = game.runMode.value.isEvent
+        ? game.services.progress.lastEvent.value
+        : null;
+    final eventDef = game.runMode.value.isEvent
+        ? game.eventDefinition.value
+        : null;
+    final newRecord = event != null
+        ? event.newBest
+        : daily != null
+        ? daily.newBest
+        : game.isNewRecord.value;
+    // Sezon ödülü kupa çerçevesi seçiliyse altın çerçeve ve kupa rozeti
+    final kupaFrame =
+        game.services.progress.value.events.effectiveFrame == 'kupa';
+    final stages = game.dayCycle.stages;
+    final stageIndex = stages.indexWhere((s) => s.$1 == game.zoneIndex.value);
     return Container(
+      key: Key(kupaFrame ? 'postcardKupaFrame' : 'postcardFrame'),
       decoration: pixelBox(
         color: UiColors.paper,
+        border: kupaFrame ? const Color(0xFFD9A21C) : null,
+        borderWidth: kUiPx * 3,
         shadow: kUiPx * 4,
         shadowColor: const Color(0x66000000),
         steps: 3,
@@ -266,6 +296,12 @@ class Postcard extends StatelessWidget {
                         top: 10,
                         child: _PostStamp(zone: zone),
                       ),
+                      if (kupaFrame)
+                        const Positioned(
+                          right: 8,
+                          top: 8,
+                          child: CupBadge(size: 36),
+                        ),
                       Positioned(
                         left: 12,
                         right: 48 * k - 20,
@@ -306,8 +342,9 @@ class Postcard extends StatelessWidget {
                   style: const TextStyle(color: UiColors.navy),
                 ),
                 TextSpan(
-                  text:
-                      '  ·  ${routeZones.indexOf(game.zoneIndex.value) + 1}/${routeZones.length}',
+                  text: stages.length < 2
+                      ? ''
+                      : '  ·  ${stageIndex + 1}/${stages.length}',
                   style: const TextStyle(color: UiColors.navySoft),
                 ),
               ],
@@ -322,16 +359,20 @@ class Postcard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _Stat(
-                    label: 'SKOR',
-                    value: game.score.value,
+                    label: event != null ? 'PUAN' : 'SKOR',
+                    value: event?.score ?? game.score.value,
                     valueKey: const Key('finalScore'),
                   ),
                 ),
                 const VerticalDivider(color: Color(0xFFD8CDB6), thickness: 1),
                 Expanded(
                   child: _Stat(
-                    label: dailyDate != null ? 'EN İYİ' : 'REKOR',
-                    value: dailyDate != null
+                    label: dailyDate != null || event != null
+                        ? 'EN İYİ'
+                        : 'REKOR',
+                    value: event != null
+                        ? event.bestScore
+                        : dailyDate != null
                         ? daily?.bestScore ?? 0
                         : game.best.value,
                     valueKey: const Key('finalBest'),
@@ -375,7 +416,13 @@ class Postcard extends StatelessWidget {
                     steps: 1,
                   ),
                   child: Text(
-                    dailyDate != null ? 'GÜNÜN REKORU!' : 'YENİ REKOR!',
+                    event != null
+                        ? (eventDef?.kind == EventKind.weeklyCup
+                              ? 'HAFTANIN REKORU!'
+                              : 'ETKİNLİK REKORU!')
+                        : dailyDate != null
+                        ? 'GÜNÜN REKORU!'
+                        : 'YENİ REKOR!',
                     style: const TextStyle(
                       color: UiColors.action,
                       letterSpacing: 2,
@@ -388,7 +435,9 @@ class Postcard extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Text(
-            dailyDate != null
+            eventDef != null
+                ? 'Martı: Istanbul Flight – ${eventDef.kind == EventKind.weeklyCup ? 'İstanbul Kupası · ' : ''}${eventDef.type.title}'
+                : dailyDate != null
                 ? 'Martı: Istanbul Flight – Günün Uçuşu · ${formatDailyDate(dailyDate)}'
                 : 'Martı: Istanbul Flight',
             key: const Key('postcardFooter'),

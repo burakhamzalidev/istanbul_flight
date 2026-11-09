@@ -110,10 +110,12 @@ class LandmarkLayer extends Component
     for (final i in _pool) {
       i.active = false;
     }
-    _zoneLandmark = zones[0].landmark;
+    // uçuşun ilk bölgesi (klasikte Haliç; etkinlikte dizinin ilk bölgesi)
+    final first = game.dayCycle.zone.landmark;
+    _zoneLandmark = first;
     _spawn(
-      zones[0].landmark,
-      x: focusX(zones[0].landmark, 0.6),
+      first,
+      x: focusX(first, 0.6),
       alpha: 1,
       rise: 0,
     );

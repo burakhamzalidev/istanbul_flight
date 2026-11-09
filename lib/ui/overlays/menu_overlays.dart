@@ -10,6 +10,7 @@ import '../widgets/buttons.dart';
 import '../widgets/simit_icon.dart';
 import '../pixel.dart';
 import 'daily_overlays.dart';
+import 'event_overlays.dart';
 import 'discovery_overlays.dart';
 import 'leaderboard_overlay.dart';
 import 'progression_overlays.dart';
@@ -186,9 +187,27 @@ class MainMenuOverlay extends StatelessWidget {
                   MenuProgressStrip(game: game),
                   const Spacer(),
                   // Phase 2.5: Günün Uçuşu (keşif/sıralama satırının üstünde, ayrı satır)
+                  // Phase 2.7: Etkinlikler aynı satırda (tek giriş noktası; menü yüksekliği değişmez)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: DailyMenuButton(game: game),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Flexible(
+                          child: DailyMenuButton(
+                            game: game,
+                            compact: c.maxWidth < 400,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: EventsMenuButton(
+                            game: game,
+                            compact: c.maxWidth < 360,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: compact ? 4 : 8),
                   // Phase 2.3: keşif albümüne tek giriş noktası (ana eylemin hemen üstünde)
@@ -307,6 +326,7 @@ class ReadyOverlay extends StatelessWidget {
               LogoStamp(reduceMotion: true, scale: 0.7),
               const SizedBox(height: 12),
               DailyReadyBanner(game: game),
+              EventReadyBanner(game: game),
               const Spacer(),
               _Pulse(
                 reduce: game.reduceMotion,

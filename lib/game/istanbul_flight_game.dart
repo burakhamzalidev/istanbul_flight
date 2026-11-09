@@ -10,6 +10,8 @@ import 'package:flutter/foundation.dart';
 import '../challenge/daily_challenge.dart';
 import '../challenge/daily_state.dart';
 import '../data/score_repository.dart';
+import '../events/event_calendar.dart';
+import '../events/event_definition.dart';
 import '../progression/cosmetics.dart';
 import '../progression/game_events.dart';
 import '../services/audio_service.dart';
@@ -52,6 +54,7 @@ abstract final class Overlays {
   static const discovery = 'discovery';
   static const leaderboard = 'leaderboard';
   static const daily = 'daily';
+  static const events = 'events';
 }
 
 /// Martı: Istanbul Flight oyunu.
@@ -131,6 +134,20 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Dereceli deneme başlatılamadığı için uçuş antrenmana döndüyse nedeni (arayüz gösterir).
   final dailyNotice = ValueNotifier<DailyBeginResult?>(null);
+
+  // ---- Etkinlik (Phase 2.7) ----
+
+  /// Etkinlik uçuşunun tanımı (diğer modlarda null).
+  final eventDefinition = ValueNotifier<EventDefinition?>(null);
+
+  /// Etkinlik uçuşu dereceye giremediyse (etkinlik bitti ya da saat güvenilmez) true (arayüz gösterir).
+  final eventPracticeNotice = ValueNotifier(false);
+
+  /// Etkinliğin skor kuralıyla canlı skor (Simit Festivali: engel + 2 × simit; diğerlerinde skorla aynı).
+  final eventScore = ValueNotifier(0);
+
+  /// Etkinlik parkuru: günlük parkur üreticisi + etkinliğin dinamik engelleri.
+  EventCourse? _eventCourse;
 
   /// Günlük parkur (klasikte null: klasik üretici aynen çalışır).
   DailyCourse? _course;
@@ -239,7 +256,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   PhasePalette get palette => dayCycle.palette;
   double get readyY => config.worldHeight * 0.42;
-  double get birdX => runMode.value.isDaily
+  double get birdX => runMode.value.usesCourse
       ? DailyCourse.birdX
       : (visibleWidth * config.birdXFraction).clamp(
           config.birdMinX,
@@ -376,6 +393,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
         _runId,
         mode: runMode.value,
         challengeId: dailyDefinition.value?.challengeId,
+        eventId: eventDefinition.value?.eventId,
       ),
     );
     _flap();
@@ -385,6 +403,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Günlük: o anki günün tanımı (ekranda beklerken gün değiştiyse yeni gün), sabit ilk engel mesafesi;
   /// dereceli hak bu anda harcanır, hak yoksa ya da saat güvenilmezse uçuş antrenmana döner.
   void _prepareRun() {
+    eventScore.value = 0;
+    if (runMode.value.isEvent) return _prepareEventRun();
+    _eventCourse = null;
     if (!runMode.value.isDaily) {
       _course = null;
       dailyDefinition.value = null;
@@ -412,6 +433,25 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _courseScroll = 0;
   }
 
+  /// Etkinlik: tanımın parkuru (aynı hafta herkes aynı parkur). Etkinlik bittiyse ya da saat güvenilmezse
+  /// uçuş dereceye girmez (ödül ve sıralama yok); deneme sınırı yok.
+  void _prepareEventRun() {
+    final def = eventDefinition.value!;
+    final slot = EventCalendar.slotById(def.eventId);
+    final ranked =
+        slot != null &&
+        services.events.canRank(services.progress.value, slot);
+    runMode.value = ranked ? RunMode.event : RunMode.eventPractice;
+    eventPracticeNotice.value = !ranked;
+    dailyDefinition.value = null;
+    _runBest = services.progress.value.events[def.eventId]?.bestScore ?? 0;
+    final ec = EventGenerators.course(def, config: config);
+    _eventCourse = ec;
+    _course = ec.course;
+    _courseIndex = 0;
+    _courseScroll = 0;
+  }
+
   void _flap() {
     physics.flap();
     bird.onFlap();
@@ -424,6 +464,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// "UÇMAYA BAŞLA": menüyü kapatır, "uçmak için dokun" ekranına geçer.
   void startFromMenu() {
     if (phase.value != GamePhase.ready) return;
+    _leaveEvent();
     runMode.value = RunMode.classic;
     dailyDefinition.value = null;
     menuOpen.value = false;
@@ -438,6 +479,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       if (phase.value == GamePhase.gameOver && !canRestart.value) return;
       restart();
     }
+    _leaveEvent();
     runMode.value = ranked ? RunMode.dailyRanked : RunMode.dailyPractice;
     dailyDefinition.value = services.daily.today();
     dailyNotice.value = null;
@@ -446,9 +488,38 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _applyOverlays();
   }
 
+  /// Etkinlik: "Uçuşa başla". Menüden, etkinlik ekranından ya da oyun sonundan "uçmak için dokun"
+  /// ekranına geçer; sahne etkinliğin ilk bölgesine (ör. Gece Uçuşu: Rumeli Hisarı) döner.
+  void startEvent(EventDefinition def) {
+    if (phase.value == GamePhase.gameOver && !canRestart.value) return;
+    eventDefinition.value = def;
+    dailyDefinition.value = null;
+    dailyNotice.value = null;
+    eventPracticeNotice.value = false;
+    runMode.value = RunMode.event;
+    dayCycle.route = [
+      for (final s in def.zoneSelection.stages) (s.zone, s.fromScore),
+    ];
+    restart(); // sahne yeni bölge dizisinin başına
+    menuOpen.value = false;
+    modal.value = null;
+    _applyOverlays();
+  }
+
+  /// Etkinlikten çıkış: klasik rota geri gelir (sahne gerekiyorsa Haliç'e döner).
+  void _leaveEvent() {
+    final hadRoute = dayCycle.route != null;
+    eventDefinition.value = null;
+    eventPracticeNotice.value = false;
+    _eventCourse = null;
+    dayCycle.route = null;
+    if (hadRoute && phase.value == GamePhase.ready) restart();
+  }
+
   /// Ana menüye dön (duraklatma ya da oyun sonundan). Tur temizlenir.
   void openMenu() {
     if (phase.value != GamePhase.ready) restart();
+    _leaveEvent();
     runMode.value = RunMode.classic;
     dailyDefinition.value = null;
     menuOpen.value = true;
@@ -661,6 +732,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   void _collect(double x, double y) {
     runSimits.value++;
+    _updateEventScore();
     _countInZone(simits: 1);
     fx.collect(x, y);
     services.audio.playSfx(Sfx.collect);
@@ -747,6 +819,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   /// Günlük parkurdan sıradaki engel: yalnızca sırasına bağlı (skor, ekran ve kare hızından bağımsız).
+  /// Etkinlikte koridorun dinamik engeli de parkurdan gelir (aynı sıra, aynı tohum).
   void _spawnDaily(DailyCourse course) {
     final index = _courseIndex++;
     final spec = course.at(index);
@@ -762,6 +835,12 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           )
           ..pickupY = spec.pickupY
           ..courseIndex = index;
+    final h = _eventCourse?.hazardAt(index);
+    if (h != null) {
+      final view = HazardView(h, anchor: o);
+      hazardViews.add(view);
+      world.add(view);
+    }
     obstacles.add(o);
     world.add(o);
   }
@@ -809,9 +888,26 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     return false;
   }
 
+  /// Etkinliğin skor kuralıyla canlı skor; rekor rozeti etkinlikte bu skora bakar.
+  void _updateEventScore() {
+    final def = eventDefinition.value;
+    if (def == null || !runMode.value.isEvent) return;
+    eventScore.value = def.scoring.score(
+      obstacles: _runObstacles,
+      simits: runSimits.value,
+    );
+    if (!recordPassed.value && _runBest > 0 && eventScore.value > _runBest) {
+      recordPassed.value = true;
+    }
+  }
+
   void _addPoint() {
     score.value++;
-    if (!recordPassed.value && _runBest > 0 && score.value == _runBest + 1) {
+    if (runMode.value.isEvent) {
+      _updateEventScore();
+    } else if (!recordPassed.value &&
+        _runBest > 0 &&
+        score.value == _runBest + 1) {
       recordPassed.value = true;
     }
     // Günün Uçuşu v1/v2 rotası Rumeli Hisarı'nda biter: yeni bölgeler günlük parkurun görünümünü değiştirmez
@@ -859,6 +955,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
           assisted: _runAssisted,
           mode: runMode.value,
           challengeId: dailyDefinition.value?.challengeId,
+          eventId: eventDefinition.value?.eventId,
         ),
       ),
     );
@@ -964,6 +1061,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       services.emit(RunAbandoned(_runId));
     }
     _course = null;
+    eventScore.value = 0;
     for (final o in obstacles) {
       o.removeFromParent();
     }
@@ -976,10 +1074,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _hazards.reset();
     _gaps.reset();
     weatherLayer.snap(Weather.clear);
-    services.audio.setAmbience(ambienceForZone(0));
-    dayCycle.reset();
+    dayCycle.reset(); // klasikte Haliç, etkinlikte bölge dizisinin ilk bölgesi
     score.value = 0;
-    zoneIndex.value = 0;
+    zoneIndex.value = dayCycle.zoneIndex;
     isNewRecord.value = false;
     canRestart.value = false;
     runSimits.value = 0;
@@ -1004,7 +1101,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
       services.audio.resumeAll();
     }
     menuOpen.value = false;
-    services.audio.setAmbience(ambienceForZone(0));
+    services.audio.setAmbience(ambienceForZone(dayCycle.zoneIndex));
     _setPhase(GamePhase.ready);
     _applyCosmetic();
   }

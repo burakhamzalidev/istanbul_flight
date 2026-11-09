@@ -364,7 +364,7 @@ void main() {
       expect(r.claimed, e.record!.claimed);
       expect(r.seed, _def.seed);
       expect(back.dailyChallenge.highWaterDay, '2026-10-24');
-      expect(json['v'], 4);
+      expect(json['v'], 5); // Phase 2.7: events alanı
     });
 
     test(
