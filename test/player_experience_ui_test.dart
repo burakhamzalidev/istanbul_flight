@@ -9,6 +9,7 @@ import 'package:istanbul_flight/main.dart';
 import 'package:istanbul_flight/progression/discovery.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:istanbul_flight/services/ux_state.dart';
+import 'package:istanbul_flight/ui/overlays/menu_overlays.dart';
 
 import 'fakes.dart';
 
@@ -63,6 +64,7 @@ Future<void> _crashToGameOver(WidgetTester tester, IstanbulFlightGame game) asyn
 }
 
 void main() {
+  sweepTests();
   testWidgets('ilk açılış: eğitim ekranı (1/3, yönerge, dokunma animasyonu), atla → menü', (tester) async {
     final (game, t) = await _pumpApp(tester, ux: const UxState());
     expect(find.byKey(const Key('tutorialStage')), findsOneWidget);
@@ -84,6 +86,10 @@ void main() {
     expect(find.byKey(const Key('tutorialHudText')), findsOneWidget);
     expect(find.byKey(const Key('scoreText')), findsNothing);
     expect(find.text('Dokundukça yükselirsin. Havada kal!'), findsOneWidget);
+    // HUD oyun alanını kapatmaz: geçitlerin bulunduğu orta bant (%25–60) boş
+    const h = 844.0;
+    expect(tester.getRect(find.byKey(const Key('tutorialStage'))).bottom, lessThan(h * 0.2));
+    expect(tester.getRect(find.byKey(const Key('tutorialHudText'))).top, greaterThan(h * 0.6));
   });
 
   testWidgets('"Nasıl oynanır" → "Eğitimi oyna" eğitimi yeniden başlatır', (tester) async {
@@ -211,5 +217,61 @@ void main() {
     final (game, _) = await _pumpApp(tester);
     expect(game.reduceMotion, isTrue);
     expect(game.config.gravity, plain.config.gravity); // fizik aynı
+  });
+}
+
+// Kalan maddeler (docs/21 §8): bütün ekranlarda taşma ve metin kontrastı.
+const _modals = [
+  'profileButton', 'shopButton', 'discoveryButton', 'leaderboardButton', 'dailyButton',
+  'eventsButton', 'missionsButton', 'achievementsButton', 'settingsButton', 'howToButton',
+];
+
+void sweepTests() {
+  for (final (size, scale) in const [(Size(320, 568), 1.0), (Size(375, 667), 1.3)]) {
+    testWidgets('ekran taraması: bütün ekranlar ${size.width.toInt()}×${size.height.toInt()} @$scale× taşmadan açılır', (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = scale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final (game, _) = await _pumpApp(tester, size: size);
+      expect(tester.takeException(), isNull, reason: 'menü');
+      for (final key in _modals) {
+        await _tap(tester, key);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(tester.takeException(), isNull, reason: key);
+        if (key == 'eventsButton') {
+          for (final tab in ['eventsTab_events', 'eventsTab_season']) {
+            await _tap(tester, tab);
+            await tester.pump(const Duration(milliseconds: 100));
+            expect(tester.takeException(), isNull, reason: tab);
+          }
+        }
+        game.closeModal();
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      await _crashToGameOver(tester, game);
+      expect(tester.takeException(), isNull, reason: 'oyun sonu');
+    });
+  }
+
+  for (final size in const [Size(320, 568), Size(375, 667), Size(430, 932)]) {
+    testWidgets('eğitim ekranı: "Eğitimi atla" logoya binmez, taşma yok (${size.width.toInt()}×${size.height.toInt()})', (tester) async {
+      await _pumpApp(tester, size: size, ux: const UxState());
+      final skip = tester.getRect(find.byKey(const Key('tutorialSkip')));
+      final logo = tester.getRect(find.byType(LogoStamp).first);
+      expect(skip.overlaps(logo), isFalse, reason: '$skip / $logo');
+      expect(tester.getRect(find.byKey(const Key('readyPrompt'))).bottom, lessThanOrEqualTo(size.height));
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('kontrast: menü, eğitim ve oyun sonu metinleri WCAG eşiğini geçer', (tester) async {
+    final handle = tester.ensureSemantics();
+    final (game, _) = await _pumpApp(tester, ux: const UxState());
+    await expectLater(tester, meetsGuideline(textContrastGuideline), reason: 'eğitim');
+    game.skipTutorial();
+    await tester.pump(const Duration(milliseconds: 100));
+    await expectLater(tester, meetsGuideline(textContrastGuideline), reason: 'menü');
+    await _crashToGameOver(tester, game);
+    await expectLater(tester, meetsGuideline(textContrastGuideline), reason: 'oyun sonu');
+    handle.dispose();
   });
 }

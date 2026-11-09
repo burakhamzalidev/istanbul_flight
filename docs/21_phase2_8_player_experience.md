@@ -66,6 +66,9 @@ Mağaza → görünüm seç (2. adım) · Nasıl oynanır → Eğitimi oyna
 ## 5. HUD
 
 - **Eğitimde:** Skor, rota ve vurgular yerine aşama, tek satır yönerge ve çubuk.
+  - **Yerleşim:** Aşama etiketi üstte. Yönerge, çubuk ve "Güzel!" ekranın alt kısmında (su). Geçitlerin bulunduğu orta bant (≈ %30–60) boş kalıyor; test bunu doğruluyor.
+  - **İlk sürümdeki hata:** Hepsi üstte bir bloktu ve martı yükselince etiketin arkasında kalıyordu. Görsel kontrolde fark edildi ve düzeltildi.
+  - **"Eğitimi atla":** Logoya biniyordu; düzeltildi. Üç ekran boyutunda örtüşmeme testi var.
 - **Mod etiketi:** Günlük, etkinlik ve antrenmanda en üstte küçük bir mod etiketi; Simit Festivali'nde canlı puan. Oyun alanına inmiyor.
 - **Simit:** Sayacın altında "+1" (festivalde "+1 · +2 puan"), ses kapalıyken de görünür.
 - **Kıl payı:** "KIL PAYI!" altında "+5 XP" (ayardan okunuyor).
@@ -97,6 +100,15 @@ Mağaza → görünüm seç (2. adım) · Nasıl oynanır → Eğitimi oyna
 - **Dokunma hedefi:** ≥ 44 pt (`iOSTapTargetGuideline` testi).
 - **Hareketi Azalt:** iOS ayarı oyunun azaltılmış hareketine eşleniyor; fizik ve çarpışma aynı (test).
 - **Büyük metin:** 1,3×'e kadar uygulanıyor (piksel font ve düzen daha büyükte taşar); 375×667'de menü ve oyun sonu taşmıyor (test).
+- **Küçük yazılar:** Bütün ekranlardaki 10 puntoluk dipnotlar 11 punktoya çıkarıldı (Apple'ın önerdiği en küçük boyut; 9 dosya, `UiText.caption` dahil). İki istisna:
+  - Kartpostal içindeki yazılar: kartpostal görseli korunuyor.
+  - Hata ayıklama sayacı.
+  - Bu değişiklik Etkinlikler → "Yaklaşan" satırında 320 pt genişlikte 4,5 piksel taşma yaptı. Süre yazısı satırın %40'ıyla sınırlandı; gerekirse iki satıra iniyor.
+- **Ekran taraması (test):** Menü, 10 ekranın hepsi (Etkinlikler'in üç sekmesi dahil) ve oyun sonu taşmadan açılıyor:
+  - 320×568, 1,0×
+  - 375×667, 1,3× büyük metin
+- **Kontrast (test):** `textContrastGuideline` (WCAG AA: normal metin 4,5:1, büyük metin 3:1) eğitim, menü ve oyun sonunda geçiyor.
+  - Sınır: Testlerde sahne görselleri yüklenmiyor. Panellerin kendi zeminleri ölçülüyor, oyun sahnesinin önündeki yazılar ölçülmüyor.
 - **Renk körlüğü:** "Yeni" işareti biçimle (kare) ve sesli etiketle ayrılıyor; tamamlanma onay ikonu ve metinle.
 - **Bulunan ve düzeltilen hata:** Görev ekranı ilk açılışta görevleri oluşturma (build) sırasında üretiyordu; ilk kareden sonraya alındı.
 
@@ -108,18 +120,20 @@ Mağaza → görünüm seç (2. adım) · Nasıl oynanır → Eğitimi oyna
 | Komut | Sonuç |
 |---|---|
 | `flutter analyze` | No issues found |
-| `flutter test` | **454 / 454** (26 yeni) |
+| `flutter test` | **460 / 460** (32 yeni) |
 
 - **`tutorial_test.dart` (14):**
   - Durum makinesi; ux kaydı (yeni / eski, geri alınamaz tamamlama, bozuk kayıt).
   - İlk açılış; eğitimi baştan sona tamamlama, ödül / olay / kayıt / Game Center yok.
   - Çarpma, atlama, yarıda çıkış, tekrar oynama.
   - Günlük hak ve kupa güvenliği, hava ve engel; klasik / günlük / etkinlik regresyonu.
-- **`player_experience_ui_test.dart` (12):**
-  - İlk açılış ekranı, eğitim HUD'u, "Eğitimi oyna".
+- **`player_experience_ui_test.dart` (18):**
+  - İlk açılış ekranı, eğitim HUD'u (orta bant boş), "Eğitimi oyna".
+  - "Eğitimi atla" logoya binmiyor (3 boyut).
   - Menüden 10 özelliğe tek dokunuş.
   - 3 ekran boyutunda "Tekrar uç" görünürlüğü ve tek dokunuş.
   - "Yeni" işaretleri; VoiceOver ve dokunma hedefi yönergeleri; büyük metin; Hareketi Azalt.
+  - Bütün ekranların taşma taraması (2 boyut / ölçek); metin kontrastı.
 - **Güncellenen mevcut testler:** "UÇUŞA BAŞLA" metni, Mağaza karosu, "Ayrıntılar" açılımı.
 
 **Kabul ölçütleri:**
@@ -140,9 +154,25 @@ Mağaza → görünüm seç (2. adım) · Nasıl oynanır → Eğitimi oyna
 5. Ses kapalıyken simit ve kıl payı görsel geri bildirimi.
 6. Akıcılık 1.6.0 ile aynı.
 
-## 11. Bilinen eksikler
+## 11. Ekran görüntüleri
 
-- **Ekran görüntüleri:** Eski ve yeni ekran görüntüleri bu turda üretilmedi (kullanım sınırı). Tarayıcı paneli uçuş sırasında duraklıyor; görüntüler bir sonraki turda alınmalı.
+Web derlemesi, 375×812 (iPhone boyutu, tarayıcı). Gerçek cihaz görüntüsü değil.
+
+- **"Önce" görüntüleri:** Önceki fazlardan alındı:
+  - Menü: Phase 2.7.
+  - Oyun sonu: Phase 2.6. Özet bütün satırları gösteriyor, "Tekrar uç" ekranın dışında.
+- **Yeni oyun sonu:** Yeni bir oyuncunun ilk uçuşu (skor 0).
+
+| Önce: menü | Sonra: menü | Önce: oyun sonu | Sonra: oyun sonu |
+|---|---|---|---|
+| ![Önce menü](screenshots/phase2_7/01_menu_etkinlikler.jpg) | ![Yeni menü](screenshots/phase2_8/02_menu_yeni.jpg) | ![Önce oyun sonu](screenshots/phase2_6/03_kartpostal_ortakoy.jpg) | ![Yeni oyun sonu](screenshots/phase2_8/06_oyun_sonu.jpg) |
+
+| Eğitim: başlangıç | Eğitim: uçuş | Eğitim: çarpınca | Nasıl oynanır |
+|---|---|---|---|
+| ![Eğitim](screenshots/phase2_8/03_egitim_hazir.jpg) | ![Uçuş](screenshots/phase2_8/04_egitim_ucus.jpg) | ![Neredeyse](screenshots/phase2_8/04b_egitim_neredeyse.jpg) | ![Nasıl oynanır](screenshots/phase2_8/05_nasil_oynanir.jpg) |
+
+## 12. Bilinen eksikler
+
 - **Kullanıcı testi:** Gerçek kullanıcı testi yok; 30 saniye hedefi doğrulanmadı.
-- **Metin boyutu:** Bütün ekranlardaki 10 punto dipnotlar gözden geçirilmedi (yalnızca yeni ve değişen ekranlar).
-- **Kontrast:** Otomatik kontrast denetimi oyun sahnesinin önünde çalıştırılmadı.
+- **Kontrast:** Oyun sahnesinin önündeki yazılar (yönerge, "Uçmak için ekrana dokun") otomatik ölçülmedi. Hepsinde koyu gölge var; gerçek cihazda göz kontrolü gerekiyor.
+- **Gerçek cihaz:** §10'daki maddelerin hepsi gerçek cihazda denenmedi.

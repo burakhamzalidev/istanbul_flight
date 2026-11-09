@@ -113,7 +113,7 @@ class _DiscoveryOverlayState extends State<DiscoveryOverlay> {
                 'yerleri gösterir.',
                 key: Key('mapLegend'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               const SizedBox(height: 8),
               for (final z in routeZones)
@@ -186,7 +186,7 @@ class _AlbumHeader extends StatelessWidget {
           Text(
             'Kartpostal ${progress.discoveredZones.length}/${routeZones.length} · '
             'Hedef ${d.goalsDone}/${DiscoveryState.goalsTotal}',
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         ],
       ),
@@ -376,7 +376,7 @@ class IstanbulMap extends StatelessWidget {
       child: Text(
         text,
         style: TextStyle(
-          fontSize: 10,
+          fontSize: 11,
           letterSpacing: 1,
           color: land ? const Color(0xFF6E5236) : const Color(0xFFDDF0F6),
         ),
@@ -585,7 +585,7 @@ class _ZoneRow extends StatelessWidget {
                   '${zones[zone].startScore} puanda açılır',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 )
               else ...[
@@ -604,7 +604,7 @@ class _ZoneRow extends StatelessWidget {
                       '${progress.discovery.doneInZone(zone)}/3',
                       style: const TextStyle(
                         color: UiColors.navySoft,
-                        fontSize: 10,
+                        fontSize: 11,
                       ),
                     ),
                   ),
@@ -740,7 +740,7 @@ class _PostcardTile extends StatelessWidget {
                   locked ? '${zones[zone].startScore} puanda açılır' : '%$pct',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -796,7 +796,7 @@ class _AlbumReward extends StatelessWidget {
                   key: const Key('albumRewardText'),
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -901,7 +901,7 @@ class _ZoneDetail extends StatelessWidget {
           Text(
             dz.place,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         const SizedBox(height: 4),
         Text(
@@ -937,7 +937,7 @@ class _ZoneDetail extends StatelessWidget {
           'KEŞİF HEDEFLERİ',
           style: TextStyle(
             color: UiColors.navySoft,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -948,7 +948,7 @@ class _ZoneDetail extends StatelessWidget {
           'İSTANBUL NOTLARI',
           style: TextStyle(
             color: UiColors.navySoft,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -1060,7 +1060,7 @@ class _GoalRow extends StatelessWidget {
               Text(
                 done ? 'Tamam' : '$value/${goal.target}',
                 key: Key('goalValue_${goal.id}'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
@@ -1069,7 +1069,7 @@ class _GoalRow extends StatelessWidget {
                   const SizedBox(width: 2),
                   Text(
                     '+${goal.rewardSimits}',
-                    style: const TextStyle(color: UiColors.navy, fontSize: 10),
+                    style: const TextStyle(color: UiColors.navy, fontSize: 11),
                   ),
                 ],
               ),

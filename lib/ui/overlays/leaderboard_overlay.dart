@@ -180,7 +180,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             'Skorlar yalnızca Game Center’a giriş yaptıysan Apple’a gönderilir. '
             'Görünümler, XP ve simitler skoru etkilemez.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+            style: TextStyle(color: UiColors.navySoft, fontSize: 11),
           ),
         ],
       ),
@@ -285,7 +285,7 @@ class _StatusCard extends StatelessWidget {
             Text(
               body,
               key: const Key('gcStatusBody'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ],
           if (state.connection == GcConnection.signedOut) ...[
@@ -422,7 +422,7 @@ class BoardList extends StatelessWidget {
               'Bugünün sıralaması ${end.toLocal().hour.toString().padLeft(2, '0')}:'
               '${end.toLocal().minute.toString().padLeft(2, '0')}’de kapanır.',
               key: const Key('dailyBoardEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
         if (board == GcBoard.weekly && end != null)
@@ -432,7 +432,7 @@ class BoardList extends StatelessWidget {
               'Bu haftanın yarışı ${end.toLocal().day}.${end.toLocal().month.toString().padLeft(2, '0')} '
               '${end.toLocal().hour.toString().padLeft(2, '0')}:${end.toLocal().minute.toString().padLeft(2, '0')}’de biter.',
               key: const Key('weeklyEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
         if (page.entries.isEmpty)
@@ -461,7 +461,7 @@ class BoardList extends StatelessWidget {
             child: Text(
               '${page.total} oyuncu',
               textAlign: TextAlign.right,
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ),
       ],

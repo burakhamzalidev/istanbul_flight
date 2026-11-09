@@ -338,7 +338,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
               'Simitler yalnızca oyunda kazanılır. Görünümler sadece görseldir; '
               'uçuşu, çarpışmayı ve skoru etkilemez.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
           ],
         );
@@ -412,7 +412,7 @@ class _FocusPanel extends StatelessWidget {
         Text(
           '${item.category.label} · ${item.description}',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 10),
+          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
         ),
         const SizedBox(height: 8),
         if (confirming)
@@ -437,7 +437,7 @@ class _FocusPanel extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -661,7 +661,7 @@ class _ShopCard extends StatelessWidget {
                             statusText,
                             key: Key('shopStatus_${item.id}'),
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 11,
                               color: status == CosmeticStatus.tooExpensive
                                   ? UiColors.action
                                   : UiColors.navySoft,
@@ -725,7 +725,7 @@ class WardrobeOverlay extends StatelessWidget {
             const Text(
               'Seçimin menüde hemen, uçuşta bir sonraki turda görünür.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -808,12 +808,12 @@ class _OwnedTile extends StatelessWidget {
             item.name,
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: const TextStyle(color: UiColors.navy, fontSize: 10),
+            style: const TextStyle(color: UiColors.navy, fontSize: 11),
           ),
           Text(
             selected ? 'KULLANILIYOR' : 'KULLAN',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: selected ? UiColors.action : UiColors.navySoft,
             ),
           ),

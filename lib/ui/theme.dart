@@ -51,7 +51,7 @@ abstract final class UiDur {
 
 /// Metin seviyeleri: piksel font boyutları 5'in katı (10 dipnot, 15 gövde, 20 başlık, 25+ vurgu).
 abstract final class UiText {
-  static const caption = TextStyle(fontSize: 10, color: UiColors.navySoft);
+  static const caption = TextStyle(fontSize: 11, color: UiColors.navySoft);
   static const body = TextStyle(fontSize: 15, color: UiColors.navy);
   static const heading = TextStyle(fontSize: 20, color: UiColors.navy);
   static const score = TextStyle(

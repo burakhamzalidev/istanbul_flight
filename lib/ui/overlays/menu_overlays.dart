@@ -492,7 +492,8 @@ class ReadyOverlay extends StatelessWidget {
             child: SafeArea(
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  // eğitimde sağ üstteki "Eğitimi atla" düğmesi logonun üstüne binmesin
+                  SizedBox(height: tutorial ? 68 : 40),
                   LogoStamp(reduceMotion: true, scale: 0.7),
                   const SizedBox(height: 12),
                   DailyReadyBanner(game: game),
@@ -530,7 +531,8 @@ class ReadyOverlay extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const SizedBox(height: 110),
+                  // eğitimde üst boşluk büyüdü; küçük ekranda sığması için alt boşluk biraz daha az
+                  SizedBox(height: tutorial ? 88 : 110),
                 ],
               ),
             ),

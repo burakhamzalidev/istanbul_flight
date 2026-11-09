@@ -209,7 +209,7 @@ class ProfileOverlay extends StatelessWidget {
                             : 'Sonraki seviyeye ${info.xpRemaining} XP',
                         style: const TextStyle(
                           color: UiColors.navySoft,
-                          fontSize: 10,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -322,7 +322,7 @@ class _LevelBadge extends StatelessWidget {
           'SEVİYE',
           style: TextStyle(
             color: UiColors.mustard,
-            fontSize: 10,
+            fontSize: 11,
             letterSpacing: 1,
           ),
         ),
@@ -390,7 +390,7 @@ class _ZoneTrail extends StatelessWidget {
           child: Text(
             discovered.contains(i) ? zones[i].name : '???',
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: discovered.contains(i)
                   ? UiColors.paper
                   : UiColors.navySoft,
@@ -454,7 +454,7 @@ class _MissionsOverlayState extends State<MissionsOverlay> {
               const Text(
                 'Uçtukça kendiliğinden ilerler. Ödül, görev biter bitmez verilir.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 10),
+                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
               ),
               const SizedBox(height: 10),
               for (final (i, m) in missions.indexed) ...[
@@ -524,7 +524,7 @@ class _MissionTile extends StatelessWidget {
                           : '${m.progress}/${m.target}',
                       key: Key('missionProgress$index'),
                       style: TextStyle(
-                        fontSize: 10,
+                        fontSize: 11,
                         color: m.completed
                             ? UiColors.action
                             : UiColors.navySoft,
@@ -537,7 +537,7 @@ class _MissionTile extends StatelessWidget {
                   '+${m.rewardXp} XP · +${m.rewardSimits} simit',
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -620,7 +620,7 @@ class _AchievementTile extends StatelessWidget {
                   def.description,
                   style: const TextStyle(
                     color: UiColors.navySoft,
-                    fontSize: 10,
+                    fontSize: 11,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -629,7 +629,7 @@ class _AchievementTile extends StatelessWidget {
                     'Kazanıldı: ${formatDate(at)} · +${def.rewardXp} XP · +${def.rewardSimits} simit',
                     style: const TextStyle(
                       color: UiColors.action,
-                      fontSize: 10,
+                      fontSize: 11,
                     ),
                   )
                 else ...[
@@ -646,7 +646,7 @@ class _AchievementTile extends StatelessWidget {
                         '%${(def.fractionIn(progress) * 100).floor()}',
                         style: const TextStyle(
                           color: UiColors.navySoft,
-                          fontSize: 10,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -657,7 +657,7 @@ class _AchievementTile extends StatelessWidget {
                         : '${def.progressIn(progress)}/${def.target} · Ödül: +${def.rewardXp} XP · +${def.rewardSimits} simit',
                     style: const TextStyle(
                       color: UiColors.navySoft,
-                      fontSize: 10,
+                      fontSize: 11,
                     ),
                   ),
                 ],

@@ -311,7 +311,7 @@ class PixelSwitchTile extends StatelessWidget {
                     if (subtitle != null)
                       DefaultTextStyle.merge(
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 11,
                           color: muted,
                           height: 1.4,
                         ),

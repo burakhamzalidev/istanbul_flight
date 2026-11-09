@@ -26,11 +26,13 @@ class HudOverlay extends StatelessWidget {
     return SafeArea(
       child: Stack(
         children: [
+          // aşama üstte, yönerge altta: geçitlerin bulunduğu orta bant (≈ %30–60) boş kalır
           if (tutorial)
             Positioned(
               left: 16,
               right: 16,
-              top: 70,
+              top: 64,
+              bottom: 32,
               child: IgnorePointer(child: TutorialHud(game: game)),
             ),
           if (!tutorial)
@@ -277,7 +279,7 @@ class _ModeTag extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: UiColors.paper,
-                  fontSize: 10,
+                  fontSize: 11,
                   letterSpacing: 1,
                   shadows: kSceneTextShadow,
                 ),
@@ -291,7 +293,7 @@ class _ModeTag extends StatelessWidget {
                   key: const Key('hudFestivalScore'),
                   style: const TextStyle(
                     color: UiColors.mustard,
-                    fontSize: 10,
+                    fontSize: 11,
                     letterSpacing: 1,
                     shadows: kSceneTextShadow,
                   ),

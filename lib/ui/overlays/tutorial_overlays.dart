@@ -75,10 +75,13 @@ class TutorialStagePill extends StatelessWidget {
               const SizedBox(width: 4),
             ],
             const SizedBox(width: 4),
-            ExcludeSemantics(
-              child: Text(
-                '$n/3 · ${stage.title}',
-                style: const TextStyle(color: UiColors.paper, fontSize: 15),
+            // dar ekranda / büyük metinde taşmasın: gerekirse iki satır
+            Flexible(
+              child: ExcludeSemantics(
+                child: Text(
+                  '$n/3 · ${stage.title}',
+                  style: const TextStyle(color: UiColors.paper, fontSize: 15),
+                ),
               ),
             ),
           ],
@@ -305,11 +308,31 @@ class TutorialHud extends StatelessWidget {
     valueListenable: game.tutorialStage,
     builder: (context, stage, _) {
       if (stage == null) return const SizedBox.shrink();
+      // Uçuşta oyun alanını kapatmasın: üstte yalnızca küçük aşama etiketi; yönerge, çubuk ve
+      // "Güzel!" ekranın alt kısmında (su). Geçitlerin bulunduğu orta bant boş kalır.
       return Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           TutorialStagePill(stage: stage),
-          const SizedBox(height: 8),
+          const Spacer(),
+          EventPopup(
+            key: const Key('tutorialNice'),
+            trigger: game.tutorialFlaps,
+            reduceMotion: game.reduceMotion,
+            child: const Text(
+              'Güzel!',
+              style: TextStyle(
+                color: UiColors.mustard,
+                fontSize: 25,
+                shadows: kSceneTextShadow,
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          if (stage == TutorialStage.simit)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 6),
+              child: SimitIcon(size: 30),
+            ),
           ValueListenableBuilder<TutorialHint>(
             valueListenable: game.tutorialHint,
             builder: (context, hint, _) => Text(
@@ -327,25 +350,6 @@ class TutorialHud extends StatelessWidget {
             const SizedBox(height: 8),
             SizedBox(width: 160, child: _FlyMeter(game: game)),
           ],
-          if (stage == TutorialStage.simit)
-            const Padding(
-              padding: EdgeInsets.only(top: 6),
-              child: SimitIcon(size: 30),
-            ),
-          const SizedBox(height: 6),
-          EventPopup(
-            key: const Key('tutorialNice'),
-            trigger: game.tutorialFlaps,
-            reduceMotion: game.reduceMotion,
-            child: const Text(
-              'Güzel!',
-              style: TextStyle(
-                color: UiColors.mustard,
-                fontSize: 25,
-                shadows: kSceneTextShadow,
-              ),
-            ),
-          ),
         ],
       );
     },
