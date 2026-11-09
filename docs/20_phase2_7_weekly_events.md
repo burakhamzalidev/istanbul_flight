@@ -4,7 +4,7 @@
 >
 > **Dal:** `feature/phase2-7-weekly-events`, `feature/phase2-6-expanded-istanbul` üzerine açıldı (1.6.0 (9), commit `2f95459`). Sürüm numarası değiştirilmedi.
 >
-> **Yapılmayanlar:** TestFlight yüklemesi, App Review gönderimi, App Store Connect'te tablo oluşturma ve yayın **yapılmadı** (izin gerekiyor). Gerçek iPhone testi **yapılmadı** (§13).
+> **Yapılmayanlar:** TestFlight yüklemesi, App Review gönderimi ve yayın **yapılmadı** (izin gerekiyor). Kupa tablosu App Store Connect'te kullanıcı onayıyla **oluşturuldu**, incelemeye gönderilmedi (§6). Gerçek iPhone testi **yapılmadı** (§15).
 
 ## 0. Özet
 
@@ -14,7 +14,7 @@
 | Haftalık İstanbul Kupası | **Tamam.** Pazartesi 00:00 UTC → pazartesi 00:00 UTC. Herkes aynı parkur, sınırsız deneme, en iyi **tek** uçuş |
 | 4 etkinlik türü | **Tamam.** Boğaz Maratonu, Simit Festivali, Gece Uçuşu, Rüzgâr Ustası. Hepsi mevcut motorun değiştiricileri |
 | Hafta sonu özel etkinliği | **Tamam.** Cuma 00:00 → pazartesi 00:00 UTC, kupadan farklı tür, yalnızca yerel en iyi skor |
-| Game Center haftalık kupa tablosu | **Kod tamam, Apple tarafı YOK.** `istanbul_flight_weekly_cup` App Store Connect'te oluşturulmadı (§6) |
+| Game Center haftalık kupa tablosu | **Kod tamam; App Store Connect'te oluşturuldu** (9 Kasım 2026, kullanıcı onayıyla): "Prepare for Submission", incelemeye gönderilmedi (§6). Gerçek cihazda denenmedi |
 | Sezon (4 hafta), 6 seviye ödülü | **Tamam.** Sezon puanı XP'den ayrı; ödüller ücretsiz ve kalıcı |
 | Haftalık görevler | **Tamam.** Günlük görevlerden ayrı kayıt ve ödül defteri |
 | Etkinlik Merkezi (Kupa / Etkinlik / Sezon) | **Tamam.** Menüde tek "Etkinlikler" girişi |
@@ -121,7 +121,7 @@ Hepsi mevcut motorun kontrollü değiştiricileri. Fizik, hız ve çarpışma he
 - **Sahte sıralama yok:** Game Center bağlı değilse yalnızca durum metni gösterilir.
 - **Hile koruması:** Sunucu doğrulaması olmadığı için kesin hile koruması **iddia edilmez** (§14).
 
-**App Store Connect'te yapılması gereken** (yapılmadı; izin gerekiyor):
+**App Store Connect: OLUŞTURULDU** (9 Kasım 2026, kullanıcı onayıyla; App Store Connect API üzerinden, günlük tabloyla aynı yöntem). Kimlik `a18bff30-dd92-454d-90e4-b43a0e4c662d`, sürüm 1 "Prepare for Submission". API'den doğrulanan değerler: `RECURRING`, başlangıç `2026-11-16T00:00:00Z`, süre `PT168H`, kural `FREQ=DAILY;INTERVAL=7`, `BEST_SCORE`, `DESC`, 0–9999, TR ve EN yerelleştirme.
 
 | Alan | Değer |
 |---|---|
@@ -129,13 +129,13 @@ Hepsi mevcut motorun kontrollü değiştiricileri. Fizik, hız ve çarpışma he
 | Leaderboard ID | `istanbul_flight_weekly_cup` |
 | Reference name | İstanbul Kupası |
 | Biçim / sıralama | Integer, büyük olan iyi, en iyi skor tutulur |
-| Başlangıç | **Pazartesi 00:00 UTC** (ör. 2026-11-16T00:00:00Z). Mevcut "Haftalık" tablo İstanbul saatine göre kurulu; bu tablo UTC olmalı, yoksa dönem eşleşmez ve gönderimler düşer |
+| Başlangıç | **Pazartesi 2026-11-16 00:00 UTC.** Mevcut "Haftalık" tablo 21:00 UTC'de (İstanbul gece yarısı) başlıyor; kupa tablosu UTC pazartesi, uygulamadaki kupa haftasıyla aynı. Takvimin ilk kupa haftası (9–16 Kasım) Apple döneminden önce kaldığı için o haftanın skorları tabloya gitmez; Phase 2.7 henüz yayında olmadığı için etkisi yok |
 | Süre / tekrar | 7 gün / 7 gün |
 | Skor aralığı | 0 – 9999 |
 | Yerelleştirme | TR "İstanbul Kupası" · "X puan"; EN "Istanbul Cup" · "X points" |
 
 - **Apple incelemesi:** Yeni tablolar bir uygulama sürümüyle birlikte incelemeye girer. TestFlight'ta sandbox ortamında çalışır.
-- **Doğrulanamadı:** App Store Connect oturumu kapalı olduğu için kimliğin Apple tarafında henüz olmadığı bu turda yeniden doğrulanamadı.
+- **Henüz yok:** Tablo görseli gerekmiyor (günlük tabloda da yok). Gerçek cihazda gönderim ve sıralama denenmedi.
 
 ## 7. Sezon ilerlemesi
 
@@ -312,9 +312,7 @@ Hepsi mevcut motorun kontrollü değiştiricileri. Fizik, hız ve çarpışma he
 
 ## 16. Bilinen sınırlamalar
 
-1. **Kupa tablosu Apple'da yok:**
-   - Kurulana kadar Game Center `not_configured` döner; skor yalnızca cihazda kalır, oyun etkilenmez.
-   - Mevcut "Haftalık" tablo İstanbul saatine göre kurulu; kupa tablosu UTC kurulmalı.
+1. **Kupa tablosu incelemeden geçmedi:** App Store Connect'te "Prepare for Submission"; bir uygulama sürümüyle incelemeye girecek. TestFlight'ta sandbox ortamında çalışır. İlk dönemi 16 Kasım 2026.
 2. **Sunucu doğrulaması yok:** Değiştirilmiş bir istemci sahte skor gönderebilir. Yalnızca tutarlılık kontrolleri var: süre, skor = engel, festival simidi ≤ engel. Apple'ın skor aralığı sınırı ve App Store Connect'ten skor silme ek önlem olarak kalıyor.
 3. **Zaman:** Çevrimdışıyken saati ileri almak tespit edilemez. Kazanç, gelecek haftanın etkinliğini erken oynamakla sınırlı; ödül iki kez alınamaz.
 4. **Takvim:** Uzaktan değiştirilemez; yeni etkinlik türü uygulama güncellemesi gerektirir.
@@ -324,7 +322,7 @@ Hepsi mevcut motorun kontrollü değiştiricileri. Fizik, hız ve çarpışma he
 
 ## 17. Sonraki faz önerileri
 
-1. **App Store Connect:** `istanbul_flight_weekly_cup` tablosunu UTC pazartesi başlangıçlı kur; mevcut haftalık tablonun başlangıcını gözden geçir.
+1. **App Store Connect:** Kupa tablosu kuruldu; mevcut klasik "Haftalık" tablonun İstanbul saatine göre başlangıcını gözden geçir.
 2. **Sunucu:** Hafif bir sunucu (ör. CloudKit / Firebase) ile skor doğrulaması ve uzaktan takvim. Ancak bundan sonra sıralamaya göre ödül.
 3. **Görsel:** Etkinliklere özel afiş (pixel art), diğer bölgelerin gece varyantı.
 4. **Etkinlik türleri:** Vapur engelli "Vapur Rotası", yalnızca kıl payı puanlı "Kıl Payı Ustası".
