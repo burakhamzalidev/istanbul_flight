@@ -53,7 +53,14 @@ void main() {
       tester.widget<Text>(find.byKey(const Key('totalSimits'))).data,
       '120',
     );
-    expect(find.text('· Mağaza'), findsOneWidget);
+    // Phase 2.8: mağaza, oyuncu alanındaki "Mağaza" karosu
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('shopButton')),
+        matching: find.text('Mağaza'),
+      ),
+      findsOneWidget,
+    );
     await _tap(tester, 'shopButton');
     expect(game.modal.value, Overlays.shop);
     expect(

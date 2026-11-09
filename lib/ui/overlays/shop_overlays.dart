@@ -107,10 +107,30 @@ class _Stage extends StatelessWidget {
   );
 }
 
-class _Balance extends StatelessWidget {
-  const _Balance({required this.balance});
+/// Bakiye. Phase 2.8: satın alınca sayı eski değerden yenisine sayar ve yanında kısa süre harcanan miktar
+/// ("−50") görünür: bakiyenin nereye gittiği anlaşılır (azaltılmış harekette sayma yok, fark yine yazılır).
+class _Balance extends StatefulWidget {
+  const _Balance({required this.balance, required this.reduce});
 
   final int balance;
+  final bool reduce;
+
+  @override
+  State<_Balance> createState() => _BalanceState();
+}
+
+class _BalanceState extends State<_Balance> {
+  late int _from = widget.balance;
+  int? _delta;
+
+  @override
+  void didUpdateWidget(_Balance old) {
+    super.didUpdateWidget(old);
+    if (old.balance != widget.balance) {
+      _from = old.balance;
+      _delta = widget.balance - old.balance;
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Container(
@@ -127,10 +147,28 @@ class _Balance extends StatelessWidget {
         const Expanded(
           child: Text('Simit bakiyen', style: TextStyle(color: UiColors.navy)),
         ),
-        Text(
-          '$balance',
-          key: const Key('shopBalance'),
-          style: const TextStyle(color: UiColors.navy, fontSize: 20),
+        if (_delta != null && _delta != 0)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Text(
+              _delta! < 0 ? '−${-_delta!}' : '+${_delta!}',
+              key: const Key('shopBalanceDelta'),
+              style: const TextStyle(color: UiColors.action, fontSize: 15),
+            ),
+          ),
+        TweenAnimationBuilder<double>(
+          key: ValueKey(widget.balance),
+          tween: Tween(
+            begin: (widget.reduce ? widget.balance : _from).toDouble(),
+            end: widget.balance.toDouble(),
+          ),
+          duration: UiDur.emphasis,
+          curve: Curves.easeOut,
+          builder: (_, v, _) => Text(
+            '${v.round()}',
+            key: const Key('shopBalance'),
+            style: const TextStyle(color: UiColors.navy, fontSize: 20),
+          ),
         ),
       ],
     ),
@@ -158,6 +196,19 @@ class _ShopOverlayState extends State<ShopOverlay> {
   bool _messageIsError = false;
 
   IstanbulFlightGame get g => widget.game;
+
+  @override
+  void initState() {
+    super.initState();
+    // Phase 2.8: sahip olunan görünümler görüldü (menüdeki "yeni" işareti söner)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        g.services.ux.markCosmeticsSeen(
+          g.services.progress.value.unlockedCosmetics,
+        );
+      }
+    });
+  }
 
   void _select(String id) => setState(() {
     _focus = id;
@@ -243,7 +294,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _Balance(balance: p.simitBalance),
+            _Balance(balance: p.simitBalance, reduce: g.reduceMotion),
             const SizedBox(height: 10),
             _FocusPanel(
               key: _panelKey,
@@ -769,52 +820,5 @@ class _OwnedTile extends StatelessWidget {
         ],
       ),
     ),
-  );
-}
-
-/// Menüdeki simit rozeti: bakiyeyi gösterir, dokununca mağazayı açar.
-class ShopChip extends StatelessWidget {
-  const ShopChip({super.key, required this.game});
-
-  final IstanbulFlightGame game;
-
-  @override
-  Widget build(BuildContext context) => ValueListenableBuilder<PlayerProgress>(
-    valueListenable: game.services.progress,
-    builder: (context, p, _) {
-      final narrow = MediaQuery.sizeOf(context).width < 360;
-      return Pressable(
-        key: const Key('shopButton'),
-        game: game,
-        semanticLabel: 'Simit mağazası, bakiye ${p.simitBalance}',
-        onTap: () => game.openModal(Overlays.shop),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: pixelBox(
-            color: UiColors.scrim,
-            border: const Color(0x66FBF7EE),
-            steps: 3,
-          ),
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(color: UiColors.paper, fontSize: 15),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SimitIcon(size: 18),
-                const SizedBox(width: 6),
-                Text('${p.simitBalance}', key: const Key('totalSimits')),
-                if (!narrow) ...[
-                  const SizedBox(width: 6),
-                  const Text(
-                    '· Mağaza',
-                    style: TextStyle(color: UiColors.mustard),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      );
-    },
   );
 }

@@ -438,7 +438,7 @@ class GameCenterController extends ValueNotifier<GameCenterState>
     if (_handledRuns.length > 50) _handledRuns.remove(_handledRuns.first);
     final reject = GcScorePolicy.rejectReason(r, config: config);
     switch (r.mode) {
-      case RunMode.dailyPractice || RunMode.eventPractice:
+      case RunMode.dailyPractice || RunMode.eventPractice || RunMode.tutorial:
         return; // antrenman hiçbir tabloya gitmez
       case RunMode.dailyRanked:
         return _queueDaily(r, reject);

@@ -31,13 +31,16 @@ enum RunMode {
   event,
 
   /// Etkinlik parkurunda dereceye girmeyen uçuş (cihaz saati güvenilmez): ödül ve sıralama yok.
-  eventPractice;
+  eventPractice,
+
+  /// İlk uçuş eğitimi (Phase 2.8): gerçek uçuş değildir; hiçbir olay yayınlanmaz, hiçbir şey kaydedilmez.
+  tutorial;
 
   bool get isDaily => this == dailyRanked || this == dailyPractice;
   bool get isEvent => this == event || this == eventPractice;
 
   /// Parkur deterministik bir tanımdan gelir (günlük ya da etkinlik): kuşun yatay konumu sabit.
-  bool get usesCourse => this != classic;
+  bool get usesCourse => isDaily || isEvent;
 }
 
 /// UTC gün anahtarı (`2026-10-24`). Günlük challenge bütün dünyada aynı anda başlar ve biter.

@@ -184,6 +184,10 @@ void main() {
       }
       expect(game.phase.value, GamePhase.gameOver);
       expect(find.text('Albüme yeni kartpostal: Haliç'), findsOneWidget);
+      // Phase 2.8: ikiden fazla satır "Ayrıntılar"da
+      await tester.ensureVisible(find.byKey(const Key('summaryMore')));
+      await tester.tap(find.byKey(const Key('summaryMore')));
+      await tester.pump(const Duration(milliseconds: 16));
       expect(find.text("Keşif: Haliç'e ulaş (+5)"), findsOneWidget);
       expect(t.services.progress.value.discovery.firstSeen.keys, [0]);
       expect(tester.takeException(), isNull);

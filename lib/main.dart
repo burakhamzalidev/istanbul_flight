@@ -18,6 +18,7 @@ import 'services/haptics_service.dart';
 import 'services/progress.dart';
 import 'services/settings.dart';
 import 'services/share_service.dart';
+import 'services/ux_state.dart';
 import 'ui/overlays/daily_overlays.dart';
 import 'ui/overlays/discovery_overlays.dart';
 import 'ui/overlays/event_overlays.dart';
@@ -54,22 +55,35 @@ Future<void> main() async {
   SettingsRepository settingsRepo;
   ProgressRepository progressRepo;
   GameCenterStore gameCenterStore;
+  UxRepository uxRepo;
   try {
     final prefs = await SharedPreferences.getInstance();
     scores = SharedPrefsScoreRepository(prefs);
     settingsRepo = SharedPrefsSettingsRepository(prefs);
     progressRepo = SharedPrefsProgressRepository(prefs);
     gameCenterStore = SharedPrefsGameCenterStore(prefs);
+    uxRepo = SharedPrefsUxRepository(prefs);
   } catch (e) {
     debugPrint('Kalıcı kayıt açılamadı, bellek içi kayıt kullanılıyor: $e');
     scores = InMemoryScoreRepository();
     settingsRepo = InMemorySettingsRepository();
     progressRepo = InMemoryProgressRepository();
     gameCenterStore = InMemoryGameCenterStore();
+    // kayıt yoksa eğitim zorlanmaz (kalıcı kayıt olmadan her açılışta eğitim açılmasın)
+    uxRepo = InMemoryUxRepository(
+      const UxState(tutorial: TutorialStatus.legacy),
+    );
   }
   await PixelIcons.load();
   final settings = await settingsRepo.load();
   final progress = await progressRepo.load();
+  // Phase 2.8: eğitim ve "yeni" işaretleri (ayrı kayıt, ux_v1). İlk açılışta yeni oyuncu mu, eski oyuncu mu
+  // ilerlemeden ve rekordan anlaşılır; eski oyuncuya eğitim zorlanmaz.
+  var best = 0;
+  try {
+    best = await scores.loadBest();
+  } catch (_) {}
+  final ux = await UxController.load(uxRepo, progress, best: best);
 
   final audio = AudioplayersAudioService();
   unawaited(
@@ -91,6 +105,7 @@ Future<void> main() async {
     progress: progressController,
     share: PlatformShareService(),
     gameCenter: gameCenter,
+    ux: ux,
   );
   services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
   // Günün Uçuşu: önceki oturumda yarıda kalan dereceli deneme "kesildi" olur (hak geri verilmez)
@@ -153,6 +168,16 @@ class MartiApp extends StatelessWidget {
         // Özgün bitmap font (docs/08): Türkçe karakterli; tek ağırlık, sahte kalınlık yok
         fontFamily: 'MartiPixel',
       ),
+      // Phase 2.8 erişilebilirlik: iOS "Hareketi Azalt" oyunun azaltılmış hareketine eşlenir; büyük metin
+      // 1,3 katına kadar uygulanır (piksel font ve oyun düzeni daha büyükte taşar)
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        game.platformReduceMotion = mq.disableAnimations;
+        return MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.3,
+          child: child!,
+        );
+      },
       home: Scaffold(
         backgroundColor: const Color(0xFF0E1433),
         // Web: tarayıcı, ilk kullanıcı etkileşimine kadar sesi engeller → ilk dokunuşta sesi aç

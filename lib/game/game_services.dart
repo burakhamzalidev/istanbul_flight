@@ -17,6 +17,7 @@ import '../services/game_center/game_center_controller.dart';
 import '../services/progress.dart';
 import '../services/settings.dart';
 import '../services/share_service.dart';
+import '../services/ux_state.dart';
 
 /// Oyuncu ilerlemesinin canlı kaynağı (profil, XP, görevler, başarımlar); değişince kaydedilir.
 ///
@@ -263,7 +264,9 @@ class GameServices {
     GameCenterController? gameCenter,
     DailyChallengeService? daily,
     EventService? events,
+    UxController? ux,
   }) : gameCenter = gameCenter ?? GameCenterController.disabled(),
+       ux = ux ?? UxController.memory(),
        daily = daily ?? DailyChallengeService(clock: progress.now),
        events = events ?? EventService(clock: progress.now) {
     // Günlük skorların Game Center durumu günlük kayda yazılır; Apple'ın günlük dönemi saat denetimine girer
@@ -305,6 +308,9 @@ class GameServices {
 
   /// Etkinlikler: haftalık kupa, özel etkinlik, sezon, saat denetimi (Phase 2.7).
   final EventService events;
+
+  /// Eğitim durumu ve menüdeki "yeni" işaretleri (Phase 2.8; ilerleme kaydından ayrı).
+  final UxController ux;
 
   /// Ek dinleyiciler (testler, ileride analitik olmayan yerel sistemler).
   final List<GameEventListener> listeners = [];
