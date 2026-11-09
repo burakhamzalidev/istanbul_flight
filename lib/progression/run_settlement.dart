@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../game/day_cycle.dart';
 import '../services/progress.dart';
 import 'achievements.dart';
+import 'discovery.dart';
 import 'game_events.dart';
 import 'missions.dart';
 import 'progression_config.dart';
@@ -24,6 +25,7 @@ class RunSummary {
     required this.newZones,
     required this.completedMissions,
     required this.unlockedAchievements,
+    this.discovery = DiscoveryOutcome.none,
   });
 
   final String runId;
@@ -40,6 +42,9 @@ class RunSummary {
   final List<int> newZones;
   final List<DailyMission> completedMissions;
   final List<AchievementDef> unlockedAchievements;
+
+  /// Keşif albümü: yeni kartpostallar, tamamlanan bölge hedefleri, rozetler (simitleri [bonusSimits]'te).
+  final DiscoveryOutcome discovery;
 
   /// Uçuşun kendi XP'si (üst sınır uygulanmış).
   int get xpRun => math.min(
@@ -109,13 +114,14 @@ Settlement? settleRun(PlayerProgress p, RunResult r, DateTime now) {
   final obstacles = _nonNeg(r.obstaclesPassed);
   final simits = _nonNeg(r.simits);
   final near = _nonNeg(r.nearMisses);
-  final maxZone = r.maxZone.clamp(0, zones.length - 1);
+  // yalnızca rotadaki bölgeler keşfedilebilir (hazır olmayan bölge atlanır; bozuk değer son durağa kırpılır)
+  final maxZone = r.maxZone.clamp(0, routeZones.last);
   final levelBefore = p.level;
 
   // ---- Bölge keşfi (Haliç başlangıç: keşif XP'si yok) ----
   final newZones = [
-    for (var z = 0; z <= maxZone; z++)
-      if (!p.discoveredZones.contains(z)) z,
+    for (final z in routeZones)
+      if (z <= maxZone && !p.discoveredZones.contains(z)) z,
   ];
   final paidZones = newZones.where((z) => z > 0).length;
 
@@ -139,6 +145,10 @@ Settlement? settleRun(PlayerProgress p, RunResult r, DateTime now) {
     discoveredZones: {...p.discoveredZones, ...newZones},
     xp: _addXp(p.xp, xpRun),
   );
+
+  // ---- Keşif albümü (Phase 2.3): bölge keşfi yazıldıktan sonra; XP vermez, yalnızca simit ----
+  final (afterDiscovery, discovery) = settleDiscovery(p, r, newZones, now);
+  p = afterDiscovery;
 
   // ---- Günlük görevler ----
   p = ensureDaily(p, now);
@@ -194,12 +204,13 @@ Settlement? settleRun(PlayerProgress p, RunResult r, DateTime now) {
       xpMissions: xpMissions,
       xpAchievements: p.xp - xpBeforeAch,
       runSimits: simits,
-      bonusSimits: bonus + (p.bonusSimits - bonusBeforeAch),
+      bonusSimits: bonus + discovery.simits + (p.bonusSimits - bonusBeforeAch),
       levelBefore: levelBefore,
       levelAfter: p.level,
       newZones: newZones.where((z) => z > 0).toList(),
       completedMissions: completed,
       unlockedAchievements: unlocked,
+      discovery: discovery,
     ),
   );
 }

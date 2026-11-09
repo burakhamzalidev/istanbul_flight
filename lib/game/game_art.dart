@@ -86,7 +86,7 @@ class GameArt {
   final Map<String, ZoneArt> zones;
   final Map<Landmark, Image> landmarks;
 
-  /// Engel kitleri (1/4 çözünürlüklü atlas, bkz. ObstacleKitLayout.atlasScale).
+  /// Engel kitleri (1/2 çözünürlüklü atlas, bkz. ObstacleKitLayout.atlasScale).
   final Map<ObstacleKitId, Image> kits;
 
   /// Efekt atlası: toplanabilir simit, parıltı, tüy, damla, halkalar.
@@ -137,6 +137,15 @@ class GameArt {
     'bolt',
     'sunset',
     'back',
+    // Phase 2.3: keşif albümü
+    'map',
+    'lock',
+    'check',
+    'badge',
+    // Phase 2.4: Game Center sıralaması
+    'trophy',
+    // Phase 2.5: Günün Uçuşu
+    'calendar',
   ];
   static Rect iconRect(String name) =>
       Rect.fromLTWH(iconNames.indexOf(name) * 16.0, 0, 16, 16);
@@ -161,6 +170,10 @@ class GameArt {
     Landmark.kizKulesi => '$_root/landmarks/kiz_kulesi.png',
     Landmark.bridge => '$_root/landmarks/bridge.png',
     Landmark.rumeliHisari => '$_root/landmarks/rumeli_hisari.png',
+    Landmark.emirgan => '$_root/landmarks/emirgan.png',
+    Landmark.ortakoy => '$_root/landmarks/ortakoy.png',
+    Landmark.dolmabahce => '$_root/landmarks/dolmabahce.png',
+    Landmark.uskudar => '$_root/landmarks/uskudar.png',
   };
   static String kitPath(ObstacleKitId k) =>
       '$_root/obstacles/kit_${k.name}.png';
@@ -168,11 +181,22 @@ class GameArt {
   static const fxPath = '$_root/effects/fx.png';
   static const iconsPath = '$_root/ui/icons.png';
 
+  /// İstanbul keşif haritası (160×160). Oyun açılışında yüklenmez: yalnızca harita ekranı açılınca.
+  static const mapPath = 'assets/images/$_root/ui/istanbul_map.png';
+
   /// Kozmetik sheet yolları (katalogdan).
   static Map<String, String> get skinPaths => {
     for (final c in cosmeticCatalog)
       if (c.sheetAsset != null) c.id: c.sheetAsset!,
   };
+
+  /// Rotadaki bölgelerin kitleri ve simgeleri: hazır olmayan bölgenin asset'i yüklenmez (docs/19 §2).
+  static List<ObstacleKitId> get routeKits => [
+    for (final z in routeZoneList) z.kit,
+  ];
+  static List<Landmark> get routeLandmarks => [
+    for (final z in routeZoneList) z.landmark,
+  ];
 
   /// Bütün asset yolları (test: dosyaların varlığı kontrol edilir).
   static List<String> get allPaths => [
@@ -180,10 +204,10 @@ class GameArt {
     ...skinPaths.values,
     fxPath,
     iconsPath,
-    for (final k in ObstacleKitId.values)
+    for (final k in routeKits)
       for (final l in zoneLayers) zonePath(k.name, l),
-    ...Landmark.values.map(landmarkPath),
-    ...ObstacleKitId.values.map(kitPath),
+    ...routeLandmarks.map(landmarkPath),
+    ...routeKits.map(kitPath),
   ];
 
   static Future<GameArt> load(Images images) async {
@@ -215,12 +239,13 @@ class GameArt {
       );
     }
 
-    final zoneKeys = ObstacleKitId.values.map((k) => k.name).toList();
+    final kitIds = routeKits, landmarkIds = routeLandmarks;
+    final zoneKeys = kitIds.map((k) => k.name).toList();
     final results = await Future.wait<Object?>([
       get(simitPath),
       Future.wait(zoneKeys.map(zone)),
-      Future.wait(Landmark.values.map((l) => get(landmarkPath(l)))),
-      Future.wait(ObstacleKitId.values.map((k) => get(kitPath(k)))),
+      Future.wait(landmarkIds.map((l) => get(landmarkPath(l)))),
+      Future.wait(kitIds.map((k) => get(kitPath(k)))),
       get(fxPath),
       get(iconsPath),
       Future.wait(skinPaths.values.map(get)),
@@ -236,12 +261,12 @@ class GameArt {
         for (var i = 0; i < zoneKeys.length; i++) zoneKeys[i]: zoneList[i],
       },
       landmarks: {
-        for (var i = 0; i < Landmark.values.length; i++)
-          if (lm[i] != null) Landmark.values[i]: lm[i]!,
+        for (var i = 0; i < landmarkIds.length; i++)
+          if (lm[i] != null) landmarkIds[i]: lm[i]!,
       },
       kits: {
-        for (var i = 0; i < ObstacleKitId.values.length; i++)
-          if (kits[i] != null) ObstacleKitId.values[i]: kits[i]!,
+        for (var i = 0; i < kitIds.length; i++)
+          if (kits[i] != null) kitIds[i]: kits[i]!,
       },
       fx: results[4] as Image?,
       icons: results[5] as Image?,

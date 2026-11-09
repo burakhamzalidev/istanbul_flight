@@ -5,10 +5,12 @@ import 'package:flame/components.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/data/score_repository.dart';
+import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/game_services.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
 import 'package:istanbul_flight/progression/achievements.dart';
+import 'package:istanbul_flight/progression/discovery.dart';
 import 'package:istanbul_flight/progression/game_events.dart';
 import 'package:istanbul_flight/progression/missions.dart';
 import 'package:istanbul_flight/progression/progression_config.dart';
@@ -154,7 +156,11 @@ void main() {
       expect(s.progress.totalScore, 0);
       expect(s.progress.totalSimits, 0);
       expect(s.progress.longestFlightMs, 0);
-      expect(s.progress.maxZone, 4, reason: 'bölge sırası sınırlanır');
+      expect(
+        s.progress.maxZone,
+        routeZones.last,
+        reason: 'bölge sırası rotanın son durağına sınırlanır',
+      );
     });
 
     test('XP oyun fiziğini değiştirmez (ayarlar sabit)', () async {
@@ -439,10 +445,12 @@ void main() {
       expect(s1.summary.unlockedAchievements.map((a) => a.id), ['first_flap']);
       expect(s1.summary.xpAchievements, 10);
       expect(s1.progress.achievements['first_flap'], _now);
-      expect(s1.progress.bonusSimits, 5);
+      // başarım ödülü 5 + keşif albümünün "Haliç'e ulaş" hedefi (Phase 2.3)
+      final halic = discoveryGoalById('halic_reach')!.rewardSimits;
+      expect(s1.progress.bonusSimits, 5 + halic);
       final s2 = settleRun(s1.progress, _run(id: 'b'), _now)!;
       expect(s2.summary.unlockedAchievements, isEmpty);
-      expect(s2.progress.bonusSimits, 5);
+      expect(s2.progress.bonusSimits, 5 + halic);
     });
 
     test('ilerleme hedefte durur; kademeli başarımlar ayrı ayrı açılır', () {

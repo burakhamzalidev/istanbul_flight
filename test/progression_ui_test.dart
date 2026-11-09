@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/data/score_repository.dart';
+import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
 import 'package:istanbul_flight/main.dart';
@@ -94,7 +95,7 @@ void main() {
         '40',
       );
       expect(find.text('1 dk 05 sn'), findsOneWidget);
-      expect(find.text('3/5'), findsOneWidget);
+      expect(find.text('3/${routeZones.length}'), findsOneWidget);
       await tester.ensureVisible(find.byKey(const Key('openAchievements')));
       await tester.tap(find.byKey(const Key('openAchievements')));
       await tester.pump(const Duration(milliseconds: 16));

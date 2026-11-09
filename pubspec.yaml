@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.2.0+3
+version: 1.6.0+9
 
 environment:
   sdk: ^3.13.5
@@ -76,6 +76,10 @@ flutter:
     - assets/images/pixel_art/backgrounds/kizkulesi/
     - assets/images/pixel_art/backgrounds/kopru/
     - assets/images/pixel_art/backgrounds/rumeli/
+    - assets/images/pixel_art/backgrounds/ortakoy/
+    - assets/images/pixel_art/backgrounds/emirgan/
+    - assets/images/pixel_art/backgrounds/dolmabahce/
+    - assets/images/pixel_art/backgrounds/uskudar/
     - assets/audio/
 
   # Özgün bitmap font (Türkçe karakterli). Kaynak: art/_source/pixel/font.js

@@ -26,6 +26,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSGKFriendListUsageDescription</key>
+	<string>Game Center arkadaşlarınla skorlarını karşılaştırmak için arkadaş listen kullanılır. Liste saklanmaz.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Kartpostalını Fotoğraflar'a kaydetmek için (paylaşım menüsündeki "Resmi Kaydet").</string>
 	<key>LSRequiresIPhoneOS</key>

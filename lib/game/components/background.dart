@@ -105,7 +105,7 @@ abstract class ZoneLayer extends Component
 
   late final ZoneFade zf = ZoneFade(zones[0].kit.name);
 
-  void reset() => zf.snap(zones[0].kit.name);
+  void reset() => zf.snap(zoneKey);
 
   @override
   void update(double dt) => zf.update(zoneKey, dt);

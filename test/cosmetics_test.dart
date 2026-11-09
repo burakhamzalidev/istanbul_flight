@@ -12,6 +12,7 @@ import 'package:istanbul_flight/game/game_phase.dart';
 import 'package:istanbul_flight/game/game_services.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
 import 'package:istanbul_flight/progression/cosmetics.dart';
+import 'package:istanbul_flight/progression/discovery.dart';
 import 'package:istanbul_flight/progression/progression_config.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,7 +59,11 @@ void main() {
 
     test('fiyatlar istenen tabloyla aynı ve yapılandırmadan okunuyor', () {
       expect(
-        {for (final c in cosmeticCatalog) c.name: c.price},
+        // Mağazada satılan görünümler (ödül görünümleri satılmaz: Phase 2.3 İznik Martısı)
+        {
+          for (final c in cosmeticCatalog)
+            if (!c.rewardOnly) c.name: c.price,
+        },
         {
           'Klasik Simit': 0,
           'Denizci Simit': 50,
@@ -68,7 +73,7 @@ void main() {
           'İstanbul Kaşifi': 350,
         },
       );
-      for (final c in cosmeticCatalog) {
+      for (final c in cosmeticCatalog.where((c) => !c.rewardOnly)) {
         expect(c.price, ShopConfig.prices[c.id], reason: c.id);
       }
     });
@@ -219,7 +224,14 @@ void main() {
         });
         final prefs = await SharedPreferences.getInstance();
         final p = await SharedPrefsProgressRepository(prefs).load();
-        expect(p.simitBalance, 80);
+        // 80 simit korunur; rekor 20 → Haliç ve Galata keşfedilmiş: keşif albümünün "ulaş" hedefleri
+        // geçişte bir kez ödüllendirilir (Phase 2.3, docs/15 §9)
+        expect(
+          p.simitBalance,
+          80 +
+              discoveryGoalById('halic_reach')!.rewardSimits +
+              discoveryGoalById('galata_reach')!.rewardSimits,
+        );
         expect(effectiveCosmetic(p).id, classicCosmeticId);
         expect(purchaseCosmetic(p, 'denizci').$2, PurchaseResult.purchased);
       },

@@ -81,7 +81,8 @@ class HudOverlay extends StatelessWidget {
             child: IgnorePointer(
               child: ValueListenableBuilder<int>(
                 valueListenable: game.score,
-                builder: (_, s, _) => RouteBar(score: s),
+                builder: (_, s, _) =>
+                    RouteBar(score: s, stages: game.dayCycle.stages),
               ),
             ),
           ),
@@ -289,23 +290,39 @@ class OneShotFade extends StatelessWidget {
   );
 }
 
-/// Rotadaki 5 durak ve ilerleme (bölge eşiklerine göre).
+/// Rotadaki duraklar ve ilerleme (bölge eşiklerine göre; yalnızca rotadaki bölgeler).
 class RouteBar extends StatelessWidget {
-  const RouteBar({super.key, required this.score});
+  const RouteBar({super.key, required this.score, this.stages});
 
   final int score;
 
-  static double progressFor(int score) {
-    final last = zones.last.startScore;
+  /// (bölge, eşik) durakları; null: klasik rota. Etkinlikte etkinliğin bölge dizisi (Phase 2.7).
+  final List<(int, int)>? stages;
+
+  static List<(int, int)> get _classic => [
+    for (final z in routeZones) (z, zones[z].startScore),
+  ];
+
+  static double progressFor(int score, [List<(int, int)>? stages]) {
+    final route = stages ?? _classic;
+    if (route.length < 2) return 1;
+    final last = route.last.$2;
     if (score >= last) return 1;
-    final i = zoneIndexForScore(score);
-    final a = zones[i].startScore, b = zones[i + 1].startScore;
-    return (i + (score - a) / (b - a)) / (zones.length - 1);
+    var i = 0;
+    while (i + 1 < route.length && score >= route[i + 1].$2) {
+      i++;
+    }
+    final a = route[i].$2, b = route[i + 1].$2;
+    return (i + (score - a) / (b - a)) / (route.length - 1);
   }
 
   @override
   Widget build(BuildContext context) {
-    final p = progressFor(score);
+    final route = stages ?? _classic;
+    // tek bölgelik uçuşta (Gece Uçuşu) rota çubuğu yok
+    if (route.length < 2) return const SizedBox(height: 22);
+    final p = progressFor(score, route);
+    final n = route.length;
     return SizedBox(
       height: 22,
       child: LayoutBuilder(
@@ -320,14 +337,14 @@ class RouteBar extends StatelessWidget {
                 color: UiColors.paper.withValues(alpha: 0.35),
               ),
               Container(height: 4, width: w * p, color: UiColors.mustard),
-              for (var i = 0; i < zones.length; i++)
+              for (var i = 0; i < n; i++)
                 Positioned(
-                  left: w * i / (zones.length - 1) - 6,
+                  left: w * i / (n - 1) - 6,
                   child: Container(
                     width: 12,
                     height: 12,
                     decoration: pixelBox(
-                      color: p * (zones.length - 1) >= i - 0.001
+                      color: p * (n - 1) >= i - 0.001
                           ? UiColors.mustard
                           : UiColors.paper,
                       border: UiColors.navy,

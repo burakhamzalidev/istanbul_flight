@@ -174,6 +174,48 @@ const explorer = {
   },
 };
 
+/** İznik Martısı (Phase 2.3 keşif ödülü): başın arkasına iliştirilmiş kırmızı lale. */
+const tulip = {
+  head(cv, sway) {
+    // sap ve yaprak: başın arkasından yukarı, kanatla hafifçe salınır
+    const k = Math.round(sway);
+    cv.line(25, 9, 23 + k, 3, '#2f7a46'); cv.set(24, 7, '#4fa35e'); cv.set(25, 6, '#4fa35e'); cv.set(26, 6, '#2f7a46');
+    // lale çanağı: üç taç yaprak, soldan ışık
+    const tx = 23 + k, ty = 2;
+    cv.poly([[tx - 3, ty - 3], [tx - 2, ty + 1], [tx + 2, ty + 1], [tx + 3, ty - 3], [tx + 1, ty - 1], [tx, ty - 4], [tx - 1, ty - 1]], (x) => (x < tx - 1 ? '#f0645a' : x > tx + 1 ? '#9c1f2c' : '#d0343c'));
+    cv.set(tx, ty, '#7a1622');
+  },
+};
+
+/** Kupa Martısı (Phase 2.7 sezon ödülü): başta defne tacı, göğüste kırmızı-beyaz kurdeleli altın madalya. */
+const champion = {
+  chest(cv, sway) {
+    // kurdele: boyundan madalyaya V biçiminde iki şerit (kırmızı, ortası beyaz), hafifçe salınır
+    const k = Math.round(sway * 0.6);
+    cv.poly([[29, 20], [31, 20], [34, 26 + k], [32, 26 + k]], '#c42f36');
+    cv.poly([[37, 20], [39, 20], [36, 26 + k], [34, 26 + k]], '#a32530');
+    cv.set(30, 21, '#fbf7ee'); cv.set(31, 23, '#fbf7ee'); cv.set(37, 21, '#fbf7ee'); cv.set(36, 23, '#fbf7ee');
+    // madalya: altın daire, parlak sol üst, koyu alt kenar; ortada yıldız kabartması
+    const cx = 34.5, cy = 29 + k;
+    cv.ellipse(cx, cy, 3.6, 3.6, (nx, ny) => (nx + ny < -0.7 ? '#fff3b0' : nx + ny > 0.6 ? '#b07b18' : '#f2c23a'));
+    const x = Math.round(cx), y = Math.round(cy);
+    cv.set(x - 1, y - 2, '#fffbe6');
+    cv.set(x, y - 1, '#c98f26'); cv.set(x - 1, y, '#c98f26'); cv.set(x, y, '#c98f26'); cv.set(x + 1, y, '#c98f26'); cv.set(x, y + 1, '#c98f26');
+  },
+  head(cv) {
+    // defne tacı: başın üst çizgisine oturan iki sıra yaprak (arka dal koyu, ön dal açık), önde altın düğüm
+    for (let x = 21; x <= 36; x++) {
+      const t = (x - 29) / 9.2;
+      const top = Math.round(16 - Math.sqrt(Math.max(0, 1 - t * t)) * 8.6);
+      const even = x % 2 === 0;
+      cv.set(x, top - 1, even ? '#5fae4f' : '#3f8a3a');
+      cv.set(x, top, even ? '#3f8a3a' : '#2c6a2c');
+      if (even) cv.set(x, top - 2, '#7cc46a'); // yaprak ucu, dışa doğru
+    }
+    cv.set(36, 10, '#f2c23a'); cv.set(37, 10, '#d99a1c'); cv.set(36, 11, '#d99a1c');
+  },
+};
+
 const SKINS = {
   classic: { palette: C },
   denizci: { palette: C, acc: sailor },
@@ -199,6 +241,17 @@ const SKINS = {
     },
   },
   kasif: { palette: C, acc: explorer },
+  iznik: {
+    // İznik Martısı: çini mavisi kanatlar, firuze uçlar, kanatta beyaz çini çiçekleri + lale
+    palette: {
+      ...C,
+      g: ['#7fd3d6', '#2f8fb0', '#1d5f9e', '#163f73'],
+      tip: '#0f2a52', mirror: '#e9fbff',
+      glint: [[-6, 0], [-11, -2], [-3, -1]], glintColor: '#fbf7ee',
+    },
+    acc: tulip,
+  },
+  kupa: { palette: C, acc: champion },
 };
 
 function frame(spec, skin = SKINS.classic) {

@@ -5,16 +5,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'challenge/daily_challenge.dart';
 import 'data/score_repository.dart';
 import 'game/game_services.dart';
 import 'game/day_cycle.dart';
 import 'game/istanbul_flight_game.dart';
+import 'game/weather.dart';
 import 'services/audio_service.dart';
+import 'services/game_center/game_center.dart';
+import 'services/game_center/game_center_controller.dart';
 import 'services/haptics_service.dart';
 import 'services/progress.dart';
 import 'services/settings.dart';
 import 'services/share_service.dart';
+import 'ui/overlays/daily_overlays.dart';
+import 'ui/overlays/discovery_overlays.dart';
+import 'ui/overlays/event_overlays.dart';
 import 'ui/overlays/hud_overlay.dart';
+import 'ui/overlays/leaderboard_overlay.dart';
 import 'ui/overlays/menu_overlays.dart';
 import 'ui/overlays/postcard_overlay.dart';
 import 'ui/overlays/progression_overlays.dart';
@@ -45,16 +53,19 @@ Future<void> main() async {
   ScoreRepository scores;
   SettingsRepository settingsRepo;
   ProgressRepository progressRepo;
+  GameCenterStore gameCenterStore;
   try {
     final prefs = await SharedPreferences.getInstance();
     scores = SharedPrefsScoreRepository(prefs);
     settingsRepo = SharedPrefsSettingsRepository(prefs);
     progressRepo = SharedPrefsProgressRepository(prefs);
+    gameCenterStore = SharedPrefsGameCenterStore(prefs);
   } catch (e) {
     debugPrint('Kalıcı kayıt açılamadı, bellek içi kayıt kullanılıyor: $e');
     scores = InMemoryScoreRepository();
     settingsRepo = InMemorySettingsRepository();
     progressRepo = InMemoryProgressRepository();
+    gameCenterStore = InMemoryGameCenterStore();
   }
   await PixelIcons.load();
   final settings = await settingsRepo.load();
@@ -65,35 +76,65 @@ Future<void> main() async {
     audio.init(),
   ); // ses havuzları arka planda hazırlanır; açılışı bekletmez
 
+  final progressController = ProgressController(progressRepo, progress);
+  // Apple Game Center (Phase 2.4): yalnızca iOS'ta etkin; giriş yapılmasa da oyun aynen oynanır
+  final gameCenter = GameCenterController(
+    api: MethodChannelGameCenterApi(),
+    store: gameCenterStore,
+    progress: progressController,
+    scores: scores,
+  );
   final services = GameServices(
     audio: audio,
     haptics: PlatformHaptics(),
     settings: SettingsController(settingsRepo, settings),
-    progress: ProgressController(progressRepo, progress),
+    progress: progressController,
     share: PlatformShareService(),
+    gameCenter: gameCenter,
   );
   services.progress.refreshDay(); // günlük görevler (gün değiştiyse yenilenir)
+  // Günün Uçuşu: önceki oturumda yarıda kalan dereceli deneme "kesildi" olur (hak geri verilmez)
+  services.progress.recoverDaily();
+  services.progress.refreshWeek(); // haftalık görevler (hafta değiştiyse yenilenir; Phase 2.7)
 
   // Geliştirme bayrakları (normal derlemede kapalı):
   //   MARTI_AUTOPILOT=true  → Simit kendi uçar
   //   MARTI_DEMO=true       → otomatik pilot + çarpışma kapalı (tüm bölgeleri görmek için)
   //   MARTI_STATS=true      → FPS ve nesne sayısı
-  // Web demoda: ?zone=n turu o bölgeden başlatır; &card=1 otomatik pilotu ve korumayı kapatır
-  // (Simit düşer → o bölgenin kartpostalı görülür); &play=1 menüyü atlayıp turu başlatır.
+  // Web demoda: ?zone=n turu o bölgeden (bölge sırası, 6 = Ortaköy), &score=n o skordan başlatır; &card=1 otomatik pilotu ve korumayı kapatır
+  // (Simit düşer → o bölgenin kartpostalı görülür); &play=1 menüyü atlayıp turu başlatır; &weather=rain|fog|windy
+  // her bölgede o havayı gösterir.
   const demo = bool.fromEnvironment('MARTI_DEMO');
   final card = demo && Uri.base.queryParameters['card'] == '1';
   final game = IstanbulFlightGame(scores: scores, services: services)
     ..autopilot =
         (demo && !card) || const bool.fromEnvironment('MARTI_AUTOPILOT')
     ..debugInvincible = demo && !card
+    // &score=n: turu bu skordan başlatır (bölge geçişini görmek için; ?zone'dan önceliklidir)
     ..debugStartScore = demo
-        ? zones[(int.tryParse(Uri.base.queryParameters['zone'] ?? '') ?? 0)
-                  .clamp(0, zones.length - 1)]
-              .startScore
+        ? int.tryParse(Uri.base.queryParameters['score'] ?? '') ??
+              zones[(int.tryParse(Uri.base.queryParameters['zone'] ?? '') ?? 0)
+                      .clamp(0, zones.length - 1)]
+                  .startScore
         : 0
     ..debugAutoStart = demo && Uri.base.queryParameters['play'] == '1'
+    ..debugWeather = demo
+        ? Weather.values
+              .where((w) => w.name == Uri.base.queryParameters['weather'])
+              .firstOrNull
+        : null
     ..showStats = const bool.fromEnvironment('MARTI_STATS');
   runApp(MartiApp(game: game));
+  // GameKit girişi ilk kareden sonra (giriş ekranı uygulamanın üstünde açılır); bekleyen skorlar
+  // uygulama öne her geldiğinde tekrar denenir.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(gameCenter.start());
+    // Bugünün parkuru arka planda doğrulanır (ilk "Günün Uçuşu" ekranı beklemesin)
+    unawaited(DailyGenerators.prepare(services.daily.now()));
+    // Açık kupa ve özel etkinliğin parkuru arka planda doğrulanır (Phase 2.7)
+    unawaited(services.events.prepareActive());
+  });
+  AppLifecycleListener(onResume: () => unawaited(gameCenter.flush()));
 }
 
 class MartiApp extends StatelessWidget {
@@ -164,6 +205,10 @@ class GameScreen extends StatelessWidget {
                   Overlays.achievements: (_, g) => AchievementsOverlay(game: g),
                   Overlays.shop: (_, g) => ShopOverlay(game: g),
                   Overlays.wardrobe: (_, g) => WardrobeOverlay(game: g),
+                  Overlays.discovery: (_, g) => DiscoveryOverlay(game: g),
+                  Overlays.leaderboard: (_, g) => LeaderboardOverlay(game: g),
+                  Overlays.daily: (_, g) => DailyOverlay(game: g),
+                  Overlays.events: (_, g) => EventsOverlay(game: g),
                 },
                 initialActiveOverlays: const [Overlays.menu],
               ),

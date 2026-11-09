@@ -226,5 +226,18 @@ song('music_game.wav', 112, 8, [
   drone(x, [38], 0.05); fadeEdges(x, 400);
   report.push(writeWav('music_gameover.wav', normalize(reverb(x, { mix: 0.35 }), 0.7))); }
 
+// ================= PHASE 2.6.3: HAVA DURUMU =================
+// Hafif yağmur (8 sn, dikişsiz döngü): yüksek geçiren hışırtı + ara ara iri damla tıkırtısı. Kendi tohumuyla
+// üretilir: yukarıdaki seslerin üretimini değiştirmez.
+{ seed = 26300;
+  const x = loopNoise(8.25, t => ({ gain: 0.75 + 0.25 * Math.sin(2 * Math.PI * t * 3), cut: 2600 + 600 * Math.sin(2 * Math.PI * t) }));
+  highpass(x, 900);
+  for (let k = 0; k < 90; k++) { // damlalar
+    const at = Math.floor(rnd() * (x.length - 400));
+    const d = noiseBurst(0.012, { a: 0.0005, d: 0.006, s: 0.1, r: 0.004, lp: 6000, hp: 1800 });
+    mixInto(x, d, at, 0.25 + rnd() * 0.35);
+  }
+  report.push(writeWav('amb_rain.wav', normalize(x, 0.38))); }
+
 console.table(report);
 console.log('Toplam KB:', report.reduce((s, r) => s + r.kb, 0));

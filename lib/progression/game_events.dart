@@ -1,3 +1,5 @@
+import '../challenge/daily_challenge.dart';
+
 /// Oyun olayları: oyun (IstanbulFlightGame) bunları yayınlar, ilerleme sistemleri dinler.
 ///
 /// Olay veriyolu ya da durum kütüphanesi yok: [GameServices.emit] olayı dinleyicilere
@@ -8,7 +10,26 @@ sealed class GameEvent {
 }
 
 class RunStarted extends GameEvent {
-  const RunStarted(this.runId);
+  const RunStarted(
+    this.runId, {
+    this.mode = RunMode.classic,
+    this.challengeId,
+    this.eventId,
+  });
+  final String runId;
+  final RunMode mode;
+
+  /// Günün Uçuşu'nda challenge kimliği (klasikte null).
+  final String? challengeId;
+
+  /// Etkinlik uçuşunda etkinlik kimliği (Phase 2.7; diğer modlarda null).
+  final String? eventId;
+}
+
+/// Oyuncu uçuşu yarıda bıraktı (duraklatıp ana menüye döndü ya da yeniden başlattı). Uçuş hesabı
+/// yapılmaz; Günün Uçuşu'nda dereceli hak harcanmış kalır.
+class RunAbandoned extends GameEvent {
+  const RunAbandoned(this.runId);
   final String runId;
 }
 
@@ -51,6 +72,11 @@ class RunResult {
     required this.nearMisses,
     required this.maxZone,
     required this.flightMs,
+    this.zoneStats = const {},
+    this.assisted = false,
+    this.mode = RunMode.classic,
+    this.challengeId,
+    this.eventId,
   });
 
   /// Uçuşun benzersiz kimliği: aynı uçuş iki kez hesaplanmaz.
@@ -67,4 +93,58 @@ class RunResult {
 
   /// Simülasyon süresi (ms): kare hızından bağımsız, duraklatma sayılmaz.
   final int flightMs;
+
+  /// Bölge sırası → o bölgede geçen engel / simit / kıl payı (Phase 2.3 keşif hedefleri).
+  /// Toplamlar yukarıdaki sayaçlarla aynıdır; boş = bölge bazlı veri yok (ör. eski testler).
+  final Map<int, ZoneRunStats> zoneStats;
+
+  /// Geliştirme yardımı açıktı (otomatik pilot, çarpışmasızlık ya da başlangıç skoru): skor liderlik
+  /// tablosuna gönderilmez (Phase 2.4). Normal derlemede hep false.
+  final bool assisted;
+
+  /// Oyun modu (Phase 2.5). Günlük uçuşlar klasik rekoru ve klasik Game Center tablolarını etkilemez.
+  final RunMode mode;
+
+  /// Günün Uçuşu challenge kimliği (`daily_2026_10_24`); klasikte null.
+  final String? challengeId;
+
+  /// Etkinlik kimliği (`cup_2026_w46`); etkinlik dışı uçuşlarda null (Phase 2.7).
+  final String? eventId;
+
+  /// Değiştirilmiş kopya: Simit Festivali'nin cüzdan sınırı ([simits]) ve etkinlik uçuşunun keşif / görev
+  /// karşılığı ([maxZone], docs/20 §13).
+  RunResult copyWith({int? simits, int? maxZone}) => RunResult(
+    runId: runId,
+    score: score,
+    obstaclesPassed: obstaclesPassed,
+    simits: simits ?? this.simits,
+    nearMisses: nearMisses,
+    maxZone: maxZone ?? this.maxZone,
+    flightMs: flightMs,
+    zoneStats: zoneStats,
+    assisted: assisted,
+    mode: mode,
+    challengeId: challengeId,
+    eventId: eventId,
+  );
+}
+
+/// Bir uçuşun tek bölgedeki sayaçları.
+class ZoneRunStats {
+  const ZoneRunStats({
+    this.obstacles = 0,
+    this.simits = 0,
+    this.nearMisses = 0,
+  });
+
+  final int obstacles;
+  final int simits;
+  final int nearMisses;
+
+  ZoneRunStats add({int obstacles = 0, int simits = 0, int nearMisses = 0}) =>
+      ZoneRunStats(
+        obstacles: this.obstacles + obstacles,
+        simits: this.simits + simits,
+        nearMisses: this.nearMisses + nearMisses,
+      );
 }

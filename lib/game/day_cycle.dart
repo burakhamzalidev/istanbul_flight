@@ -85,20 +85,35 @@ enum ObstacleKitId {
   galata(ObstacleStyle.house),
   kizkulesi(ObstacleStyle.ferry),
   kopru(ObstacleStyle.bridge),
-  rumeli(ObstacleStyle.bridge);
+  rumeli(ObstacleStyle.bridge),
+  // Phase 2.6 (docs/19): ikinci gün rotası
+  emirgan(ObstacleStyle.house),
+  ortakoy(ObstacleStyle.house),
+  dolmabahce(ObstacleStyle.house),
+  uskudar(ObstacleStyle.ferry);
 
   const ObstacleKitId(this.fallbackStyle);
   final ObstacleStyle fallbackStyle;
 }
 
 /// L3 kahraman simgeler (assets/images/pixel_art/landmarks).
-enum Landmark { suleymaniye, galata, kizKulesi, bridge, rumeliHisari }
+enum Landmark {
+  suleymaniye,
+  galata,
+  kizKulesi,
+  bridge,
+  rumeliHisari,
+  emirgan,
+  ortakoy,
+  dolmabahce,
+  uskudar,
+}
 
 /// L2 uzak silüet şeritleri.
 enum FarSkyline { peninsula, uskudar, hills }
 
 /// L4 kıyı şeritleri.
-enum Shore { halic, galata, uskudar, ortakoy, rumeli }
+enum Shore { halic, galata, uskudar, ortakoy, rumeli, emirgan, dolmabahce }
 
 /// Rota üzerindeki bölge = günün bir fazı + kendine özgü görsel set.
 class Zone {
@@ -111,6 +126,7 @@ class Zone {
     required this.landmark,
     required this.far,
     required this.shore,
+    this.available = true,
   });
 
   final String name;
@@ -123,6 +139,10 @@ class Zone {
   final Landmark landmark;
   final FarSkyline far;
   final Shore shore;
+
+  /// Rotada mı. Kalıcı kayıtlar bölgeyi [zones] içindeki sırasıyla tanır (keşif, rozet, rekor), bu yüzden
+  /// sıra hiç değişmez; görselleri hazır olmayan bölge listede durur ama rotaya girmez ([routeZones]).
+  final bool available;
 
   ObstacleStyle get obstacleStyle => kit.fallbackStyle;
 }
@@ -274,14 +294,145 @@ const zones = <Zone>[
       lights: 1,
     ),
   ),
+  // ---- Phase 2.6: ikinci gün rotası (docs/19). Rumeli'den sonra Boğaz boyunca güneye dönüş; eski bölgelerin
+  // eşikleri ve sırası değişmez. Sıra kalıcı kimliktir: yeni bölgeler hep sona eklenir.
+  Zone(
+    name: 'Emirgan',
+    greeting: "Emirgan'dan selamlar!",
+    startScore: 120,
+    kit: ObstacleKitId.emirgan,
+    landmark: Landmark.emirgan,
+    far: FarSkyline.hills,
+    shore: Shore.emirgan,
+    palette: PhasePalette(
+      skyTop: Color(0xFF6FB0D8),
+      skyMid: Color(0xFFA8D4E6),
+      skyHorizon: Color(0xFFE8F0D8),
+      sun: Color(0xFFFFF8E0),
+      sunY: 420,
+      water: Color(0xFF3E8FA0),
+      waterDeep: Color(0xFF2E7488),
+      far: Color(0xFF8FB49A),
+      shore: Color(0xFF5E7E5A),
+      landmark: Color(0xFF3E5A44),
+      light: Color(0xFFFFF4D6),
+      obstacleBase: Color(0xFF3B3A2F),
+      obstacleDetail: Color(0xFF7A5A3A),
+      windowDark: Color(0xFF4A4A48),
+      obstacleTint: Color(0xFFFFFFFF),
+      cloud: Color(0xFFFFFFFF),
+    ),
+  ),
+  Zone(
+    name: 'Ortaköy',
+    greeting: "Ortaköy'den selamlar!",
+    startScore: 150,
+    kit: ObstacleKitId.ortakoy,
+    landmark: Landmark.ortakoy,
+    far: FarSkyline.hills,
+    shore: Shore.ortakoy,
+    palette: PhasePalette(
+      skyTop: Color(0xFF1F78D0),
+      skyMid: Color(0xFF5FA8E2),
+      skyHorizon: Color(0xFFB8DDF2),
+      sun: Color(0xFFFFFBE8),
+      sunY: 260,
+      water: Color(0xFF1E86B0),
+      waterDeep: Color(0xFF136C96),
+      far: Color(0xFF8CA8C4),
+      shore: Color(0xFF5E7C98),
+      landmark: Color(0xFF34485E),
+      light: Color(0xFFFFF8E0),
+      obstacleBase: Color(0xFF3A3236),
+      obstacleDetail: Color(0xFF9A4A34),
+      windowDark: Color(0xFF4A4650),
+      obstacleTint: Color(0xFFFFFFFF),
+      cloud: Color(0xFFFFFFFF),
+    ),
+  ),
+  Zone(
+    name: 'Dolmabahçe',
+    greeting: "Dolmabahçe'den selamlar!",
+    startScore: 180,
+    kit: ObstacleKitId.dolmabahce,
+    landmark: Landmark.dolmabahce,
+    far: FarSkyline.uskudar,
+    shore: Shore.dolmabahce,
+    palette: PhasePalette(
+      skyTop: Color(0xFF3E7EC0),
+      skyMid: Color(0xFF8AB4D8),
+      skyHorizon: Color(0xFFF2DDB0),
+      sun: Color(0xFFFFE9B0),
+      sunY: 640,
+      water: Color(0xFF2F7E9A),
+      waterDeep: Color(0xFF246884),
+      far: Color(0xFFB4A8A8),
+      shore: Color(0xFF8A7A70),
+      landmark: Color(0xFF5A4A44),
+      light: Color(0xFFFFE2A0),
+      obstacleBase: Color(0xFF3E3430),
+      obstacleDetail: Color(0xFFA87A4A),
+      windowDark: Color(0xFF4E4448),
+      obstacleTint: Color(0xFFFFF4E4),
+      cloud: Color(0xFFFFF4E0),
+    ),
+  ),
+  Zone(
+    name: 'Üsküdar',
+    greeting: "Üsküdar'dan selamlar!",
+    startScore: 210,
+    kit: ObstacleKitId.uskudar,
+    landmark: Landmark.uskudar,
+    far: FarSkyline.peninsula,
+    shore: Shore.uskudar,
+    palette: PhasePalette(
+      skyTop: Color(0xFF5A6AA8),
+      skyMid: Color(0xFFC8A0B0),
+      skyHorizon: Color(0xFFF8D8B0),
+      sun: Color(0xFFFFE0A8),
+      sunY: 980,
+      water: Color(0xFF6A7AA0),
+      waterDeep: Color(0xFF56658A),
+      far: Color(0xFFA88AA0),
+      shore: Color(0xFF7A6A84),
+      landmark: Color(0xFF4A3A54),
+      light: Color(0xFFFFD2A0),
+      obstacleBase: Color(0xFF33283A),
+      obstacleDetail: Color(0xFFB07A6A),
+      windowDark: Color(0xFF443A4E),
+      obstacleTint: Color(0xFFF6E2D8),
+      cloud: Color(0xFFF2C8C0),
+    ),
+  ),
 ];
 
-int zoneIndexForScore(int score) {
+/// Rotadaki bölgelerin [zones] sıraları (yalnızca [Zone.available] olanlar, skor eşiğine göre artan).
+final List<int> routeZones = [
+  for (var i = 0; i < zones.length; i++)
+    if (zones[i].available) i,
+];
+
+/// Rotadaki bölgeler (sırasıyla).
+List<Zone> get routeZoneList => [for (final i in routeZones) zones[i]];
+
+/// Klasik rotanın ilk beş bölgesi (Phase 2.0–2.5). Günün Uçuşu v1/v2 ve keşif albümü ödülü bu sınırı kullanır.
+const firstRouteLastZone = 4;
+
+/// Skorun bulunduğu bölge (rotadaki son eşiği geçilmiş bölge). [maxZone] verilirse rota o bölgede biter
+/// (Günün Uçuşu v1/v2: Rumeli Hisarı).
+int zoneIndexForScore(int score, {int? maxZone}) {
   var index = 0;
-  for (var i = 0; i < zones.length; i++) {
+  for (final i in routeZones) {
+    if (maxZone != null && i > maxZone) break;
     if (score >= zones[i].startScore) index = i;
   }
   return index;
+}
+
+/// Rotada [zone]'dan sonraki bölge (son bölgede null).
+int? nextRouteZone(int zone) {
+  final at = routeZones.indexOf(zone);
+  return at < 0 || at + 1 >= routeZones.length ? null : routeZones[at + 1];
 }
 
 /// Skora bağlı gün döngüsü: bölge değişince palet [transitionTime] sürede yumuşakça geçer.
@@ -290,6 +441,31 @@ class DayCycle {
 
   final double transitionTime;
   int _zone = 0;
+
+  /// Etkinlik bölge dizisi (Phase 2.7): (bölge, bu skordan itibaren). null: klasik rota.
+  List<(int, int)>? _route;
+
+  List<(int, int)>? get route => _route;
+
+  /// Bölge dizisini değiştirir; görünüm bir sonraki [reset] ile dizinin ilk bölgesine geçer.
+  set route(List<(int, int)>? r) => _route = r == null || r.isEmpty ? null : r;
+
+  /// Uçuşun başladığı bölge.
+  int get startZone => _route?.first.$1 ?? 0;
+
+  /// Rotadaki duraklar ve eşikleri (HUD rota çubuğu).
+  List<(int, int)> get stages =>
+      _route ?? [for (final z in routeZones) (z, zones[z].startScore)];
+
+  int _zoneFor(int score, int? maxZone) {
+    final r = _route;
+    if (r == null) return zoneIndexForScore(score, maxZone: maxZone);
+    var z = r.first.$1;
+    for (final (zone, from) in r) {
+      if (score >= from) z = zone;
+    }
+    return z;
+  }
   PhasePalette _from = zones[0].palette;
   double _t = 1;
   PhasePalette _current = zones[0].palette;
@@ -301,9 +477,9 @@ class DayCycle {
   /// Geçiş sürüyor mu (sadece bu sırada palet her karede yeniden hesaplanır).
   bool get isTransitioning => _t < 1;
 
-  /// Skor yeni bir bölgeye geçtiyse true döner.
-  bool updateScore(int score) {
-    final next = zoneIndexForScore(score);
+  /// Skor yeni bir bölgeye geçtiyse true döner. [maxZone]: rotanın biteceği bölge (Günün Uçuşu).
+  bool updateScore(int score, {int? maxZone}) {
+    final next = _zoneFor(score, maxZone);
     if (next == _zone) return false;
     _from = _current;
     _zone = next;
@@ -319,9 +495,9 @@ class DayCycle {
   }
 
   void reset() {
-    _zone = 0;
-    _from = zones[0].palette;
-    _current = zones[0].palette;
+    _zone = startZone;
+    _from = zones[_zone].palette;
+    _current = zones[_zone].palette;
     _t = 1;
   }
 }

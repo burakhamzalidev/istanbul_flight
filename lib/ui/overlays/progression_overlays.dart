@@ -260,7 +260,7 @@ class ProfileOverlay extends StatelessWidget {
                   ('Kıl payı geçiş', '${p.totalNearMisses}'),
                   (
                     'Keşfedilen bölge',
-                    '${p.discoveredZones.length}/${zones.length}',
+                    '${p.discoveredZones.length}/${routeZones.length}',
                   ),
                   ('Tamamlanan görev', '${p.missionsCompleted}'),
                 ],
@@ -382,7 +382,7 @@ class _ZoneTrail extends StatelessWidget {
     spacing: 6,
     runSpacing: 4,
     children: [
-      for (var i = 0; i < zones.length; i++)
+      for (final i in routeZones)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: pixelBox(
@@ -771,6 +771,24 @@ class RunSummaryPanel extends StatelessWidget {
               _line(Icons.wb_twilight_rounded, 'Görev tamam: ${m.title}'),
             for (final a in s.unlockedAchievements)
               _line(Icons.star_rounded, 'Başarım: ${a.title}'),
+            // Phase 2.3: keşif albümü
+            if (s.discovery.newPostcards.isNotEmpty)
+              _line(
+                Icons.map_rounded,
+                'Albüme yeni kartpostal: ${s.discovery.newPostcards.map((z) => zones[z].name).join(', ')}',
+              ),
+            for (final g in s.discovery.completedGoals)
+              _line(
+                Icons.check_rounded,
+                'Keşif: ${g.title} (+${g.rewardSimits})',
+              ),
+            for (final z in s.discovery.newBadges)
+              _line(Icons.military_tech_rounded, 'Rozet: ${zones[z].name}'),
+            if (s.discovery.rewardCosmetic != null)
+              _line(
+                Icons.military_tech_rounded,
+                'Albüm tamam! İznik Martısı açıldı.',
+              ),
           ],
         ),
       );

@@ -3,10 +3,10 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:istanbul_flight/game/components/landmark_layer.dart';
 import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_art.dart';
 import 'package:istanbul_flight/game/game_phase.dart';
-import 'package:istanbul_flight/game/components/landmark_layer.dart';
 import 'package:istanbul_flight/game/visual/crossfade.dart';
 import 'package:istanbul_flight/game/visual/obstacle_kit_layout.g.dart';
 import 'package:istanbul_flight/game/visual/obstacle_renderer.dart';
@@ -155,7 +155,7 @@ void main() {
 
   group('Engel sprite yerleşimi hitbox ile uyumlu', () {
     const width = 196.0, worldH = 1920.0;
-    for (final kit in ObstacleKitId.values) {
+    for (final kit in GameArt.routeKits) {
       for (final gap in [
         (top: 230.0, bottom: 570.0),
         (top: 900.0, bottom: 1200.0),
@@ -235,15 +235,35 @@ void main() {
   });
 
   group('Bölgeler', () {
-    test('beş bölgenin her biri kendine özgü simge, kit ve kıyıya sahip', () {
-      expect(zones.map((z) => z.landmark).toSet().length, 5);
-      expect(zones.map((z) => z.kit).toSet().length, 5);
-      expect(zones.map((z) => z.shore).toSet().length, 5);
+    test('her bölgenin kendine özgü simgesi ve kiti var; ilk rotanın kıyıları ayrı', () {
+      expect(zones.map((z) => z.landmark).toSet().length, zones.length);
+      expect(zones.map((z) => z.kit).toSet().length, zones.length);
+      expect(zones.take(5).map((z) => z.shore).toSet().length, 5);
       expect(
-        zones.last.landmark,
+        zones[4].landmark,
         Landmark.rumeliHisari,
         reason: '5. bölge köprüyü tekrar kullanmamalı',
       );
+      // Ortaköy, Köprü bölgesinin camiyi de gösteren simgesini tekrar kullanmaz
+      expect(zones[6].landmark, Landmark.ortakoy);
+    });
+
+    test('hazır olmayan bölgenin asset\'i yüklenmez; rotadaki her bölgenin asset\'i var', () {
+      for (var i = 0; i < zones.length; i++) {
+        final z = zones[i];
+        expect(GameArt.routeKits.contains(z.kit), z.available, reason: z.name);
+        expect(
+          GameArt.routeLandmarks.contains(z.landmark),
+          z.available,
+          reason: z.name,
+        );
+        if (z.available) {
+          expect(
+            File('assets/images/${GameArt.kitPath(z.kit)}').existsSync(),
+            isTrue,
+          );
+        }
+      }
     });
 
     test('palet geçişinde atmosfer değerleri de karışır', () {
@@ -271,19 +291,34 @@ void main() {
         (f.width * 6).toInt(),
         (f.height * 2).toInt(),
       ));
-      for (final k in ObstacleKitId.values) {
+      for (final k in GameArt.routeKits) {
         final (w, h) = _pngSize('assets/images/${GameArt.kitPath(k)}');
-        // Atlas = yerleşim × atlasScale: en sağdaki parça (taban) ve en uzun parça sığmalı
-        expect(w * 4, greaterThanOrEqualTo(ObstacleKitLayout.bottomBase.right));
-        expect(h * 4, greaterThanOrEqualTo(ObstacleKitLayout.baseHeight));
-        expect(ObstacleKitLayout.atlasScale, 1 / kArtPx);
+        // Engel atlası 2× ayrıntılı (docs/18): 1 px = 2 dünya birimi. Atlas = yerleşim × atlasScale.
+        expect(ObstacleKitLayout.atlasScale, 2 / kArtPx);
+        const s = ObstacleKitLayout.atlasScale;
+        for (final r in [
+          ObstacleKitLayout.bottomBodyA,
+          ObstacleKitLayout.bottomBodyB,
+          ObstacleKitLayout.topBodyA,
+          ObstacleKitLayout.topBodyB,
+          ObstacleKitLayout.bottomCap,
+          ObstacleKitLayout.topCap,
+          ObstacleKitLayout.bottomBase,
+        ]) {
+          expect(r.right * s, lessThanOrEqualTo(w), reason: '$r');
+          expect(r.bottom * s, lessThanOrEqualTo(h), reason: '$r');
+        }
+        expect(
+          (w, h),
+          ((800 * s).toInt(), (ObstacleKitLayout.lightsOffsetY * s).toInt()),
+        );
       }
-      for (final l in Landmark.values) {
+      for (final l in GameArt.routeLandmarks) {
         final (w, h) = _pngSize('assets/images/${GameArt.landmarkPath(l)}');
         final lay = LandmarkLayer.layout(l);
         expect((w * kArtPx, h * kArtPx), (lay.w, lay.h), reason: l.name);
       }
-      for (final k in ObstacleKitId.values) {
+      for (final k in GameArt.routeKits) {
         // Bütün bölgelerde aynı şerit yükseklikleri (piksel yoğunluğu tutarlı)
         expect(
           _pngSize('assets/images/${GameArt.zonePath(k.name, 'water')}').$2 *
@@ -308,7 +343,7 @@ void main() {
       (tester) async {
         await tester.runAsync(() async {
           final paths = [
-            for (final k in ObstacleKitId.values)
+            for (final k in GameArt.routeKits)
               for (final l in ['distant', 'midground', 'waterfront', 'water'])
                 GameArt.zonePath(k.name, l),
           ];

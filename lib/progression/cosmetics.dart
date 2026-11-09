@@ -35,6 +35,7 @@ class CosmeticDef {
     required this.category,
     this.sheetAsset,
     this.previewFrame = 6,
+    this.rewardOnly = false,
   });
 
   /// Kalıcı kimlik (kayıtta bu tutulur).
@@ -48,6 +49,10 @@ class CosmeticDef {
 
   /// Kartlarda gösterilen sabit kare (6 = süzülme).
   final int previewFrame;
+
+  /// Mağazada satılmaz; yalnızca bir ödülle açılır (İznik Martısı: keşif albümü, Phase 2.3; Kupa Martısı:
+  /// sezon ödülü, Phase 2.7).
+  final bool rewardOnly;
 
   int get price => ShopConfig.prices[id] ?? 0;
   int get minLevel => ShopConfig.minLevels[id] ?? 1;
@@ -98,6 +103,24 @@ const cosmeticCatalog = <CosmeticDef>[
     category: CosmeticCategory.outfit,
     sheetAsset: 'pixel_art/characters/skins/kasif.png',
   ),
+  CosmeticDef(
+    id: 'iznik',
+    name: 'İznik Martısı',
+    description:
+        'Çini mavisi kanatlar, başında kırmızı lale. Keşif albümü ödülü.',
+    category: CosmeticCategory.plumage,
+    sheetAsset: 'pixel_art/characters/skins/iznik.png',
+    rewardOnly: true,
+  ),
+  CosmeticDef(
+    id: 'kupa',
+    name: 'Kupa Martısı',
+    description:
+        'Başında defne tacı, göğsünde kurdeleli altın madalya. Sezon ödülü.',
+    category: CosmeticCategory.outfit,
+    sheetAsset: 'pixel_art/characters/skins/kupa.png',
+    rewardOnly: true,
+  ),
 ];
 
 CosmeticDef? cosmeticById(String id) {
@@ -119,11 +142,21 @@ bool ownsCosmetic(PlayerProgress p, String id) =>
     id == classicCosmeticId || p.unlockedCosmetics.contains(id);
 
 /// Kartın durumu (mağaza ve görünüm ekranı).
-enum CosmeticStatus { equipped, owned, levelLocked, affordable, tooExpensive }
+enum CosmeticStatus {
+  equipped,
+  owned,
+
+  /// Satılmayan ödül görünümü, henüz açılmadı.
+  rewardLocked,
+  levelLocked,
+  affordable,
+  tooExpensive,
+}
 
 CosmeticStatus cosmeticStatus(PlayerProgress p, CosmeticDef c) {
   if (effectiveCosmetic(p).id == c.id) return CosmeticStatus.equipped;
   if (ownsCosmetic(p, c.id)) return CosmeticStatus.owned;
+  if (c.rewardOnly) return CosmeticStatus.rewardLocked;
   if (p.level < c.minLevel) return CosmeticStatus.levelLocked;
   return p.simitBalance >= c.price
       ? CosmeticStatus.affordable
@@ -136,6 +169,9 @@ enum PurchaseResult {
   insufficientFunds,
   levelLocked,
   unknownItem,
+
+  /// Ödül görünümü: simitle satın alınamaz.
+  notForSale,
 
   /// Aynı ürün için önceki satın alma henüz bitmedi (çift dokunma).
   busy,
@@ -150,6 +186,7 @@ enum PurchaseResult {
   final c = cosmeticById(id);
   if (c == null) return (p, PurchaseResult.unknownItem);
   if (ownsCosmetic(p, id)) return (p, PurchaseResult.alreadyOwned);
+  if (c.rewardOnly) return (p, PurchaseResult.notForSale);
   if (p.level < c.minLevel) return (p, PurchaseResult.levelLocked);
   final spent = p.trySpend(c.price);
   if (spent == null) return (p, PurchaseResult.insufficientFunds);
