@@ -10,6 +10,8 @@ import 'package:istanbul_flight/progression/discovery.dart';
 import 'package:istanbul_flight/services/progress.dart';
 import 'package:istanbul_flight/services/ux_state.dart';
 import 'package:istanbul_flight/ui/overlays/menu_overlays.dart';
+import 'package:istanbul_flight/ui/theme.dart';
+import 'package:istanbul_flight/ui/widgets/buttons.dart';
 
 import 'fakes.dart';
 
@@ -262,6 +264,39 @@ void sweepTests() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('tasarım değerleri: bütün ekranlarda düğmeler dört yükseklikten birinde', (tester) async {
+    final allowed = {UiButtonH.row, UiButtonH.secondary, UiButtonH.action, UiButtonH.primary};
+    final (game, _) = await _pumpApp(tester);
+    final seen = <double>{};
+    var count = 0;
+    void check(String where) {
+      for (final e in find.byType(MartiButton).evaluate()) {
+        if (e.widget.key == const Key('startButton')) continue; // ana menü: ekran boyuna göre ölçeklenir
+        final h = e.size!.height;
+        seen.add(h);
+        count++;
+        expect(allowed, contains(h), reason: '$where ${e.widget.key}');
+      }
+    }
+    for (final key in _modals) {
+      await _tap(tester, key);
+      await tester.pump(const Duration(milliseconds: 300));
+      check(key);
+      if (key == 'eventsButton') {
+        for (final tab in ['eventsTab_events', 'eventsTab_season']) {
+          await _tap(tester, tab);
+          check(tab);
+        }
+      }
+      game.closeModal();
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await _crashToGameOver(tester, game);
+    check('oyun sonu');
+    expect(count, greaterThan(15));
+    expect(seen.length, greaterThanOrEqualTo(3));
+  });
 
   testWidgets('kontrast: menü, eğitim ve oyun sonu metinleri WCAG eşiğini geçer', (tester) async {
     final handle = tester.ensureSemantics();

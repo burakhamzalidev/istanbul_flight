@@ -47,9 +47,30 @@ abstract final class UiDur {
 
   /// İlerleme çubuğunun dolması.
   static const fill = Duration(milliseconds: 700);
+
+  /// Düğmeye basılı tutma (ölçek); parmağın altında hemen hissedilmeli.
+  static const press = Duration(milliseconds: 90);
+
+  /// Uçuş içi kısa yazı ("+1", "KIL PAYI!", "Güzel!"): görünür, sonra söner.
+  static const popup = Duration(milliseconds: 800);
 }
 
-/// Metin seviyeleri: piksel font boyutları 5'in katı (10 dipnot, 15 gövde, 20 başlık, 25+ vurgu).
+/// Düğme yükseklikleri: dört boy. Ana menüdeki "Uçuşa başla" ekran boyuna göre ayrıca ölçeklenir.
+abstract final class UiButtonH {
+  /// Liste satırı içindeki eylem (Kullan, Satın al, Geri, Tekrar dene).
+  static const row = 44.0;
+
+  /// İkincil eylem (Paylaş, Ana menü, Game Center, Vazgeç).
+  static const secondary = 48.0;
+
+  /// Ekran içi ana eylem ve "Tamam" (Günün Uçuşu'nda başla, Hemen kullan).
+  static const action = 56.0;
+
+  /// Ekranın tek ana eylemi (Tekrar uç, Devam et).
+  static const primary = 68.0;
+}
+
+/// Metin seviyeleri: 11 dipnot (iOS'ta önerilen en küçük boyut), 15 gövde, 20 başlık, 25+ vurgu.
 abstract final class UiText {
   static const caption = TextStyle(fontSize: 11, color: UiColors.navySoft);
   static const body = TextStyle(fontSize: 15, color: UiColors.navy);

@@ -113,7 +113,7 @@ class _DiscoveryOverlayState extends State<DiscoveryOverlay> {
                 'yerleri gösterir.',
                 key: Key('mapLegend'),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+                style: UiText.caption,
               ),
               const SizedBox(height: 8),
               for (final z in routeZones)
@@ -186,7 +186,7 @@ class _AlbumHeader extends StatelessWidget {
           Text(
             'Kartpostal ${progress.discoveredZones.length}/${routeZones.length} · '
             'Hedef ${d.goalsDone}/${DiscoveryState.goalsTotal}',
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+            style: UiText.caption,
           ),
         ],
       ),
@@ -872,7 +872,7 @@ class _ZoneDetail extends StatelessWidget {
             label: backLabel,
             icon: Icons.arrow_back_rounded,
             style: MartiButtonStyle.secondary,
-            height: 44,
+            height: UiButtonH.row,
             onPressed: onBack,
           ),
         ),
@@ -895,19 +895,19 @@ class _ZoneDetail extends StatelessWidget {
           '${routeZones.indexOf(zone) + 1}. durak · ${locked ? '???' : zones[zone].name}',
           key: const Key('zoneDetailName'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navy, fontSize: 20),
+          style: UiText.heading,
         ),
         if (!locked)
           Text(
             dz.place,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+            style: UiText.caption,
           ),
         const SizedBox(height: 4),
         Text(
           locked ? 'Kartpostalı açmak için bölgeye uç.' : dz.summary,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navy, fontSize: 15),
+          style: UiText.body,
         ),
         const SizedBox(height: 8),
         _InfoLine(
@@ -977,7 +977,7 @@ class _ZoneDetail extends StatelessWidget {
                         TextSpan(text: f.text),
                       ],
                     ),
-                    style: const TextStyle(color: UiColors.navy, fontSize: 15),
+                    style: UiText.body,
                   ),
                 ),
             ],
@@ -1003,7 +1003,7 @@ class _InfoLine extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: const TextStyle(color: UiColors.navy, fontSize: 15),
+            style: UiText.body,
           ),
         ),
       ],
@@ -1044,7 +1044,7 @@ class _GoalRow extends StatelessWidget {
               children: [
                 Text(
                   goal.title,
-                  style: const TextStyle(color: UiColors.navy, fontSize: 15),
+                  style: UiText.body,
                 ),
                 if (!done && goal.target > 1) ...[
                   const SizedBox(height: 4),
@@ -1060,7 +1060,7 @@ class _GoalRow extends StatelessWidget {
               Text(
                 done ? 'Tamam' : '$value/${goal.target}',
                 key: Key('goalValue_${goal.id}'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+                style: UiText.caption,
               ),
               Row(
                 mainAxisSize: MainAxisSize.min,
