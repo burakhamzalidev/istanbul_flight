@@ -238,7 +238,7 @@ class _DailyOverlayState extends State<DailyOverlay> {
                 label: 'Uçuşa başla',
                 icon: Icons.flight_takeoff_rounded,
                 width: double.infinity,
-                height: 60,
+                height: UiButtonH.action,
                 onPressed: () => game.startDaily(ranked: true),
               )
             else ...[
@@ -254,7 +254,7 @@ class _DailyOverlayState extends State<DailyOverlay> {
                 label: 'Antrenman yap',
                 icon: Icons.replay_rounded,
                 width: double.infinity,
-                height: 60,
+                height: UiButtonH.action,
                 onPressed: () => game.startDaily(ranked: false),
               ),
             ],
@@ -265,7 +265,7 @@ class _DailyOverlayState extends State<DailyOverlay> {
                   : 'Antrenman aynı parkurda uçar; sıralamaya ve günlük ödüllere sayılmaz.',
               key: const Key('dailyRuleNote'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ],
         );
@@ -305,7 +305,7 @@ class _Header extends StatelessWidget {
                 Text(
                   formatDailyDate(def.dateUtc),
                   key: const Key('dailyDate'),
-                  style: const TextStyle(color: UiColors.navy, fontSize: 20),
+                  style: UiText.heading,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -362,7 +362,7 @@ class _Fact extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     ),
@@ -520,7 +520,7 @@ class _DailyBoardState extends State<_DailyBoard> {
                   : 'Game Center’a bağlanınca dünya ve arkadaşlarınla aynı parkurda yarışırsın. '
                         'Bağlantısız da oynayabilirsin; skorun bu cihazda kalır.',
               key: const Key('dailyBoardOffline'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             )
           else ...[
             if (status != DailyGcStatus.none)

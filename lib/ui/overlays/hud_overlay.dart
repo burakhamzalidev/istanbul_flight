@@ -327,7 +327,7 @@ class Bump extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       key: ValueKey(value),
       tween: Tween(begin: scale, end: 1),
-      duration: const Duration(milliseconds: 220),
+      duration: UiDur.normal,
       curve: Curves.easeOut,
       builder: (_, s, c) => Transform.scale(scale: s, child: c),
       child: child,
@@ -356,7 +356,7 @@ class _EventPopupState extends State<EventPopup>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 800),
+    duration: UiDur.popup,
   );
   late int _last = widget.trigger.value;
 

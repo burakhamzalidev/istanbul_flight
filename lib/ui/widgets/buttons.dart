@@ -54,7 +54,7 @@ class _PressableState extends State<Pressable> {
               },
         child: AnimatedScale(
           scale: _down && !reduce ? 0.94 : 1,
-          duration: const Duration(milliseconds: 90),
+          duration: UiDur.press,
           child: widget.child,
         ),
       ),
@@ -105,14 +105,14 @@ class MartiButton extends StatelessWidget {
         Colors.transparent,
       ),
     };
-    final h = height ?? (style == MartiButtonStyle.primary ? 68.0 : 56.0);
+    final h = height ?? (style == MartiButtonStyle.primary ? UiButtonH.primary : UiButtonH.action);
     return Pressable(
       game: game,
       onTap: onPressed,
       semanticLabel: label,
       child: AnimatedOpacity(
         opacity: enabled ? 1 : 0.5,
-        duration: const Duration(milliseconds: 150),
+        duration: UiDur.fast,
         child: Container(
           width: width,
           height: h,

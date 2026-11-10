@@ -155,7 +155,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
                     label: 'Game Center',
                     icon: Icons.emoji_events_rounded,
                     style: MartiButtonStyle.secondary,
-                    height: 48,
+                    height: UiButtonH.secondary,
                     onPressed: () =>
                         _native(() => gc.api.showLeaderboard(_board, _scope)),
                   ),
@@ -168,7 +168,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
                     label: 'Başarımlar',
                     icon: Icons.star_rounded,
                     style: MartiButtonStyle.secondary,
-                    height: 48,
+                    height: UiButtonH.secondary,
                     onPressed: () => _native(gc.api.showAchievements),
                   ),
                 ),
@@ -180,7 +180,7 @@ class _LeaderboardOverlayState extends State<LeaderboardOverlay> {
             'Skorlar yalnızca Game Center’a giriş yaptıysan Apple’a gönderilir. '
             'Görünümler, XP ve simitler skoru etkilemez.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+            style: UiText.caption,
           ),
         ],
       ),
@@ -223,7 +223,7 @@ class _OwnRecord extends StatelessWidget {
           Text(
             '$best',
             key: const Key('ownBest'),
-            style: const TextStyle(color: UiColors.navy, fontSize: 20),
+            style: UiText.heading,
           ),
         ],
       ),
@@ -278,14 +278,14 @@ class _StatusCard extends StatelessWidget {
           Text(
             title,
             key: const Key('gcStatusTitle'),
-            style: const TextStyle(color: UiColors.navy, fontSize: 15),
+            style: UiText.body,
           ),
           if (body != null) ...[
             const SizedBox(height: 4),
             Text(
               body,
               key: const Key('gcStatusBody'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ],
           if (state.connection == GcConnection.signedOut) ...[
@@ -294,7 +294,7 @@ class _StatusCard extends StatelessWidget {
               key: const Key('gcConnect'),
               game: game,
               label: 'Game Center’a bağlan',
-              height: 48,
+              height: UiButtonH.secondary,
               onPressed: onConnect,
             ),
           ],
@@ -402,7 +402,7 @@ class BoardList extends StatelessWidget {
             game: game,
             label: 'Tekrar dene',
             style: MartiButtonStyle.secondary,
-            height: 44,
+            height: UiButtonH.row,
             onPressed: onRetry,
           ),
         ],
@@ -422,7 +422,7 @@ class BoardList extends StatelessWidget {
               'Bugünün sıralaması ${end.toLocal().hour.toString().padLeft(2, '0')}:'
               '${end.toLocal().minute.toString().padLeft(2, '0')}’de kapanır.',
               key: const Key('dailyBoardEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ),
         if (board == GcBoard.weekly && end != null)
@@ -432,7 +432,7 @@ class BoardList extends StatelessWidget {
               'Bu haftanın yarışı ${end.toLocal().day}.${end.toLocal().month.toString().padLeft(2, '0')} '
               '${end.toLocal().hour.toString().padLeft(2, '0')}:${end.toLocal().minute.toString().padLeft(2, '0')}’de biter.',
               key: const Key('weeklyEnds'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ),
         if (page.entries.isEmpty)
@@ -461,7 +461,7 @@ class BoardList extends StatelessWidget {
             child: Text(
               '${page.total} oyuncu',
               textAlign: TextAlign.right,
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ),
       ],

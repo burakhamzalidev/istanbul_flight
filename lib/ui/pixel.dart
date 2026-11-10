@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../game/game_art.dart';
+import 'theme.dart';
 
 /// Pixel art arayüz yapı taşları (docs/08 §Arayüz):
 /// * [PixelBorder]: basamaklı köşeli çerçeve (yuvarlak köşe yerine piksel merdiven).
@@ -338,7 +339,7 @@ class _PixelToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedContainer(
-    duration: const Duration(milliseconds: 120),
+    duration: UiDur.fast,
     width: 48,
     height: 26,
     padding: const EdgeInsets.all(kUiPx * 2),

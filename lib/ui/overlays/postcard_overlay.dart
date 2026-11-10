@@ -128,7 +128,7 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                           constraints: const BoxConstraints(maxWidth: 380),
                           child: TweenAnimationBuilder<double>(
                             tween: Tween(begin: reduce ? 1 : 0, end: 1),
-                            duration: const Duration(milliseconds: 420),
+                            duration: UiDur.emphasis,
                             curve: Curves.easeOutBack,
                             builder: (context, t, child) => Transform.translate(
                               offset: Offset(0, (1 - t) * 140),
@@ -210,7 +210,7 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                                     label: _sharing ? 'Hazırlanıyor' : 'Paylaş',
                                     icon: Icons.ios_share_rounded,
                                     style: MartiButtonStyle.secondary,
-                                    height: 48,
+                                    height: UiButtonH.secondary,
                                     onPressed: _sharing ? null : _share,
                                   ),
                                 ),
@@ -223,7 +223,7 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
                                   label: 'Ana menü',
                                   icon: Icons.home_rounded,
                                   style: MartiButtonStyle.secondary,
-                                  height: 48,
+                                  height: UiButtonH.secondary,
                                   onPressed: g.openMenu,
                                 ),
                               ),

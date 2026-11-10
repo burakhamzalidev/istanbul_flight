@@ -238,7 +238,7 @@ class ProfileOverlay extends StatelessWidget {
                   Text(
                     '${p.simitBalance}',
                     key: const Key('profileBalance'),
-                    style: const TextStyle(color: UiColors.navy, fontSize: 20),
+                    style: UiText.heading,
                   ),
                 ],
               ),
@@ -271,7 +271,7 @@ class ProfileOverlay extends StatelessWidget {
               label: 'Martı görünümü',
               icon: Icons.flight_takeoff_rounded,
               style: MartiButtonStyle.secondary,
-              height: 52,
+              height: UiButtonH.secondary,
               onPressed: () => game.openModal(Overlays.wardrobe),
             ),
             const SizedBox(height: 8),
@@ -282,7 +282,7 @@ class ProfileOverlay extends StatelessWidget {
                   'Başarımlar ${p.achievements.length}/${achievementDefs.length}',
               icon: Icons.star_rounded,
               style: MartiButtonStyle.secondary,
-              height: 52,
+              height: UiButtonH.secondary,
               onPressed: () => game.openModal(Overlays.achievements),
             ),
           ],
@@ -454,7 +454,7 @@ class _MissionsOverlayState extends State<MissionsOverlay> {
               const Text(
                 'Uçtukça kendiliğinden ilerler. Ödül, görev biter bitmez verilir.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+                style: UiText.caption,
               ),
               const SizedBox(height: 10),
               for (final (i, m) in missions.indexed) ...[

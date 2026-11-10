@@ -167,7 +167,7 @@ class _BalanceState extends State<_Balance> {
           builder: (_, v, _) => Text(
             '${v.round()}',
             key: const Key('shopBalance'),
-            style: const TextStyle(color: UiColors.navy, fontSize: 20),
+            style: UiText.heading,
           ),
         ),
       ],
@@ -233,7 +233,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
         ctx,
         duration: g.reduceMotion
             ? Duration.zero
-            : const Duration(milliseconds: 250),
+            : UiDur.normal,
         curve: Curves.easeOut,
       );
     });
@@ -338,7 +338,7 @@ class _ShopOverlayState extends State<ShopOverlay> {
               'Simitler yalnızca oyunda kazanılır. Görünümler sadece görseldir; '
               'uçuşu, çarpışmayı ve skoru etkilemez.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
           ],
         );
@@ -407,12 +407,12 @@ class _FocusPanel extends StatelessWidget {
           item.name,
           key: const Key('shopFocusName'),
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navy, fontSize: 20),
+          style: UiText.heading,
         ),
         Text(
           '${item.category.label} · ${item.description}',
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
         const SizedBox(height: 8),
         if (confirming)
@@ -449,7 +449,7 @@ class _FocusPanel extends StatelessWidget {
                         game: game,
                         label: 'Vazgeç',
                         style: MartiButtonStyle.secondary,
-                        height: 48,
+                        height: UiButtonH.secondary,
                         onPressed: busy ? null : onCancel,
                       ),
                     ),
@@ -459,7 +459,7 @@ class _FocusPanel extends StatelessWidget {
                         key: const Key('confirmPurchase'),
                         game: game,
                         label: busy ? 'Bekle' : 'Satın al',
-                        height: 48,
+                        height: UiButtonH.secondary,
                         onPressed: busy ? null : onConfirm,
                       ),
                     ),
@@ -473,7 +473,7 @@ class _FocusPanel extends StatelessWidget {
             key: const Key('equipAfterBuy'),
             game: game,
             label: 'Hemen kullan',
-            height: 52,
+            height: UiButtonH.action,
             onPressed: onEquip,
           ),
       ],
@@ -495,7 +495,7 @@ class _BoughtStampState extends State<_BoughtStamp>
     with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 500),
+    duration: UiDur.emphasis,
   )..forward();
 
   @override
@@ -580,7 +580,7 @@ class _ShopCard extends StatelessWidget {
         game: game,
         label: 'Kullanılıyor',
         style: MartiButtonStyle.ghost,
-        height: 44,
+        height: UiButtonH.row,
         onPressed: null,
       ),
       CosmeticStatus.owned => MartiButton(
@@ -588,7 +588,7 @@ class _ShopCard extends StatelessWidget {
         game: game,
         label: 'Kullan',
         style: MartiButtonStyle.secondary,
-        height: 44,
+        height: UiButtonH.row,
         onPressed: busy ? null : onEquip,
       ),
       CosmeticStatus.rewardLocked => MartiButton(
@@ -596,7 +596,7 @@ class _ShopCard extends StatelessWidget {
         game: game,
         label: 'Albüm ödülü',
         style: MartiButtonStyle.ghost,
-        height: 44,
+        height: UiButtonH.row,
         onPressed: null,
       ),
       CosmeticStatus.levelLocked => MartiButton(
@@ -604,14 +604,14 @@ class _ShopCard extends StatelessWidget {
         game: game,
         label: 'Kilitli',
         style: MartiButtonStyle.ghost,
-        height: 44,
+        height: UiButtonH.row,
         onPressed: null,
       ),
       CosmeticStatus.affordable || CosmeticStatus.tooExpensive => MartiButton(
         key: Key('buy_${item.id}'),
         game: game,
         label: 'Satın al',
-        height: 44,
+        height: UiButtonH.row,
         onPressed: busy || status == CosmeticStatus.tooExpensive ? null : onBuy,
       ),
     };
@@ -720,12 +720,12 @@ class WardrobeOverlay extends StatelessWidget {
               current.name,
               key: const Key('wardrobeCurrent'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: UiColors.navy, fontSize: 20),
+              style: UiText.heading,
             ),
             const Text(
               'Seçimin menüde hemen, uçuşta bir sonraki turda görünür.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             ),
             const SizedBox(height: 10),
             Wrap(
@@ -743,7 +743,7 @@ class WardrobeOverlay extends StatelessWidget {
               game: game,
               label: 'Klasik görünüme dön',
               style: MartiButtonStyle.secondary,
-              height: 48,
+              height: UiButtonH.secondary,
               onPressed: current.id == classicCosmeticId
                   ? null
                   : () => game.services.progress.equip(classicCosmeticId),
@@ -754,7 +754,7 @@ class WardrobeOverlay extends StatelessWidget {
               game: game,
               label: notOwned > 0 ? 'Mağaza · $notOwned yeni' : 'Mağaza',
               style: MartiButtonStyle.secondary,
-              height: 48,
+              height: UiButtonH.secondary,
               onPressed: () => game.openModal(Overlays.shop),
             ),
           ],

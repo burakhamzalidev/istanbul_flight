@@ -317,7 +317,7 @@ class _Fact extends StatelessWidget {
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     ),
@@ -451,7 +451,7 @@ class _EventRewards extends StatelessWidget {
         const SizedBox(height: 2),
         const Text(
           'SP: sezon puanı. Ödüller sıralamadaki yere bağlı değildir; her etkinlikte bir kez verilir.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     );
@@ -498,7 +498,7 @@ class _ActiveEvent extends StatelessWidget {
         Text(
           'Parkur: ${_zonesText(zonesSel)} · Skor: ${slot.scoring.label.toLowerCase()}',
           key: Key('eventCourse_${slot.eventId}'),
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
         const SizedBox(height: 8),
         IntrinsicHeight(
@@ -540,14 +540,14 @@ class _ActiveEvent extends StatelessWidget {
           label: 'Uçuşa başla',
           icon: Icons.flight_takeoff_rounded,
           width: double.infinity,
-          height: 60,
+          height: UiButtonH.action,
           onPressed: () => game.startEvent(svc.definition(slot)),
         ),
         const SizedBox(height: 6),
         const Text(
           'Deneme sınırı yok: haftanın en iyi tek uçuşu sayılır.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     );
@@ -641,7 +641,7 @@ class _CupBoardState extends State<_CupBoard> {
                   : 'Game Center’a bağlanınca dünya ve arkadaşlarınla aynı parkurda yarışırsın. '
                         'Bağlantısız da oynayabilirsin; skorun bu cihazda kalır.',
               key: const Key('cupBoardOffline'),
-              style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+              style: UiText.caption,
             )
           else ...[
             if (status != DailyGcStatus.none)
@@ -763,7 +763,7 @@ class _EventsTab extends StatelessWidget {
         const SizedBox(height: 6),
         const Text(
           'Takvim uygulamayla gelir ve UTC haftasına göre herkes için aynıdır.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     );
@@ -899,12 +899,12 @@ class _SeasonTab extends StatelessWidget {
                     ? '${sp.points} SP · bütün ödüller açıldı'
                     : '${sp.points} / ${next.points} SP · sonraki ödül: ${_levelText(next)}',
                 key: const Key('seasonPoints'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+                style: UiText.caption,
               ),
               Text(
                 'Sezonun bitişi: ${formatLongCountdown(left.isNegative ? Duration.zero : left)} sonra',
                 key: const Key('seasonTime'),
-                style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+                style: UiText.caption,
               ),
             ],
           ),
@@ -920,7 +920,7 @@ class _SeasonTab extends StatelessWidget {
         const SizedBox(height: 2),
         const Text(
           'Ödüller ücretsizdir ve kalıcıdır; sezon bitince geri alınmaz. Sezon puanı XP’den ayrıdır.',
-          style: TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
         if (progress.events.frames.contains('kupa')) ...[
           const SizedBox(height: 10),
@@ -934,7 +934,7 @@ class _SeasonTab extends StatelessWidget {
         Text(
           'Her görev bir kez: +${WeeklyMissionCatalog.seasonPoints} SP ve +${WeeklyMissionCatalog.simits} simit. '
           'Görevler pazartesi 00:00 UTC’de yenilenir.',
-          style: const TextStyle(color: UiColors.navySoft, fontSize: 11),
+          style: UiText.caption,
         ),
       ],
     );
@@ -999,7 +999,7 @@ class _SeasonRewardRow extends StatelessWidget {
               children: [
                 Text(
                   _levelText(level),
-                  style: const TextStyle(color: UiColors.navy, fontSize: 15),
+                  style: UiText.body,
                 ),
                 Text(
                   'Seviye ${level.level} · ${level.points} SP',
@@ -1037,7 +1037,7 @@ class _FrameToggle extends StatelessWidget {
         const Expanded(
           child: Text(
             'Kartpostalda kupa çerçevesi',
-            style: TextStyle(color: UiColors.navy, fontSize: 15),
+            style: UiText.body,
           ),
         ),
         Switch(
