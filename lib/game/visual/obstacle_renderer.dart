@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import '../day_cycle.dart';
+import 'atlas_batch.dart';
 import 'obstacle_kit_layout.g.dart';
 
 /// Bir engel çiftinin sprite parçalarının yerleşimi (yerel koordinat: engelin sol üstü = 0,0).
@@ -92,6 +93,7 @@ class ObstacleRenderer {
     ..isAntiAlias = false;
   final Paint _fx = Paint()..isAntiAlias = false;
   Color _smoke = const Color(0xFFFFFFFF);
+  final AtlasBatch _batch = AtlasBatch();
 
   void setPalette(PhasePalette p) {
     _smoke = Color.lerp(p.light, const Color(0xFFFFFFFF), 0.6)!;
@@ -121,9 +123,15 @@ class ObstacleRenderer {
       worldHeight: worldHeight,
       gapTop: gapTop,
       gapBottom: gapBottom,
-      visit: (src, dst) =>
-          canvas.drawImageRect(atlas, _atlas(src), dst, _color),
+      visit: (src, dst) {
+        final s = _atlas(src);
+        // Phase 2.9: engelin bütün parçaları tek drawRawAtlas (parça başına çağrı yerine)
+        if (RenderTuning.batchDraws && _batch.add(s, dst)) return;
+        _batch.flush(canvas, atlas, _color);
+        canvas.drawImageRect(atlas, s, dst, _color);
+      },
     );
+    _batch.flush(canvas, atlas, _color);
 
     // Kız Kulesi vapur bacası: yükselen piksel duman (durumsuz, zamana bağlı → nesne üretmez)
     if (kit == ObstacleKitId.kizkulesi) {

@@ -13,6 +13,7 @@ import 'package:flame_test/flame_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:istanbul_flight/data/score_repository.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
+import 'package:istanbul_flight/game/visual/atlas_batch.dart';
 import 'package:istanbul_flight/game/weather.dart';
 
 import '../test/fakes.dart';
@@ -107,7 +108,8 @@ class CountingCanvas implements ui.Canvas {
   void drawCircle(ui.Offset c, double radius, ui.Paint paint) =>
       _paint('drawCircle', ui.Rect.fromCircle(center: c, radius: radius));
   @override
-  void drawPath(ui.Path path, ui.Paint paint) => _paint('drawPath', path.getBounds());
+  // Yolun gerçek boyanan alanı bilinemez (kutusu çok büyük olabilir): sayılır, alana katılmaz.
+  void drawPath(ui.Path path, ui.Paint paint) => _count('drawPath');
   @override
   void drawImage(ui.Image image, ui.Offset offset, ui.Paint paint) => _paint(
     'drawImage',
@@ -145,13 +147,39 @@ class CountingCanvas implements ui.Canvas {
   }
 
   @override
+  void drawRawAtlas(
+    ui.Image atlas,
+    Float32List rstTransforms,
+    Float32List rects,
+    Int32List? colors,
+    ui.BlendMode? blendMode,
+    ui.Rect? cullRect,
+    ui.Paint paint,
+  ) {
+    _count('drawRawAtlas');
+    final calls0 = calls['drawRawAtlas'];
+    for (var i = 0; i < rects.length; i += 4) {
+      final s = rstTransforms[i]; // dönüşsüz ölçek (ssin = 0)
+      _paint('_atlasSprite', ui.Rect.fromLTWH(
+        rstTransforms[i + 2],
+        rstTransforms[i + 3],
+        (rects[i + 2] - rects[i]) * s,
+        (rects[i + 3] - rects[i + 1]) * s,
+      ));
+    }
+    calls.remove('_atlasSprite');
+    calls['drawRawAtlas'] = calls0!;
+  }
+
+  @override
   dynamic noSuchMethod(Invocation invocation) {
     _count(invocation.memberName.toString().replaceAll('Symbol("', '').replaceAll('")', ''));
     return null;
   }
 }
 
-Future<void> _scene(String label, {int score = 0, Weather? weather, bool menu = false, bool gameOver = false}) async {
+Future<void> _scene(String label, {bool batch = true, int score = 0, Weather? weather, bool menu = false, bool gameOver = false}) async {
+  RenderTuning.batchDraws = batch;
   final t = TestServices(clock: () => DateTime.utc(2026, 10, 24, 10));
   final g = await initializeGame(
     () => IstanbulFlightGame(
@@ -203,7 +231,7 @@ Future<void> _scene(String label, {int score = 0, Weather? weather, bool menu = 
     per[k] = (per[k] ?? 0) + n;
   }
   final perTop = (per.entries.toList()..sort((a, b) => b.value.compareTo(a.value))).where((e) => e.value > 0).map((e) => '${e.key} ${e.value}').join(', ');
-  print('$label faz=${g.phase.value.name} bölge=${g.dayCycle.zoneIndex} hava=${g.weatherLayer.weather.name} '
+  print('${batch ? 'SONRA' : 'ÖNCE '} $label faz=${g.phase.value.name} bölge=${g.dayCycle.zoneIndex} hava=${g.weatherLayer.weather.name} '
       '| çizim/kare ${(draws / frames).toStringAsFixed(1)} | overdraw ${(area / frames / (size.x * size.y)).toStringAsFixed(2)}× '
       '| saveLayer/kare ${(saveLayers / frames).toStringAsFixed(1)} | bileşen ${g.world.children.length}\n    $top\n    bileşenler: $perTop');
 }
@@ -211,12 +239,20 @@ Future<void> _scene(String label, {int score = 0, Weather? weather, bool menu = 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test('çizim yükü', () async {
+    await _scene(batch: false, 'Menü               ', menu: true);
     await _scene('Menü               ', menu: true);
+    await _scene(batch: false, 'A Haliç açık       ', score: 1);
     await _scene('A Haliç açık       ', score: 1);
+    await _scene(batch: false, 'B Ortaköy açık+tehl', score: 150);
     await _scene('B Ortaköy açık+tehl', score: 150);
+    await _scene(batch: false, 'C Ortaköy rüzgârlı ', score: 150, weather: Weather.windy);
     await _scene('C Ortaköy rüzgârlı ', score: 150, weather: Weather.windy);
+    await _scene(batch: false, 'D Üsküdar yağmur   ', score: 215, weather: Weather.rain);
     await _scene('D Üsküdar yağmur   ', score: 215, weather: Weather.rain);
+    await _scene(batch: false, 'E Rumeli sis       ', score: 95, weather: Weather.fog);
     await _scene('E Rumeli sis       ', score: 95, weather: Weather.fog);
+    await _scene(batch: false, 'F Oyun sonu        ', gameOver: true);
     await _scene('F Oyun sonu        ', gameOver: true);
+    RenderTuning.batchDraws = true;
   }, timeout: const Timeout(Duration(minutes: 10)));
 }

@@ -313,6 +313,26 @@ class SharedPrefsProgressRepository implements ProgressRepository {
 
   final SharedPreferences _prefs;
 
+  /// Diske son başarıyla yazılan değer (anahtar başına; Phase 2.9). Değişmeyen değer yeniden yazılmaz:
+  /// uçuş sonunda çoğu zaman yalnızca ana kayıt değişir, yedekler aynı kalır (4 yazma yerine 1).
+  /// Yazma başarısız olursa kayıt güncellenmez → bir sonraki kayıtta yeniden denenir.
+  final Map<String, String?> _written = {};
+
+  /// Bu süreçte diske yapılan gerçek yazma sayısı (test ve ölçüm için).
+  @visibleForTesting
+  int writes = 0;
+
+  Future<void> _put(String k, String v) async {
+    final last = _written.containsKey(k) ? _written[k] : _prefs.getString(k);
+    if (last == v) {
+      _written[k] = v;
+      return;
+    }
+    await _prefs.setString(k, v);
+    _written[k] = v;
+    writes++;
+  }
+
   @override
   Future<PlayerProgress> load() async {
     final raw = _prefs.getString(key);
@@ -416,25 +436,19 @@ class SharedPrefsProgressRepository implements ProgressRepository {
   /// Ardından keşif yedeği yazılır (yalnızca ana kayıtta albüm alanı yoksa okunur).
   @override
   Future<void> save(PlayerProgress p) async {
-    await _prefs.setString(key, jsonEncode(p.toJson()));
+    await _put(key, jsonEncode(p.toJson()));
     try {
-      await _prefs.setString(
-        discoveryBackupKey,
-        jsonEncode(p.discovery.toJson()),
-      );
+      await _put(discoveryBackupKey, jsonEncode(p.discovery.toJson()));
     } catch (e) {
       debugPrint('Keşif yedeği yazılamadı: $e');
     }
     try {
-      await _prefs.setString(
-        dailyBackupKey,
-        jsonEncode(p.dailyChallenge.toJson()),
-      );
+      await _put(dailyBackupKey, jsonEncode(p.dailyChallenge.toJson()));
     } catch (e) {
       debugPrint('Günün Uçuşu yedeği yazılamadı: $e');
     }
     try {
-      await _prefs.setString(eventsBackupKey, jsonEncode(p.events.toJson()));
+      await _put(eventsBackupKey, jsonEncode(p.events.toJson()));
     } catch (e) {
       debugPrint('Etkinlik yedeği yazılamadı: $e');
     }

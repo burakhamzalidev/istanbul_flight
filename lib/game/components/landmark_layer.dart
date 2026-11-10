@@ -8,6 +8,7 @@ import '../day_cycle.dart';
 import '../game_art.dart';
 import '../istanbul_flight_game.dart';
 import 'background.dart';
+import '../visual/atlas_batch.dart';
 
 /// Ekrandaki bir simge örneği (havuzda tekrar kullanılır).
 class LandmarkInstance {
@@ -49,6 +50,7 @@ class LandmarkLayer extends Component
   );
   Landmark? _zoneLandmark;
   final AlphaPaint _paint = AlphaPaint(), _reflection = AlphaPaint();
+  final AtlasBatch _bands = AtlasBatch();
   final Paint _fallback = Paint();
 
   @visibleForTesting
@@ -113,12 +115,7 @@ class LandmarkLayer extends Component
     // uçuşun ilk bölgesi (klasikte Haliç; etkinlikte dizinin ilk bölgesi)
     final first = game.dayCycle.zone.landmark;
     _zoneLandmark = first;
-    _spawn(
-      first,
-      x: focusX(first, 0.6),
-      alpha: 1,
-      rise: 0,
-    );
+    _spawn(first, x: focusX(first, 0.6), alpha: 1, rise: 0);
   }
 
   @override
@@ -231,18 +228,19 @@ class LandmarkLayer extends Component
       for (var y = 0.0; y < img.height; y += band) {
         final h = math.min(band, img.height - y);
         final wob = snapPx(math.sin(game.time * 1.8 + y * 0.4) * 6);
-        canvas.drawImageRect(
-          img,
-          Rect.fromLTWH(0, img.height - y - h, src.width, h),
-          Rect.fromLTWH(
-            dst.left + wob,
-            base - (y + h) * kArtPx,
-            lay.w,
-            h * kArtPx,
-          ),
-          p,
+        final bs = Rect.fromLTWH(0, img.height - y - h, src.width, h);
+        final bd = Rect.fromLTWH(
+          dst.left + wob,
+          base - (y + h) * kArtPx,
+          lay.w,
+          h * kArtPx,
         );
+        // Phase 2.9: bütün bantlar tek drawRawAtlas (bant başına çağrı yerine)
+        if (RenderTuning.batchDraws && _bands.add(bs, bd)) continue;
+        _bands.flush(canvas, img, p);
+        canvas.drawImageRect(img, bs, bd, p);
       }
+      _bands.flush(canvas, img, p);
       canvas.restore();
     }
     canvas.drawImageRect(img, src, dst, _paint.at(eased));
