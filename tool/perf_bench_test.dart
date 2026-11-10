@@ -14,6 +14,7 @@ import 'package:istanbul_flight/data/score_repository.dart';
 import 'package:istanbul_flight/game/day_cycle.dart';
 import 'package:istanbul_flight/game/game_art.dart';
 import 'package:istanbul_flight/game/istanbul_flight_game.dart';
+import 'package:istanbul_flight/game/visual/atlas_batch.dart';
 import 'package:istanbul_flight/game/weather.dart';
 
 import '../test/fakes.dart';
@@ -87,12 +88,18 @@ void main() {
   });
   test('bench', () async {
     final phone = Vector2(1170, 2532);
-    for (var rep = 0; rep < 2; rep++) {
-      await bench('A Haliç açık        ', 1, null, phone);
-      await bench('B Ortaköy açık+tehl.', 150, null, phone);
-      await bench('C Ortaköy rüzgârlı  ', 150, Weather.windy, phone);
-      await bench('D Üsküdar yağmur    ', 215, Weather.rain, phone);
-      await bench('E Rumeli sis        ', 95, Weather.fog, phone);
+    // Phase 2.9: çizim birleştirme kapalı (ÖNCE) / açık (SONRA), dönüşümlü; ilk tur ısınma
+    for (var rep = 0; rep < 3; rep++) {
+      for (final batch in [false, true]) {
+        RenderTuning.batchDraws = batch;
+        final tag = '${rep == 0 ? "ısınma " : "tur $rep "}${batch ? "SONRA" : "ÖNCE "}';
+        await bench('$tag A Haliç açık        ', 1, null, phone);
+        await bench('$tag B Ortaköy açık+tehl.', 150, null, phone);
+        await bench('$tag C Ortaköy rüzgârlı  ', 150, Weather.windy, phone);
+        await bench('$tag D Üsküdar yağmur    ', 215, Weather.rain, phone);
+        await bench('$tag E Rumeli sis        ', 95, Weather.fog, phone);
+      }
     }
+    RenderTuning.batchDraws = true;
   }, timeout: const Timeout(Duration(minutes: 10)));
 }

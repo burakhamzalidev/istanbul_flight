@@ -1,0 +1,14 @@
+Phase 2.9 başlangıç (commit 76aa7a7, boşta uyku yok) — flutter test tool/idle_probe_test.dart
+(o sürümde araç modal açmadan önce dokunuşu taklit etmiyordu; uyku olmadığı için sonuç aynıdır)
+
+Menü (yeni açılmış): motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Menü (60 sn dokunulmadı): motor çalışıyor · bekleyen kare VAR (3750 kare izlendi)
+Modal: shop: motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Modal: profile: motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Modal: discovery: motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Modal: events: motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Modal: leaderboard: motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Hazır ("uçmak için dokun"): motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Duraklatıldı: motor DURDU · bekleyen kare yok (125 kare izlendi)
+Oyun sonu (kart yeni): motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Oyun sonu (30 sn sonra): motor çalışıyor · bekleyen kare VAR (1875 kare izlendi)

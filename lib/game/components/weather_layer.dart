@@ -6,6 +6,7 @@ import 'package:flame/components.dart';
 import '../game_art.dart';
 import '../istanbul_flight_game.dart';
 import '../weather.dart';
+import '../visual/atlas_batch.dart';
 
 /// Hava durumu katmanı (Phase 2.6.3): yağmur, sis, rüzgâr. Engellerin ARKASINDA çizilir (öncelik 39 < 40):
 /// hiçbir efekt engeli örtmez. Nesne üretmez: bütün parçacıklar sıradan ve zamandan hesaplanır (sabit sayıda
@@ -21,6 +22,8 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
   double _level = 0; // 0..1 (mevcut havanın yoğunluğu)
   final Paint _p = Paint()..isAntiAlias = false;
   final List<Path> _rainPaths = [Path(), Path(), Path()];
+  final Path _bodyPath = Path(), _edgePath = Path();
+  final List<Path> _leafPaths = List.generate(4, (_) => Path());
 
   Weather get weather => _target;
 
@@ -109,31 +112,42 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
     final horizon = game.config.horizonY;
     // ufukta genel pus, üstünde kayan sis bantları (hepsi engellerin arkasında)
     _p.color = col.withValues(alpha: 0.12 * _level);
-    canvas.drawRect(
-      Rect.fromLTWH(0, snapPx(horizon - 360), _w, 640),
-      _p,
-    );
+    canvas.drawRect(Rect.fromLTWH(0, snapPx(horizon - 360), _w, 640), _p);
+    final batch = RenderTuning.batchDraws;
     for (var i = 0; i < 8; i++) {
       final y = snapPx(horizon - 320 + i * 72);
       const seg = 720.0;
       final off = (drift * (1 + i * 0.2)) % seg;
       _p.color = col.withValues(alpha: (0.3 - (i - 3.5).abs() * 0.04) * _level);
+      // Phase 2.9: bandın gövdeleri tek yol, kenarları tek yol (birbirine değmezler → aynı görüntü)
+      _bodyPath.reset();
+      _edgePath.reset();
       for (var x = -off - seg; x < _w + seg; x += seg) {
         final bx = x + i * 110;
-        canvas.drawRect(
-          Rect.fromLTWH(snapPx(bx), y, snapPx(seg * 0.7), 12 * kArtPx),
-          _p,
+        final body = Rect.fromLTWH(
+          snapPx(bx),
+          y,
+          snapPx(seg * 0.7),
+          12 * kArtPx,
         );
         // yumuşak kenar: bandın ucunda daha kısa bir basamak
-        canvas.drawRect(
-          Rect.fromLTWH(
-            snapPx(bx + seg * 0.1),
-            y - 3 * kArtPx,
-            snapPx(seg * 0.45),
-            3 * kArtPx,
-          ),
-          _p,
+        final edge = Rect.fromLTWH(
+          snapPx(bx + seg * 0.1),
+          y - 3 * kArtPx,
+          snapPx(seg * 0.45),
+          3 * kArtPx,
         );
+        if (batch) {
+          _bodyPath.addRect(body);
+          _edgePath.addRect(edge);
+        } else {
+          canvas.drawRect(body, _p);
+          canvas.drawRect(edge, _p);
+        }
+      }
+      if (batch) {
+        canvas.drawPath(_bodyPath, _p);
+        canvas.drawPath(_edgePath, _p);
       }
     }
   }
@@ -146,6 +160,10 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
         ? const [Color(0xFFE88AB4), Color(0xFFF6D0E0)]
         : const [Color(0xFF8ABA5A), Color(0xFFF6F2EA)];
     const px = kArtPx;
+    final batch = RenderTuning.batchDraws;
+    for (final p in _leafPaths) {
+      p.reset();
+    }
     for (var k = 0; k < windBits; k++) {
       final speed = 260 + (k % 4) * 70;
       final x =
@@ -154,22 +172,31 @@ class WeatherLayer extends Component with HasGameReference<IstanbulFlightGame> {
           100; // sağdan sola, akışla aynı yönde
       final y =
           (k * 1237 % 1000) / 1000 * _h * 0.8 + 80 + math.sin(t * 2 + k) * 40;
-      _p.color = colors[k % 2].withValues(alpha: 0.85 * _level);
       // 2×2 yaprak, kanat çırpar gibi dönen tek uç pikseli
-      canvas.drawRect(
-        Rect.fromLTWH(snapPx(x), snapPx(y), px * 2, px * 2),
-        _p,
-      );
+      final leaf = Rect.fromLTWH(snapPx(x), snapPx(y), px * 2, px * 2);
       final flip = ((t * 3 + k) % 2) < 1;
-      canvas.drawRect(
-        Rect.fromLTWH(
-          snapPx(x + (flip ? px * 2 : -px)),
-          snapPx(y + (flip ? -px : px * 2)),
-          px,
-          px,
-        ),
-        _p,
+      final tip = Rect.fromLTWH(
+        snapPx(x + (flip ? px * 2 : -px)),
+        snapPx(y + (flip ? -px : px * 2)),
+        px,
+        px,
       );
+      if (batch) {
+        // Phase 2.9: renk başına yaprak gövdeleri bir yol, uçları bir yol (4 çizim; 2 × windBits yerine)
+        _leafPaths[k % 2].addRect(leaf);
+        _leafPaths[2 + k % 2].addRect(tip);
+      } else {
+        _p.color = colors[k % 2].withValues(alpha: 0.85 * _level);
+        canvas.drawRect(leaf, _p);
+        canvas.drawRect(tip, _p);
+      }
+    }
+    if (batch) {
+      for (var c = 0; c < 2; c++) {
+        _p.color = colors[c].withValues(alpha: 0.85 * _level);
+        canvas.drawPath(_leafPaths[c], _p);
+        canvas.drawPath(_leafPaths[2 + c], _p);
+      }
     }
     // ince rüzgâr çizgileri
     final line = game.palette.light;

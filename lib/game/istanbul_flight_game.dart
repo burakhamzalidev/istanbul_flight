@@ -224,6 +224,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   double _cueTimer = 8;
   double _statsClock = 0;
   int _statsFrames = 0;
+  double _statsWorst = 0;
 
   /// Oyun saati (sn): mikro animasyonlar buna bağlı, kare hızından bağımsız.
   double get time => _time;
@@ -234,6 +235,85 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// iOS / sistem "Hareketi Azalt" tercihi (MediaQuery.disableAnimations; Phase 2.8).
   bool platformReduceMotion = false;
+
+  // ================= Boşta uyku (Phase 2.9, docs/22 §6) =================
+  // Oyun dışında kimse bakmıyorken sahne her karede güncellenip çizilmesin (pil ve ısınma):
+  //  • modal ekran açıkken (sahne arkada, perde altında) → motor durur;
+  //  • oyun sonu yerleşince (kart görünür, "Tekrar uç" açık, efektler bitti) → motor durur;
+  //  • [idleTimeout] boyunca dokunulmazsa (oyun dışında) → motor durur, arayüzdeki tekrarlı
+  //    animasyonlar da durur ([deepIdle]; GameScreen TickerMode'u kapatır).
+  // İlk dokunuşta ([noteActivity]) her şey kaldığı yerden sürer. Uçuşa (PLAYING) hiç dokunmaz.
+
+  /// Dokunulmadan geçen bu süreden sonra derin uyku.
+  static const idleTimeout = Duration(seconds: 30);
+
+  /// Sahne uyuyor (motor bu yüzden durdu).
+  final sceneAsleep = ValueNotifier(false);
+
+  /// Derin uyku: arayüzün tekrarlı animasyonları da durur.
+  final deepIdle = ValueNotifier(false);
+
+  bool _sleptEngine = false;
+  double _idleT = 0;
+
+  /// Dokunuş ya da tuş: boşta sayacı sıfırlanır, uyuyorsa uyanır.
+  void noteActivity() {
+    _idleT = 0;
+    deepIdle.value = false;
+    _wake();
+  }
+
+  bool get _canSleep =>
+      phase.value == GamePhase.ready || phase.value == GamePhase.gameOver;
+
+  bool get _gameOverSettled =>
+      phase.value == GamePhase.gameOver &&
+      canRestart.value &&
+      _landed &&
+      _shakeT <= 0 &&
+      fx.activeCount == 0;
+
+  void _sleep() {
+    if (sceneAsleep.value || !_canSleep) return;
+    sceneAsleep.value = true;
+    if (!paused) {
+      pauseEngine();
+      _sleptEngine = true;
+    }
+  }
+
+  void _wake() {
+    if (!sceneAsleep.value) return;
+    sceneAsleep.value = false;
+    if (_sleptEngine) {
+      _sleptEngine = false;
+      _accumulator = 0;
+      resumeEngine();
+    }
+  }
+
+  void _onModalChanged() {
+    if (modal.value != null) {
+      _sleep();
+    } else if (!deepIdle.value) {
+      _wake(); // oyun sonu yerleşmişse sonraki karede yeniden uyur
+    }
+  }
+
+  /// Her karede (motor çalışırken): uyku koşulları.
+  void _updateIdle(double dt) {
+    if (!_canSleep) {
+      _idleT = 0;
+      return;
+    }
+    _idleT += dt;
+    if (_idleT >= idleTimeout.inMilliseconds / 1000) {
+      deepIdle.value = true;
+      _sleep();
+    } else if (modal.value != null || _gameOverSettled) {
+      _sleep();
+    }
+  }
 
   /// Geliştirme: FPS ve nesne sayısı (`--dart-define=MARTI_STATS=true`).
   bool showStats = false;
@@ -330,6 +410,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     services.settings.addListener(_applySettings);
     _applySettings();
     services.progress.addListener(_onProgressChanged);
+    modal.addListener(_onModalChanged);
     _applyCosmetic();
     services.audio.setAmbience(ambienceForZone(0));
     _syncBird(idle: true);
@@ -348,6 +429,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   void onRemove() {
     services.settings.removeListener(_applySettings);
     services.progress.removeListener(_onProgressChanged);
+    modal.removeListener(_onModalChanged);
     super.onRemove();
   }
 
@@ -389,6 +471,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   /// Dokunma: READY'de oyunu başlatır ve aynı anda kanat çırptırır (ilk dokunuş boşa gitmez).
   /// Ana menü açıkken dokunuşlar menünün kendi düğmelerine gider (overlay dokunuşu tutar).
   void handleTap() {
+    noteActivity();
     switch (phase.value) {
       case GamePhase.ready:
         _start();
@@ -728,18 +811,22 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
     _updateShake(frameDt);
     if (phase.value != GamePhase.paused) _updateAmbientCues(frameDt);
     super.update(dt);
+    _updateIdle(frameDt);
     if (showStats) _updateStats(dt);
   }
 
   void _updateStats(double dt) {
     _statsFrames++;
     _statsClock += dt;
+    _statsWorst = math.max(_statsWorst, dt);
     if (_statsClock < 0.5) return;
     final fps = _statsFrames / _statsClock;
+    // Phase 2.9: pencere içindeki en uzun kare (takılma) — 60 Hz bütçesi 16,7 ms, 120 Hz 8,3 ms
     stats.value =
-        'FPS ${fps.toStringAsFixed(0)} · bileşen ${world.children.length} · engel ${obstacles.length} · efekt ${fx.activeCount}';
+        'FPS ${fps.toStringAsFixed(0)} · en uzun ${(_statsWorst * 1000).toStringAsFixed(1)} ms · bileşen ${world.children.length} · engel ${obstacles.length} · efekt ${fx.activeCount}';
     _statsClock = 0;
     _statsFrames = 0;
+    _statsWorst = 0;
   }
 
   /// Uzak martı ve vapur düdüğü: bölgeye göre ara sıra (oyun saatine bağlı, duraklamada durur).
@@ -1216,6 +1303,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
 
   /// Yeni tur: eski engeller, skor, palet ve karakter temizlenir. READY'e ("uçmak için dokun") dönülür.
   void restart() {
+    noteActivity();
     // Süren bir uçuş yarıda bırakılıyor: hesap yapılmaz; günlük dereceli hak harcanmış kalır
     if ((phase.value == GamePhase.playing || phase.value == GamePhase.paused) &&
         _runId.isNotEmpty &&
@@ -1286,6 +1374,9 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   }
 
   void _setPhase(GamePhase p) {
+    _idleT = 0;
+    deepIdle.value = false;
+    _wake();
     phase.value = p;
     _applyOverlays();
     _syncMusic();

@@ -189,8 +189,17 @@ class MartiApp extends StatelessWidget {
             if (!game.handleBack()) SystemNavigator.pop();
           },
           child: Listener(
-            onPointerDown: (_) => game.services.audio.unlock(),
-            child: GameScreen(game: game),
+            onPointerDown: (_) {
+              game.services.audio.unlock();
+              game.noteActivity(); // boşta uykudan uyandırır (Phase 2.9)
+            },
+            // Derin uykuda arayüzün tekrarlı animasyonları (logo, "dokun" ipucu) da durur
+            child: ValueListenableBuilder<bool>(
+              valueListenable: game.deepIdle,
+              builder: (context, idle, child) =>
+                  TickerMode(enabled: !idle, child: child!),
+              child: GameScreen(game: game),
+            ),
           ),
         ),
       ),

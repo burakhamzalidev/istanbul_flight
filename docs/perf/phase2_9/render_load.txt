@@ -1,0 +1,44 @@
+00:00 +0: çizim yükü
+ÖNCE  Menü                faz=ready bölge=0 hava=clear | çizim/kare 38.1 | overdraw 2.43× | saveLayer/kare 0.0 | bileşen 14
+    drawImageRect 19.1, drawRect 18.9
+    bileşenler: FogLayer 19, WaterLayer 8, CloudLayer 4, SkyLayer 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, WaterfrontLayer 1, SimitBird 1
+SONRA Menü                faz=ready bölge=0 hava=clear | çizim/kare 38.1 | overdraw 2.43× | saveLayer/kare 0.0 | bileşen 14
+    drawImageRect 19.1, drawRect 18.9
+    bileşenler: FogLayer 19, WaterLayer 8, CloudLayer 4, SkyLayer 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, WaterfrontLayer 1, SimitBird 1
+ÖNCE  A Haliç açık        faz=playing bölge=0 hava=clear | çizim/kare 63.3 | overdraw 2.73× | saveLayer/kare 0.0 | bileşen 16
+    drawImageRect 43.3, drawRect 20.0
+    bileşenler: FogLayer 19, ObstaclePair 18, WaterLayer 9, CloudLayer 4, PickupLayer 3, SkyLayer 2, WaterfrontLayer 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, SimitBird 1
+SONRA A Haliç açık        faz=playing bölge=0 hava=clear | çizim/kare 45.3 | overdraw 2.73× | saveLayer/kare 0.0 | bileşen 16
+    drawImageRect 23.0, drawRect 20.0, drawRawAtlas 2.3
+    bileşenler: FogLayer 19, WaterLayer 9, CloudLayer 4, PickupLayer 3, SkyLayer 2, WaterfrontLayer 2, ObstaclePair 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, SimitBird 1
+ÖNCE  B Ortaköy açık+tehl faz=playing bölge=6 hava=clear | çizim/kare 86.0 | overdraw 3.45× | saveLayer/kare 0.0 | bileşen 18
+    drawImageRect 69.6, drawRect 14.2, drawPicture 2.1
+    bileşenler: ObstaclePair 29, LandmarkFrontLayer 26, HazardView 12, WaterLayer 7, CloudLayer 4, SkyLayer 2, WaterfrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+SONRA B Ortaköy açık+tehl faz=playing bölge=6 hava=clear | çizim/kare 43.0 | overdraw 3.45× | saveLayer/kare 0.0 | bileşen 18
+    drawImageRect 23.4, drawRect 14.2, drawRawAtlas 3.3, drawPicture 2.1
+    bileşenler: HazardView 12, WaterLayer 7, CloudLayer 4, ObstaclePair 3, SkyLayer 2, WaterfrontLayer 2, LandmarkFrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+ÖNCE  C Ortaköy rüzgârlı  faz=playing bölge=6 hava=windy | çizim/kare 146.0 | overdraw 3.45× | saveLayer/kare 0.0 | bileşen 18
+    drawRect 74.2, drawImageRect 69.6, drawPicture 2.1
+    bileşenler: WeatherLayer 60, ObstaclePair 29, LandmarkFrontLayer 26, HazardView 12, WaterLayer 7, CloudLayer 4, SkyLayer 2, WaterfrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+SONRA C Ortaköy rüzgârlı  faz=playing bölge=6 hava=windy | çizim/kare 59.0 | overdraw 3.45× | saveLayer/kare 0.0 | bileşen 18
+    drawRect 26.2, drawImageRect 23.4, drawPath 4.0, drawRawAtlas 3.3, drawPicture 2.1
+    bileşenler: WeatherLayer 16, HazardView 12, WaterLayer 7, CloudLayer 4, ObstaclePair 3, SkyLayer 2, WaterfrontLayer 2, LandmarkFrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+ÖNCE  D Üsküdar yağmur    faz=playing bölge=8 hava=rain | çizim/kare 88.0 | overdraw 4.30× | saveLayer/kare 0.0 | bileşen 18
+    drawImageRect 67.6, drawRect 15.2, drawPath 3.0, drawPicture 2.1
+    bileşenler: ObstaclePair 29, LandmarkFrontLayer 24, HazardView 12, WaterLayer 7, CloudLayer 4, WeatherLayer 4, SkyLayer 2, WaterfrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+SONRA D Üsküdar yağmur    faz=playing bölge=8 hava=rain | çizim/kare 47.0 | overdraw 4.30× | saveLayer/kare 0.0 | bileşen 18
+    drawImageRect 23.4, drawRect 15.2, drawRawAtlas 3.3, drawPath 3.0, drawPicture 2.1
+    bileşenler: HazardView 12, WaterLayer 7, CloudLayer 4, WeatherLayer 4, ObstaclePair 3, SkyLayer 2, WaterfrontLayer 2, LandmarkFrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+ÖNCE  E Rumeli sis        faz=playing bölge=4 hava=fog | çizim/kare 170.5 | overdraw 3.90× | saveLayer/kare 0.0 | bileşen 17
+    drawRect 105.8, drawImageRect 62.6, drawRawPoints 2.0
+    bileşenler: WeatherLayer 69, ObstaclePair 29, LandmarkFrontLayer 18, FogLayer 18, WaterLayer 17, SkyLayer 5, CloudLayer 4, WaterfrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+SONRA E Rumeli sis        faz=playing bölge=4 hava=fog | çizim/kare 83.8 | overdraw 3.74× | saveLayer/kare 0.0 | bileşen 17
+    drawRect 38.1, drawImageRect 24.4, drawPath 16.0, drawRawAtlas 3.3, drawRawPoints 2.0
+    bileşenler: FogLayer 18, WaterLayer 17, WeatherLayer 17, SkyLayer 5, CloudLayer 4, ObstaclePair 3, WaterfrontLayer 2, LandmarkFrontLayer 2, FarLayer 1, ShoreLayer 1, SimitBird 1
+ÖNCE  F Oyun sonu         faz=gameOver bölge=0 hava=clear | çizim/kare 52.2 | overdraw 2.63× | saveLayer/kare 0.0 | bileşen 15
+    drawImageRect 31.0, drawRect 21.2
+    bileşenler: FogLayer 18, ObstaclePair 10, WaterLayer 9, FerryLayer 5, CloudLayer 4, SkyLayer 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, WaterfrontLayer 1, SimitBird 1
+SONRA F Oyun sonu         faz=gameOver bölge=0 hava=clear | çizim/kare 43.2 | overdraw 2.63× | saveLayer/kare 0.0 | bileşen 15
+    drawRect 21.2, drawImageRect 21.0, drawRawAtlas 1.0
+    bileşenler: FogLayer 18, WaterLayer 9, FerryLayer 5, CloudLayer 4, SkyLayer 2, FarLayer 1, LandmarkLayer 1, ShoreLayer 1, WaterfrontLayer 1, ObstaclePair 1, SimitBird 1
+00:01 +1: All tests passed!

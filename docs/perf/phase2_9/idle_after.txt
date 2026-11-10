@@ -1,0 +1,14 @@
+00:00 +0: boşta iş
+Menü (yeni açılmış): motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Menü (60 sn dokunulmadı): motor DURDU · bekleyen kare yok (3750 kare izlendi)
+Modal: shop: motor DURDU · bekleyen kare VAR (125 kare izlendi)
+Modal: profile: motor DURDU · bekleyen kare VAR (125 kare izlendi)
+Modal: discovery: motor DURDU · bekleyen kare VAR (125 kare izlendi)
+Modal: events: motor DURDU · bekleyen kare VAR (125 kare izlendi)
+Modal: leaderboard: motor DURDU · bekleyen kare VAR (125 kare izlendi)
+Hazır ("uçmak için dokun"): motor çalışıyor · bekleyen kare VAR (125 kare izlendi)
+Hazır (35 sn dokunulmadı): motor DURDU · bekleyen kare yok (2188 kare izlendi)
+Duraklatıldı: motor DURDU · bekleyen kare yok (125 kare izlendi)
+Oyun sonu (kart yeni): motor DURDU · bekleyen kare yok (125 kare izlendi)
+Oyun sonu (30 sn sonra): motor DURDU · bekleyen kare yok (1875 kare izlendi)
+00:09 +1: All tests passed!
