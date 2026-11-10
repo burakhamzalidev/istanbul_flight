@@ -1,0 +1,6 @@
+00:00 +0: açılış
+ilk (soğuk): yükleme 237 ms · ilk kare 24.5 ms
+tekrar 1    : yükleme 12 ms · ilk kare 0.8 ms
+tekrar 2    : yükleme 10 ms · ilk kare 0.8 ms
+tekrar 3    : yükleme 11 ms · ilk kare 0.7 ms
+00:00 +1: All tests passed!

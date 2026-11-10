@@ -1,0 +1,27 @@
+00:00 +0: 110 uçuş: birikme taraması
+10 uçuş: heap 160.1 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 1727 B
+60 uçuş: heap 163.0 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 2813 B
+110 uçuş: heap 163.8 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 2936 B
+İki aralıkta da ≥10 büyüyen sınıflar (21):
+  Code (null): 18241 → 19544 → 19885
+  CodeSourceMap (null): 16364 → 17636 → 17977
+  CompressedStackMaps (null): 583 → 1164 → 1318
+  Field (null): 11936 → 12368 → 12388
+  ICData (null): 66318 → 67531 → 67625
+  Instructions (null): 18241 → 19544 → 19885
+  ObjectPool (null): 15852 → 16750 → 16920
+  PcDescriptors (null): 15770 → 16599 → 16755
+  SubtypeTestCache (null): 117 → 160 → 170
+  TypeArguments (null): 3306 → 3356 → 3374
+  WeakArray (null): 853 → 1563 → 1812
+  _Int8List (dart:typed_data): 16365 → 17637 → 17978
+  _List (dart:core): 199379 → 208361 → 209117
+  _Mint (dart:core): 9 → 31 → 50
+  _OneByteString (dart:core): 57594 → 59602 → 60954
+  _OverlayEntryLocation (package:flutter/src/widgets): 4 → 24 → 44
+  _StackTrace (dart:core): 107 → 126 → 145
+  _Type (dart:core): 10953 → 11138 → 11160
+  _TypeParameter (dart:core): 1356 → 1429 → 1440
+  _Uint64List (dart:typed_data): 107 → 126 → 145
+  _Uint8List (dart:typed_data): 7960 → 17589 → 20277
+01:36 +1: All tests passed!

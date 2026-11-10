@@ -1,0 +1,29 @@
+Phase 2.9 başlangıç (commit 76aa7a7) — flutter test --enable-vmservice tool/leak_bench_test.dart
+
+10 uçuş: heap 156.1 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 1727 B
+60 uçuş: heap 160.7 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 2813 B
+110 uçuş: heap 163.7 MB · dünya 14 · engel 0 · tehlike 0 · efekt 0 · dinleyici 0 · kayıt 2936 B
+İki aralıkta da ≥10 büyüyen sınıflar (18):
+  Code (null): 18207 → 19499 → 19845
+  CodeSourceMap (null): 16332 → 17593 → 17939
+  CompressedStackMaps (null): 582 → 1165 → 1317
+  Field (null): 11993 → 12354 → 12374
+  ICData (null): 66314 → 67377 → 67491
+  Instructions (null): 18207 → 19499 → 19845
+  ObjectPool (null): 15817 → 16712 → 16887
+  PcDescriptors (null): 15735 → 16562 → 16723
+  SubtypeTestCache (null): 115 → 158 → 168
+  WeakArray (null): 863 → 1561 → 1807
+  _Int8List (dart:typed_data): 16333 → 17594 → 17940
+  _List (dart:core): 199256 → 208042 → 208846
+  _Mint (dart:core): 9 → 31 → 51
+  _OneByteString (dart:core): 57841 → 59554 → 60906
+  _OverlayEntryLocation (package:flutter/src/widgets): 4 → 24 → 44
+  _Type (dart:core): 11018 → 11136 → 11159
+  _TypeParameter (dart:core): 1379 → 1429 → 1442
+  _Uint8List (dart:typed_data): 7901 → 17547 → 20238
+
+Ekran bazında ayrıştırma (her ekran 20 kez aç/kapat): yalnızca Ayarlar her açılışta
+_OverlayEntryLocation +2 ve _Mint +2 bırakıyor (Material Slider'ın OverlayPortal'ı, Flutter çerçevesi).
+_Uint8List her ekranda artıyor ama azalan hızla (profil 25'er açılış: +4400, +3000, +1400, +1200, +800);
+heap 146–154 MB'ta yatay → debug modda kod/tip önbelleklerinin ısınması, sızıntı değil.

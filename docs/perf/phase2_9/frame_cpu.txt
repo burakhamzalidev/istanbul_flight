@@ -1,0 +1,62 @@
+  analyzer 13.3.0 (14.7.0 available)
+  code_assets 1.2.1 (2.2.0 available)
+  cross_file 0.3.5+5 (0.4.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  hooks 2.0.2 (2.2.0 available)
+  jni 1.1.0 (1.1.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.3 available)
+  package_config 2.2.0 (3.0.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  shared_preferences_android 2.5.1 (2.5.4 available)
+  shared_preferences_foundation 2.5.7 (2.6.1 available)
+  synchronized 3.5.0 (3.6.1 available)
+  test 1.31.1 (1.33.0 available)
+  test_api 0.7.12 (0.7.15 available)
+  test_core 0.6.18 (0.6.21 available)
+  vector_math 2.4.0 (2.4.4 available)
+  web 1.1.1 (1.1.2 available)
+TOPLAM 109 dosya, 289 KB PNG, 13.9 MB RGBA
+  ortak: 14 dosya, 45 KB, 1.57 MB
+  1.gun:halic: 10 dosya, 25 KB, 1.25 MB
+  1.gun:galata: 11 dosya, 39 KB, 1.59 MB
+  1.gun:kizkulesi: 10 dosya, 28 KB, 1.25 MB
+  1.gun:kopru: 10 dosya, 16 KB, 1.18 MB
+  1.gun:rumeli: 10 dosya, 22 KB, 1.27 MB
+  2.gun:emirgan: 11 dosya, 30 KB, 1.40 MB
+  2.gun:ortakoy: 11 dosya, 30 KB, 1.47 MB
+  2.gun:dolmabahce: 11 dosya, 27 KB, 1.44 MB
+  2.gun:uskudar: 11 dosya, 27 KB, 1.45 MB
+SES 3.21 MB
+ısınma ÖNCE  A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.056 p95 0.142 | render(record) avg 0.199 p95 0.391 p99 0.681 ms
+ısınma ÖNCE  B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.032 p95 0.079 | render(record) avg 0.180 p95 0.337 p99 0.644 ms
+ısınma ÖNCE  C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.033 p95 0.099 | render(record) avg 0.265 p95 0.502 p99 0.741 ms
+ısınma ÖNCE  D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.028 p95 0.083 | render(record) avg 0.285 p95 0.541 p99 0.703 ms
+ısınma ÖNCE  E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.033 p95 0.100 | render(record) avg 0.393 p95 0.673 p99 0.876 ms
+ısınma SONRA A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.020 p95 0.053 | render(record) avg 0.133 p95 0.240 p99 0.361 ms
+ısınma SONRA B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.017 p95 0.046 | render(record) avg 0.134 p95 0.282 p99 0.438 ms
+ısınma SONRA C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.018 p95 0.051 | render(record) avg 0.176 p95 0.334 p99 0.449 ms
+ısınma SONRA D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.016 p95 0.042 | render(record) avg 0.181 p95 0.320 p99 0.459 ms
+ısınma SONRA E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.016 p95 0.047 | render(record) avg 0.179 p95 0.281 p99 0.361 ms
+tur 1 ÖNCE  A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.013 p95 0.032 | render(record) avg 0.101 p95 0.174 p99 0.230 ms
+tur 1 ÖNCE  B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.014 p95 0.037 | render(record) avg 0.141 p95 0.265 p99 0.372 ms
+tur 1 ÖNCE  C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.015 p95 0.040 | render(record) avg 0.195 p95 0.321 p99 0.413 ms
+tur 1 ÖNCE  D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.017 p95 0.043 | render(record) avg 0.211 p95 0.361 p99 0.470 ms
+tur 1 ÖNCE  E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.014 p95 0.041 | render(record) avg 0.202 p95 0.304 p99 0.393 ms
+tur 1 SONRA A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.012 p95 0.030 | render(record) avg 0.083 p95 0.148 p99 0.212 ms
+tur 1 SONRA B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.013 p95 0.037 | render(record) avg 0.106 p95 0.222 p99 0.298 ms
+tur 1 SONRA C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.017 p95 0.052 | render(record) avg 0.174 p95 0.329 p99 0.537 ms
+tur 1 SONRA D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.022 p95 0.063 | render(record) avg 0.238 p95 0.536 p99 0.753 ms
+tur 1 SONRA E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.015 p95 0.040 | render(record) avg 0.180 p95 0.294 p99 0.372 ms
+tur 2 ÖNCE  A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.012 p95 0.033 | render(record) avg 0.104 p95 0.185 p99 0.257 ms
+tur 2 ÖNCE  B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.014 p95 0.039 | render(record) avg 0.142 p95 0.276 p99 0.377 ms
+tur 2 ÖNCE  C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.015 p95 0.039 | render(record) avg 0.195 p95 0.327 p99 0.416 ms
+tur 2 ÖNCE  D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.014 p95 0.036 | render(record) avg 0.192 p95 0.328 p99 0.406 ms
+tur 2 ÖNCE  E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.013 p95 0.040 | render(record) avg 0.196 p95 0.300 p99 0.391 ms
+tur 2 SONRA A Haliç açık         zone=1 weather=clear worldChildren<=17 hazardFrames=0/1800 update avg 0.010 p95 0.025 | render(record) avg 0.078 p95 0.140 p99 0.205 ms
+tur 2 SONRA B Ortaköy açık+tehl. zone=6 weather=clear worldChildren<=18 hazardFrames=940/1800 update avg 0.012 p95 0.033 | render(record) avg 0.103 p95 0.227 p99 0.313 ms
+tur 2 SONRA C Ortaköy rüzgârlı   zone=6 weather=windy worldChildren<=18 hazardFrames=940/1800 update avg 0.014 p95 0.038 | render(record) avg 0.143 p95 0.277 p99 0.384 ms
+tur 2 SONRA D Üsküdar yağmur     zone=8 weather=rain worldChildren<=18 hazardFrames=940/1800 update avg 0.014 p95 0.034 | render(record) avg 0.161 p95 0.283 p99 0.381 ms
+tur 2 SONRA E Rumeli sis         zone=4 weather=fog worldChildren<=17 hazardFrames=0/1800 update avg 0.013 p95 0.032 | render(record) avg 0.163 p95 0.267 p99 0.367 ms

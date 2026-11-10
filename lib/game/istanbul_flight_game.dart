@@ -224,6 +224,7 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   double _cueTimer = 8;
   double _statsClock = 0;
   int _statsFrames = 0;
+  double _statsWorst = 0;
 
   /// Oyun saati (sn): mikro animasyonlar buna bağlı, kare hızından bağımsız.
   double get time => _time;
@@ -817,12 +818,15 @@ class IstanbulFlightGame extends FlameGame with TapCallbacks {
   void _updateStats(double dt) {
     _statsFrames++;
     _statsClock += dt;
+    _statsWorst = math.max(_statsWorst, dt);
     if (_statsClock < 0.5) return;
     final fps = _statsFrames / _statsClock;
+    // Phase 2.9: pencere içindeki en uzun kare (takılma) — 60 Hz bütçesi 16,7 ms, 120 Hz 8,3 ms
     stats.value =
-        'FPS ${fps.toStringAsFixed(0)} · bileşen ${world.children.length} · engel ${obstacles.length} · efekt ${fx.activeCount}';
+        'FPS ${fps.toStringAsFixed(0)} · en uzun ${(_statsWorst * 1000).toStringAsFixed(1)} ms · bileşen ${world.children.length} · engel ${obstacles.length} · efekt ${fx.activeCount}';
     _statsClock = 0;
     _statsFrames = 0;
+    _statsWorst = 0;
   }
 
   /// Uzak martı ve vapur düdüğü: bölgeye göre ara sıra (oyun saatine bağlı, duraklamada durur).

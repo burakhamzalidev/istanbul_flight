@@ -1,0 +1,10 @@
+00:00 +0: HUD rebuild: klasik
+Klasik   : kare başına yeniden kurulum 0.67 (toplam 803 / 1200 kare, skor 12) · pump ort. 1.968 ms
+    en çok: TweenAnimationBuilder<double> 0.21, AnimatedBuilder 0.16, Container 0.12, Positioned 0.10, ValueListenableBuilder<int> 0.02, Text 0.02
+00:04 +1: HUD rebuild: günlük
+Günlük   : kare başına yeniden kurulum 0.40 (toplam 482 / 1200 kare, skor 11) · pump ort. 1.029 ms
+    en çok: TweenAnimationBuilder<double> 0.15, Container 0.11, Positioned 0.09, ValueListenableBuilder<int> 0.02, Bump 0.01, Text 0.01
+00:05 +2: HUD rebuild: eğitim
+Eğitim   : kare başına yeniden kurulum 0.69 (toplam 833 / 1200 kare, skor 0) · pump ort. 1.158 ms
+    en çok: AnimatedBuilder 0.58, Container 0.04, Text 0.03, TweenAnimationBuilder<double> 0.01, ValueListenableBuilder<TutorialStage?> 0.00, ValueListenableBuilder<TutorialHint> 0.00
+00:07 +3: All tests passed!
