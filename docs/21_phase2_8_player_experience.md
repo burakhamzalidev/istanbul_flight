@@ -1,8 +1,8 @@
 # 21 · Phase 2.8: Oyuncu deneyimi, ilk uçuş eğitimi ve arayüz cilası
 
 > **Dosya adı:** İstekte `docs/20_phase2_8_player_experience.md` geçiyordu; 20 numara Phase 2.7'de kullanıldığı için 21.
-> **Dal:** `feature/phase2-8-player-experience`, `main` (`42e774a`, Phase 2.7 dahil) üzerine. Sürüm değiştirilmedi (1.6.0+9). **Öneri: 1.7.0** (Phase 2.7 + 2.8; App Store'daki son kayıt 1.2.0, TestFlight'taki son derleme 1.6.0 (9)).
-> TestFlight, App Review ve yayın **yapılmadı**. Gerçek iPhone testi **yapılmadı** (§10).
+> **Dal:** `feature/phase2-8-player-experience`, `main` (`42e774a`, Phase 2.7 dahil) üzerine; `main`e PR #2 ve #3 ile birleşti. **Sürüm: 1.7.0+10** (Phase 2.7 + 2.8; App Store'daki son kayıt 1.2.0, TestFlight'taki önceki derleme 1.6.0 (9)). TestFlight notları: [testflight/beta_1_7_0.md](testflight/beta_1_7_0.md).
+> TestFlight: 1.7.0 yüklemesi kullanıcı onayıyla başlatıldı (10 Kasım 2026). App Review ve yayın **yapılmadı**. Gerçek iPhone testi **yapılmadı** (§10).
 
 ## 1. Denetim ve önceki UX
 
