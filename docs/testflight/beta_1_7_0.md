@@ -1,0 +1,34 @@
+# TestFlight beta: İstanbul Flight 1.7.0 (Phase 2.7 + 2.8)
+
+> **Durum: Yükleme başlatıldı (10 Kasım 2026, kullanıcı onayıyla: "Sürüm ilerletip yap").** Codemagic `ios-testflight`, dal `main`. Derleme numarası Codemagic'te TestFlight'taki son numara + 1 (beklenen: 10).
+> - 1.6.0 (9) Phase 2.6 dalından derlenmişti. Bu sürüm Phase 2.7'yi (haftalık kupa, etkinlikler, sezon) ve Phase 2.8'i (ilk uçuş eğitimi, menü, oyun sonu, erişilebilirlik) ilk kez TestFlight'a taşıyor.
+> - Dahili "Ekip" grubu test eder. "Test Kullanıcıları" (harici) grubuna Codemagic ekler; yeni sürümün ilk derlemesi olduğu için beta incelemesi gerekir.
+> - App Store sürüm kaydına dokunulmaz; App Review'a gönderim yok.
+> - Ayrıntılar: [../20_phase2_7_weekly_events.md](../20_phase2_7_weekly_events.md), [../21_phase2_8_player_experience.md](../21_phase2_8_player_experience.md)
+
+## What to Test (TR)
+
+```
+YENİ: Haftalık İstanbul Kupası, hafta sonu etkinlikleri ve sezon ödülleri. Yeni oyunculara kısa uçuş eğitimi; yenilenen menü ve oyun sonu ekranı.
+
+Önceki sürüm kuruluysa SİLMEDEN güncelleyin, sonra:
+
+1. Güncellemeden sonra rekor, simit, görünümler ve albüm yerinde mi? Eğitim kendiliğinden açılmamalı.
+2. Ana menü: "Uçuşa başla" hemen göze çarpıyor mu? Profil, Mağaza, Keşif ve Sıralama kolay bulunuyor mu?
+3. Nasıl oynanır → "Eğitimi oyna": üç aşama (uçmak, engel geçmek, simit toplamak) anlaşılır mı? Çarpınca aynı aşamadan devam ediyor mu? "Eğitimi atla" çalışıyor mu?
+4. Oyun sonunda "Tekrar uç" kaydırmadan görünüyor mu? "Ayrıntılar" açılıyor mu?
+5. Menü → Etkinlikler: Kupa, Etkinlik ve Sezon sekmeleri açılıyor mu, süreler akıyor mu?
+6. Kupa uçuşu: oyun sonunda kupa puanı, en iyi skor ve sezon puanı doğru mu?
+7. Hafta sonu etkinliği (Cuma–Pazartesi): engeller net, kurallar anlaşılır mı?
+8. iPhone ayarlarında Hareketi Azalt ve Büyük Metin açıkken menü ve oyun sonu düzgün mü? VoiceOver düğmeleri okuyor mu?
+9. Sesi kapatın: simit toplayınca "+1" yazısı görünüyor mu?
+10. Akıcılık 1.6.0 ile aynı mı? Küçük ekranda (iPhone SE) taşma var mı?
+```
+
+## Bilinen sorunlar
+
+1. Game Center kupa tablosu ilk dönemini 16 Kasım 2026'da başlatıyor. Bu haftanın (9–16 Kasım) kupa skorları tabloya gitmez; uygulamadaki kupa ve ödüller çalışır.
+2. Kupa tablosu ve günlük Game Center tablosu Apple incelemesinden geçmedi; TestFlight'ta Game Center'ın test ortamı kullanılır.
+3. Büyük Metin 1,3 katına kadar uygulanır; daha büyük erişilebilirlik boyutlarında yazılar bu sınırda kalır.
+4. Arayüz yalnızca Türkçe; iPad'de arayüz küçük.
+5. Codemagic'in son adımı önceki derlemelerde hesap sorunu yüzünden başarısız oluyordu (Apple talebi 103007198858). Harici grubun beta incelemesi bu yüzden takılabilir.
