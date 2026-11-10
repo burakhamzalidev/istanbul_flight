@@ -1,6 +1,7 @@
 # TestFlight beta: İstanbul Flight 1.7.0 (Phase 2.7 + 2.8)
 
 > **Durum: Yükleme başlatıldı (10 Kasım 2026, kullanıcı onayıyla: "Sürüm ilerletip yap").** Codemagic `ios-testflight`, dal `main`. Derleme numarası Codemagic'te TestFlight'taki son numara + 1 (beklenen: 10).
+> - İlk deneme (Codemagic #11, commit `68731ea`) testlerde durdu, IPA üretilmedi, yükleme olmadı. Tek düşen test `tutorial_test.dart` → "Mod regresyonu". Sebep: Testin sahte Game Center kupa dönemi yerel saatle yazılmıştı. Codemagic UTC'de çalıştığı için bu tarih geçerli bir hafta başı sayıldı, etkinlik antrenmana düştü. İstanbul saatinde (UTC+3) geçersiz sayılıp yok sayıldığı için yerelde geçiyordu. Düzeltme yalnızca testte (dönem UTC hafta başına sabitlendi); uygulama kodu değişmedi.
 > - 1.6.0 (9) Phase 2.6 dalından derlenmişti. Bu sürüm Phase 2.7'yi (haftalık kupa, etkinlikler, sezon) ve Phase 2.8'i (ilk uçuş eğitimi, menü, oyun sonu, erişilebilirlik) ilk kez TestFlight'a taşıyor.
 > - Dahili "Ekip" grubu test eder. "Test Kullanıcıları" (harici) grubuna Codemagic ekler; yeni sürümün ilk derlemesi olduğu için beta incelemesi gerekir.
 > - App Store sürüm kaydına dokunulmaz; App Review'a gönderim yok.

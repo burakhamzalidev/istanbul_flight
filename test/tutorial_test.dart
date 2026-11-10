@@ -33,7 +33,8 @@ Future<(IstanbulFlightGame, TestServices, _Events, FakeGameCenterApi)> _game({
   PlayerProgress progress = const PlayerProgress(),
   InMemoryScoreRepository? scores,
 }) async {
-  final api = FakeGameCenterApi();
+  // kupa dönemi testin haftasına sabit (UTC): sonuç makinenin saat diliminden bağımsız (Codemagic UTC)
+  final api = FakeGameCenterApi()..weekStart = EventCalendar.weekStart(_now);
   final t = TestServices(
     progress: progress,
     clock: () => _now,
