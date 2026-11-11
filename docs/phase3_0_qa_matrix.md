@@ -2,7 +2,7 @@
 
 > **Kod:** `feature/phase3-0-premium-release`, `main` `56898e5` üzerine. **Aday derleme:** TestFlight 1.8.0 (11).
 > **Sütunlar:** "Otomatik" = `flutter test` (489/489, 11 Kasım 2026). "Web" = Flutter web derlemesinde benim baktıklarım (başsız Edge; iPhone 402×874 ve iPad 1024×1366, ayrıca iPad yatay). "iPhone" = gerçek cihaz.
-> **Gerçek cihaz testi bu fazda yapılamadı:** TestFlight kurulumu "uygulama kullanılamıyor" hatası veriyor (Apple hesap sorunu, talep 103007198858). Bu yüzden "iPhone" sütununun tamamı **NOT RUN**. Simülatör yok (Windows).
+> **Gerçek cihaz testi (11 Kasım 2026):** Apple hesap sorunu (talep 103007198858) çözüldü; 1.8.0 (11) TestFlight'tan iPhone'a kuruldu. "iPhone" sütunundaki **PASS** sonuçları kullanıcının kendi iPhone'unda yaptığı ve bildirdiği testlerdir (aşağıdaki plan, 2–10. maddeler). Yapılmayanlar **NOT RUN** olarak kaldı. Simülatör yok (Windows).
 
 ## Önem dereceleri
 
@@ -25,26 +25,26 @@ P0 veri kaybı, açılış hatası, kritik çökme · P1 temel oyunu ya da satı
 | Alan | Otomatik | Web | iPhone |
 |---|---|---|---|
 | İlk açılış, yeni oyuncu → eğitim | ✓ (`tutorial_test`, `player_experience_ui_test`) | ✓ eğitim ekranı açılıyor | NOT RUN |
-| Eski oyuncu → menü, kayıt korunuyor | ✓ (ux_v1 legacy, kayıt geri okuma) | — | NOT RUN |
+| Eski oyuncu → menü, kayıt korunuyor | ✓ (ux_v1 legacy, kayıt geri okuma) | — | PASS (güncelleme kurulumu) |
 | Eğitim: 3 aşama, atla, tekrar oyna, ödülsüz | ✓ | ✓ (Phase 2.8) | NOT RUN |
 | Ana menü, 10 ekrana tek dokunuş | ✓ | ✓ | NOT RUN |
-| Uçuş, fizik, çarpışma | ✓ (fizik, hitbox, 30/60/120 Hz aynı sonuç) | ✓ | NOT RUN |
-| 9 bölge ve geçişler | ✓ (`expanded_istanbul_test`) | ✓ 7 dk otomatik pilot, Haliç → Üsküdar | NOT RUN |
+| Uçuş, fizik, çarpışma | ✓ (fizik, hitbox, 30/60/120 Hz aynı sonuç) | ✓ | PASS |
+| 9 bölge ve geçişler | ✓ (`expanded_istanbul_test`) | ✓ 7 dk otomatik pilot, Haliç → Üsküdar | PASS (uzun uçuş, geçişlerde takılma yok) |
 | Engel açıklıkları | ✓ (`obstacle_balance_test`) | ✓ | NOT RUN |
 | Dinamik engeller ve hava | ✓ (`hazards_*`) | ✓ (rüzgâr, gece, sis görüldü) | NOT RUN |
-| Günün Uçuşu: hak, tohum, ödül, kurtarma | ✓ (`daily_*`) | ✓ ekran | NOT RUN |
-| Game Center (sahte GameKit) | ✓ (`game_center_test`, çevrimdışı kuyruk) | — (web'de yok) | NOT RUN |
-| Haftalık kupa, etkinlik, sezon | ✓ (`event_*`) | ✓ ekran | NOT RUN |
+| Günün Uçuşu: hak, tohum, ödül, kurtarma | ✓ (`daily_*`) | ✓ ekran | PASS (hak düşüşü, yeniden açılış) |
+| Game Center (sahte GameKit) | ✓ (`game_center_test`, çevrimdışı kuyruk) | — (web'de yok) | PASS (giriş, skor sıralamada) |
+| Haftalık kupa, etkinlik, sezon | ✓ (`event_*`) | ✓ ekran | PASS (kupa uçuşu, sezon puanı) |
 | Profil, XP, seviye, görevler, başarımlar | ✓ (`progression_*`) | ✓ | NOT RUN |
-| Simit Mağazası: satın alma, kalıcılık, çift dokunma | ✓ (`cosmetics_test`, `shop_ui_test`) | ✓ ekran | NOT RUN |
+| Simit Mağazası: satın alma, kalıcılık, çift dokunma | ✓ (`cosmetics_test`, `shop_ui_test`) | ✓ ekran | PASS (satın alma, kapat-aç sonrası duruyor) |
 | Keşif albümü | ✓ (`discovery_*`) | ✓ | NOT RUN |
-| Kartpostal paylaşımı (iOS paylaşım menüsü) | Kısmen (sahte paylaşım servisi) | — | NOT RUN |
+| Kartpostal paylaşımı (iOS paylaşım menüsü) | Kısmen (sahte paylaşım servisi) | — | PASS |
 | Ayarlar, ses, titreşim, hareketi azalt | ✓ | ✓ | NOT RUN |
-| Çevrimdışı | ✓ (Game Center çevrimdışı) | — | NOT RUN |
-| Arka plan / ön plan, boşta uyku (Phase 2.9) | ✓ (`idle_sleep_test`) | ✓ (Phase 2.9) | NOT RUN |
+| Çevrimdışı | ✓ (Game Center çevrimdışı) | — | PASS (uçak modu, sonra skor gönderildi) |
+| Arka plan / ön plan, boşta uyku (Phase 2.9) | ✓ (`idle_sleep_test`) | ✓ (Phase 2.9) | PASS |
 | Erişilebilirlik (VoiceOver etiketleri, 44 pt, büyük metin) | ✓ | — | NOT RUN |
 | iPad dikey ve yatay | — | ✓ (yatayda koyu şerit, P3) | NOT RUN |
-| Kayıt sürümleri ve geri dönüş yedekleri | ✓ (`services_test`, `disk_writes_test`) | — | NOT RUN |
+| Kayıt sürümleri ve geri dönüş yedekleri | ✓ (`services_test`, `disk_writes_test`) | — | PASS (eski kaydın üzerine güncelleme) |
 
 ## Yayın kalite kapıları
 
@@ -54,17 +54,17 @@ P0 veri kaybı, açılış hatası, kritik çökme · P1 temel oyunu ya da satı
 | Çözülmemiş P1 yok | ✓ |
 | `flutter analyze` temiz | ✓ |
 | Bütün otomatik testler | ✓ 489/489 |
-| Eski kayıtların korunması | ✓ otomatik · iPhone NOT RUN |
+| Eski kayıtların korunması | ✓ otomatik · iPhone PASS |
 | Yeni kurulum | iPhone NOT RUN |
-| Günün Uçuşu doğrulaması | ✓ otomatik · iPhone NOT RUN |
-| Game Center gerçek test | **NOT RUN** (yalnızca sahte GameKit) |
-| Görünüm satın alma ve kalıcılık | ✓ otomatik · iPhone NOT RUN |
-| iOS paylaşımı | **NOT RUN** |
+| Günün Uçuşu doğrulaması | ✓ otomatik · iPhone PASS |
+| Game Center gerçek test | PASS (iPhone, kullanıcı) |
+| Görünüm satın alma ve kalıcılık | ✓ otomatik · iPhone PASS |
+| iOS paylaşımı | PASS (iPhone, kullanıcı) |
 | Menü ve eğitim akışları | ✓ otomatik ve web |
-| En az bir gerçek iPhone'da uçtan uca test | **NOT RUN: yayın engeli** |
+| En az bir gerçek iPhone'da uçtan uca test | PASS (plan 2–10; 1, 11, 12 NOT RUN) |
 | iPad uyumluluğu | Web'de bakıldı (P3 bulgular) · gerçek iPad NOT RUN |
 
-**Sonuç:** Kod tarafında yayın adayı hazır. Gerçek cihaz testi yapılmadan "release candidate onaylandı" denemez.
+**Sonuç:** 1.8.0 (11) gerçek iPhone'da ana akışlarda sorunsuz (11 Kasım 2026, kullanıcı testi). Yeni kurulumdaki eğitim, erişilebilirlik ve gerçek iPad testleri NOT RUN. App Review için ekran kaydı bekleniyor.
 
 ## Gerçek iPhone test planı (TestFlight 1.8.0 (11) ile)
 
