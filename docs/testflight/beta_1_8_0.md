@@ -1,6 +1,7 @@
 # TestFlight beta: İstanbul Flight 1.8.0 (Phase 2.9, performans ve pil)
 
-> **Durum: Yükleme başlatıldı (11 Kasım 2026, kullanıcı onayıyla: "testflighta versiyon atıp yükle").**
+> **Durum: TestFlight'a YÜKLENDİ (11 Kasım 2026, kullanıcı onayıyla).** 1.8.0 (11): Codemagic `ios-testflight` derleme #14, dal `main` (commit `4dad793`). Analiz ve 489 test Codemagic'te geçti. Apple 09:44'te işledi; "Ekip" ve "Test Kullanıcıları" gruplarına eklendi, 2 davet. "What to Test" (aşağıdaki metin, kullanıcı onayıyla) App Store Connect'te girildi ve kaydedildi.
+> - Harici beta incelemesine gönderim yine 422 "Please try again later" aldı (hesap sorunu, Apple talebi 103007198858). Post-processing "failed" görünür.
 > - Codemagic `ios-testflight`, dal `main`.
 > - Derleme numarası Codemagic'te TestFlight'taki son numara + 1 olarak verilir (beklenen: 11).
 > - **İçerik:** Phase 2.9. Yeni özellik yok; boşta uyku (pil), rüzgâr ve sis efektlerinde çizim çağrısı birleştirme, daha az disk yazma.
@@ -8,7 +9,7 @@
 > - App Store sürüm kaydına dokunulmadı; App Review'a gönderim yok.
 > - Ayrıntılar: [../22_phase2_9_performance_optimization.md](../22_phase2_9_performance_optimization.md)
 
-## What to Test (TR) — taslak, onay bekliyor
+## What to Test (TR)
 
 ```
 YENİ: Performans ve pil sürümü. Oyun aynı; menüde, mağazada ve kartpostalda beklerken telefon daha az çalışmalı.
