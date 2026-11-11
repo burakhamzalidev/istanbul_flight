@@ -1,0 +1,36 @@
+Hello App Review Team,
+
+Thank you for reviewing İstanbul Flight. This submission is version 1.8.0 (build 11). The information requested on Oct 23 (Guideline 2.1) is below. The screen recording, made on a physical iPhone running the latest iOS and starting from app launch, is attached.
+
+1. Screen recording
+Attached. It shows launch, the main menu, a flight, the Daily Flight, Events, the Shop, the Discover album and the Game Center leaderboard. The app has no account registration or login, no user-generated content, and no paid content or in-app purchases.
+
+2. Purpose and target audience
+İstanbul Flight is a casual, one-tap pixel-art arcade game for all ages (rated 4+). The player guides a seagull named Simit through nine Istanbul districts (Golden Horn, Galata, Maiden's Tower, Bosphorus Bridge, Rumeli Fortress, Emirgan, Ortaköy, Dolmabahçe, Üsküdar), passing obstacles and collecting simits (a traditional Turkish bread). It offers short, relaxing play sessions in a recognizable Istanbul setting. A daily course, a weekly cup, missions, achievements, a postcard album and cosmetic looks give players goals to return to.
+
+3. How to use the main features
+No login, account or sample files are needed. The interface is in Turkish.
+- First launch: a short three-step tutorial. It can be skipped with "Eğitimi atla" (Skip tutorial).
+- Main menu: "Uçuşa başla" (Start flight), then tap anywhere to flap. After a crash, the results postcard shows the score; "Paylaş" (Share) opens the iOS share sheet.
+- "Günün Uçuşu" (Daily Flight): everyone flies the same course; three ranked attempts per day and unlimited practice.
+- "Etkinlikler" (Events): the weekly Istanbul Cup, weekend events and a four-week season with level rewards.
+- "Mağaza" (Shop): cosmetic looks bought only with in-game simits; no real money.
+- "Keşif" (Discover): the postcard album of the districts.
+- "Profil" (Profile): level, daily and weekly missions, achievements.
+- "Sıralama" (Leaderboards): optional Apple Game Center leaderboards and achievements. The whole game is playable without Game Center.
+- The gear icon opens Settings (sound on/off, vibration, reduce animations). The "?" icon opens "Nasıl oynanır" (How to play), where the tutorial can be replayed.
+
+4. External services
+Apple Game Center only (GameKit): optional sign-in, leaderboards (all-time, weekly, daily flight, weekly cup) and 9 achievements. The friends leaderboard asks for Game Center friends access only when the player opens it. There are no own servers, analytics, advertising, crash reporting or third-party SDKs. Game progress is stored on the device.
+
+5. Regional differences
+None. The app works the same in all regions where it is available. The interface language is Turkish in all regions.
+
+6. Regulated industry or third-party material
+Not applicable. The app is not in a regulated industry and contains no protected third-party content. All artwork, music, sound effects and the pixel font were created by the developer. The depicted places are public landmarks of Istanbul, shown as original pixel-art illustrations.
+
+7. Permissions
+The only permission prompts are "Add to Photos" (only if the user chooses "Save Image" from the share sheet for the end-of-flight postcard) and Game Center friends access (only when the friends leaderboard is opened).
+
+Best regards,
+Burak Hamzalı

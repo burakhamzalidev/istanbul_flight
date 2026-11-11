@@ -58,3 +58,13 @@ External services: Apple Game Center only. No own servers, analytics, advertisin
 Best regards,
 Burak Hamzalı
 ```
+
+## App Review gönderimi (12 Kasım 2026)
+
+- App Store Connect sürüm kaydı 1.4.0 → **1.8.0**, derleme **1.8.0 (11)**.
+- TR/EN metinler (`docs/store/phase3_0/metadata.json`) ve 24 görüntü (TR/EN × iPhone 1206×2622 / iPad 2048×2732, sıra 01→06) yüklendi.
+- Review Notes: `docs/store/phase3_0/app_review_notes_1_8_0.txt` (kullanıcı onayıyla). Ek: fiziksel iPhone ekran kaydı (`istanbulFlight.mp4`, 2:29, Beyza'nın iPhone'unda, dahili TestFlight).
+- Apple'ın 23 Ekim 2.1 mesajına App Store Connect'ten kısa cevap gönderildi.
+- Yayın tercihi: kullanıcı kararıyla **Automatically release this version** (onaylanınca hemen yayına girer).
+- 12 Kasım 2026 00:17 (TR): **Resubmit to App Review** → durum **Waiting for Review**. Gönderim kimliği `09b42f8f-7309-4bfc-b0d3-eb7915df3765`.
+- TestFlight: Beyza İnce ekibe Customer Support rolüyle (yalnızca İstanbul Flight) eklendi ve "Ekip" dahili grubuna alındı; harici grup için 1.8.0 (11) beta incelemesi de bekliyor.
