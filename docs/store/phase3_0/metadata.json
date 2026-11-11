@@ -1,0 +1,35 @@
+{
+  "_not": "Phase 3.0 mağaza metinleri (TR/EN). Sınırlar: ad ve alt başlık 30 karakter, tanıtım metni 170 karakter, açıklama ve yenilikler 4000 karakter, anahtar kelimeler 100 BAYT (UTF-8). Kontrol: node tool/store_check.js. App Store Connect'e yalnızca kullanıcı onayıyla girilir.",
+  "tr": {
+    "name": "İstanbul Flight",
+    "subtitle": "İstanbul üzerinde pixel uçuş",
+    "promo": "Simit adlı martıyla Haliç'ten Üsküdar'a dokuz İstanbul bölgesinde uç! Günün Uçuşu'nda herkesle aynı parkurda yarış, haftalık İstanbul Kupası'nda ödül kazan.",
+    "keywords": "martı,simit,arcade,pixel,boğaz,galata,ortaköy,üsküdar,uçuş,kuş,retro,tek dokunuş",
+    "description": "İstanbul Flight, Simit adlı bir martının İstanbul semalarında uçtuğu, tek dokunuşla oynanan bir pixel art arcade oyunu.\n\nEkrana dokun, Simit kanat çırpsın. Binaların arasından geç, altın simitleri topla, rekorunu kır.\n\nDOKUZ İSTANBUL BÖLGESİ\nHaliç'te şafakla başla; Galata, Kız Kulesi, Boğaz Köprüsü ve Rumeli Hisarı'ndan geç. Yüksek skorlarda Emirgan, Ortaköy, Dolmabahçe ve Üsküdar açılır. Her bölgenin kendi binaları, renkleri, ışığı ve sesleri var. İlerledikçe martı sürüleri, rüzgâr akımları, yağmur ve sis gelir.\n\nHER GÜN YENİ PARKUR\nGünün Uçuşu'nda herkes aynı parkurda uçar. Günde üç dereceli hakkın ve sınırsız antrenmanın var.\n\nHAFTALIK İSTANBUL KUPASI\nHer hafta yeni bir kupa: en iyi uçuşunla yarış. Hafta sonu etkinlikleri ve dört haftalık sezonda seviye ödülleri seni bekliyor.\n\nKEŞFET VE BİRİKTİR\nUlaştığın her bölge İstanbul'u Keşfet albümüne kartpostal olarak eklenir. Uçuş sonundaki kartpostalını arkadaşlarınla paylaş.\n\nMARTINI ÖZELLEŞTİR\nTopladığın simitlerle Simit Mağazası'ndan Denizci ve Pilot gibi yeni görünümler al. İznik görünümü albümden, Kupa Martısı sezondan ödül olarak gelir. Görünümler yalnızca oyun içi simitle alınır; gerçek para yok.\n\nGÖREVLER VE BAŞARIMLAR\nGünlük ve haftalık görevler, seviye sistemi ve dokuz başarım.\n\nGAME CENTER\nİstersen Game Center ile dünya ve arkadaş sıralamalarına katıl. Game Center olmadan da oyunun tamamı oynanır.\n\nİLK UÇUŞ EĞİTİMİ VE ERİŞİLEBİLİRLİK\nYeni oyunculara üç adımlık kısa bir eğitim. Hareketi azaltma, büyük metin ve VoiceOver desteği.\n\nReklam yok, uygulama içi satın alma yok, hesap gerekmez. Oyun internetsiz oynanır; ilerlemen cihazında saklanır.",
+    "whats_new": "İstanbul Flight'ın ilk sürümü: dokuz İstanbul bölgesi, Günün Uçuşu, haftalık İstanbul Kupası ve sezon, Simit Mağazası, İstanbul'u Keşfet albümü, Game Center sıralamaları ve ilk uçuş eğitimi.",
+    "screenshot_captions": [
+      { "title": "İstanbul Üzerinde Uç", "sub": "Tek dokunuşla kanat çırp" },
+      { "title": "Dokuz Bölgeyi Keşfet", "sub": "Haliç'ten Üsküdar'a" },
+      { "title": "Her Uçuşta Yeni Heyecan", "sub": "Binalar, simitler, rüzgâr ve sis" },
+      { "title": "Martını Özelleştir", "sub": "Simitlerle yeni görünümler" },
+      { "title": "Haftalık Kupada Yarış", "sub": "Etkinlikler ve sezon ödülleri" },
+      { "title": "Her Gün Yeni Parkur", "sub": "Günün Uçuşu: herkes aynı parkurda" }
+    ]
+  },
+  "en": {
+    "name": "İstanbul Flight",
+    "subtitle": "Pixel-art flight over Istanbul",
+    "promo": "Fly Simit the seagull across nine Istanbul districts, from the Golden Horn to Üsküdar! Race everyone on the same Daily Flight and chase the weekly Istanbul Cup.",
+    "keywords": "seagull,arcade,pixel,retro,bird,flying,bosphorus,galata,one tap,casual,turkey,simit,landmarks",
+    "description": "İstanbul Flight is a one-tap pixel-art arcade game about Simit, a seagull flying over Istanbul.\n\nTap to flap. Slip between the buildings, grab golden simits and beat your best score.\n\nNINE ISTANBUL DISTRICTS\nTake off at dawn over the Golden Horn and fly past Galata, the Maiden's Tower, the Bosphorus Bridge and Rumeli Fortress. Reach higher scores to unlock Emirgan, Ortaköy, Dolmabahçe and Üsküdar. Every district has its own buildings, colors, light and sounds. Further along, seagull flocks, gusts of wind, rain and fog join the flight.\n\nA NEW COURSE EVERY DAY\nIn the Daily Flight everyone flies the same course. You get three ranked attempts a day and unlimited practice.\n\nWEEKLY ISTANBUL CUP\nA new cup every week: your single best flight counts. Weekend events and a four-week season with level rewards keep things fresh.\n\nEXPLORE AND COLLECT\nEvery district you reach becomes a postcard in your Discover Istanbul album. Share your end-of-flight postcard with friends.\n\nMAKE IT YOUR SEAGULL\nSpend the simits you collect in the Simit Shop on new looks like Sailor and Pilot. The İznik look is an album reward and the Cup Gull a season reward. Looks are bought with in-game simits only; there is no real money.\n\nMISSIONS AND ACHIEVEMENTS\nDaily and weekly missions, a level system and nine achievements.\n\nGAME CENTER\nOptionally join global and friends leaderboards with Game Center. The whole game is playable without it.\n\nFIRST-FLIGHT TUTORIAL AND ACCESSIBILITY\nA short three-step tutorial for new players. Reduce Motion, larger text and VoiceOver support.\n\nNo ads, no in-app purchases, no account needed. Plays offline; your progress is stored on your device.\n\nPlease note: the game's interface is in Turkish.",
+    "whats_new": "The first release of İstanbul Flight: nine Istanbul districts, the Daily Flight, the weekly Istanbul Cup and seasons, the Simit Shop, the Discover Istanbul album, Game Center leaderboards and a first-flight tutorial.",
+    "screenshot_captions": [
+      { "title": "Fly Over Istanbul", "sub": "One tap to flap" },
+      { "title": "Explore Nine Districts", "sub": "From the Golden Horn to Üsküdar" },
+      { "title": "A Thrill Every Flight", "sub": "Buildings, simits, wind and fog" },
+      { "title": "Customize Your Seagull", "sub": "New looks for your simits" },
+      { "title": "Race the Weekly Cup", "sub": "Events and season rewards" },
+      { "title": "A New Course Every Day", "sub": "Daily Flight: same course for all" }
+    ]
+  }
+}

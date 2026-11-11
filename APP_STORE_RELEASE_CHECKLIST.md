@@ -1,5 +1,7 @@
 # App Store yayın kontrol listesi: İstanbul Flight 1.2.0 (3)
 
+> **Tarihî belge (1.2.0, 22 Ekim 2026).** 1.2.0 incelemesi 23 Ekim'de "Information Needed" (2.1) ile döndü; uygulama yayımlanmadı. Güncel yayın planı: [docs/phase3_0_launch_plan.md](docs/phase3_0_launch_plan.md) (ilk halka açık sürüm önerisi 1.8.0 (11)).
+
 Gerçek duruma göre işaretli (22 Ekim 2026). Ayrıntı: [docs/14_app_store_launch.md](docs/14_app_store_launch.md).
 
 İşaretler:
