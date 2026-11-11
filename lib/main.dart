@@ -140,6 +140,16 @@ Future<void> main() async {
         : null
     ..showStats = const bool.fromEnvironment('MARTI_STATS');
   runApp(MartiApp(game: game));
+  // Web demo (yalnızca MARTI_DEMO): &modal=shop|daily|events|discovery|profile|leaderboard o ekranı açar
+  // (mağaza ekran görüntüleri için; Phase 3.0). Normal derlemede `demo` sabit false → bu kod derlenmez.
+  final demoModal = demo ? Uri.base.queryParameters['modal'] : null;
+  if (demoModal != null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await game.loaded;
+      if (game.inTutorial) game.skipTutorial();
+      game.openModal(demoModal);
+    });
+  }
   // GameKit girişi ilk kareden sonra (giriş ekranı uygulamanın üstünde açılır); bekleyen skorlar
   // uygulama öne her geldiğinde tekrar denenir.
   WidgetsBinding.instance.addPostFrameCallback((_) {
