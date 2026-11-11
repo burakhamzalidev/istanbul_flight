@@ -126,7 +126,11 @@ class ObstacleRenderer {
       visit: (src, dst) {
         final s = _atlas(src);
         // Phase 2.9: engelin bütün parçaları tek drawRawAtlas (parça başına çağrı yerine)
-        if (RenderTuning.batchDraws && _batch.add(s, dst)) return;
+        if (RenderTuning.batchDraws &&
+            RenderTuning.batchAtlas &&
+            _batch.add(s, dst)) {
+          return;
+        }
         _batch.flush(canvas, atlas, _color);
         canvas.drawImageRect(atlas, s, dst, _color);
       },

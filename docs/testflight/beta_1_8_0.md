@@ -3,7 +3,8 @@
 > **Durum: Yükleme başlatıldı (11 Kasım 2026, kullanıcı onayıyla: "testflighta versiyon atıp yükle").**
 > - Codemagic `ios-testflight`, dal `main`.
 > - Derleme numarası Codemagic'te TestFlight'taki son numara + 1 olarak verilir (beklenen: 11).
-> - **İçerik:** Phase 2.9. Yeni özellik yok; boşta uyku (pil), çizim çağrısı birleştirme ve daha az disk yazma.
+> - **İçerik:** Phase 2.9. Yeni özellik yok; boşta uyku (pil), rüzgâr ve sis efektlerinde çizim çağrısı birleştirme, daha az disk yazma.
+> - İlk deneme (Codemagic #13, commit `0b7a810`) testlerde durdu, yüklenmedi: engel parçalarını tek atlas çağrısıyla çizme Mac çizicisinde 292–892 piksel fark verdi. Bu birleştirme kapatıldı (görüntü aynı kalsın).
 > - App Store sürüm kaydına dokunulmadı; App Review'a gönderim yok.
 > - Ayrıntılar: [../22_phase2_9_performance_optimization.md](../22_phase2_9_performance_optimization.md)
 
