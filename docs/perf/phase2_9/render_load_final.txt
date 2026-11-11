@@ -1,0 +1,14 @@
+ÖNCE  Menü                | çizim/kare 38.1 | overdraw 2.43× | bileşen 14
+SONRA Menü                | çizim/kare 38.1 | overdraw 2.43× | bileşen 14
+ÖNCE  A Haliç açık        | çizim/kare 63.3 | overdraw 2.73× | bileşen 16
+SONRA A Haliç açık        | çizim/kare 63.3 | overdraw 2.73× | bileşen 16
+ÖNCE  B Ortaköy açık+tehl | çizim/kare 86.0 | overdraw 3.45× | bileşen 18
+SONRA B Ortaköy açık+tehl | çizim/kare 86.0 | overdraw 3.45× | bileşen 18
+ÖNCE  C Ortaköy rüzgârlı  | çizim/kare 146.0 | overdraw 3.45× | bileşen 18
+SONRA C Ortaköy rüzgârlı  | çizim/kare 102.0 | overdraw 3.45× | bileşen 18
+ÖNCE  D Üsküdar yağmur    | çizim/kare 88.0 | overdraw 4.30× | bileşen 18
+SONRA D Üsküdar yağmur    | çizim/kare 88.0 | overdraw 4.30× | bileşen 18
+ÖNCE  E Rumeli sis        | çizim/kare 170.5 | overdraw 3.90× | bileşen 17
+SONRA E Rumeli sis        | çizim/kare 118.8 | overdraw 3.74× | bileşen 17
+ÖNCE  F Oyun sonu         | çizim/kare 52.2 | overdraw 2.63× | bileşen 15
+SONRA F Oyun sonu         | çizim/kare 52.2 | overdraw 2.63× | bileşen 15

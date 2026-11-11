@@ -41,7 +41,7 @@
 | Öncelik | Bulgu | Ölçüm |
 |---|---|---|
 | **1 (pil)** | Oyun dışında kimse bakmıyorken sahne hiç durmuyor: menü, modal ekranlar, "uçmak için dokun" ve oyun sonu sürekli saniyede 60–120 kare çiziliyor | §6: 60 sn dokunulmayan menüde ve 30 sn bekleyen oyun sonunda motor çalışıyor, kare isteniyor |
-| **2 (çizim)** | Aynı görselden gelen parçalar ve aynı renkteki küçük dikdörtgenler tek tek çiziliyor | §4: rüzgârda 146, siste 171 çağrı/kare. WeatherLayer tek başına 60–69, engeller 29, yansıma bantları 18–26 |
+| **2 (çizim)** | Aynı renkteki küçük dikdörtgenler (rüzgâr, sis) ve aynı görselden gelen parçalar tek tek çiziliyor | §4: rüzgârda 146, siste 171 çağrı/kare. WeatherLayer tek başına 60–69, engeller 29, yansıma bantları 18–26 |
 | 3 (disk) | Her uçuş sonunda ana kayıt ve 3 yedek yazılıyor; yedekler çoğu uçuşta değişmiyor | §8: 4 yazma / uçuş |
 | — (bellek) | 110 uçuşta Flame tarafında birikme yok. Tek gerçek birikme Flutter'ın `Slider`'ında (Ayarlar), boyutu ihmal edilebilir | §5 |
 | — (CPU) | Güncelleme ve çizim kaydı masaüstünde kare başına 0,1–0,2 ms; CPU tarafı darboğaz değil | §4 |
@@ -49,30 +49,34 @@
 ## 4. Flame çizim yükü
 
 **Yapılan:** Görüntüyü değiştirmeden çağrıları birleştirmek (`lib/game/visual/atlas_batch.dart`).
-- **Engel parçaları:** Gövde karoları, başlıklar ve taban, atlas görselinden tek `drawRawAtlas` çağrısıyla çiziliyor. Engel genişliği atlas gövde genişliğine eşit, her parça iki eksende 2 kat ölçekli. Ölçeği tutmayan bir parça çıkarsa yardımcı onu eski yoldan çizer.
-- **Simge su yansıması:** 8 piksellik bantların hepsi tek `drawRawAtlas` çağrısında.
+- **Engel parçaları ve simge su yansıması (yazıldı, varsayılan kapalı):** Atlas görselinden tek `drawRawAtlas` çağrısıyla çizme hazır (`AtlasBatch`), ama `RenderTuning.batchAtlas = false`.
+  - Windows test çizicisinde eski yolla birebir aynıydı.
+  - Codemagic'in Mac çizicisinde engel bulunan sahnelerde 292–892 piksel fark verdi (Codemagic #13, 1.8.0'ın ilk derlemesi; testlerde durdu, hiçbir şey yüklenmedi).
+  - iPhone da Metal kullandığı için görüntü değişmesin diye engeller ve yansımalar eski yoldan çiziliyor.
 - **Rüzgâr:** Yapraklar renk başına iki yolda (gövde ve uç), rüzgâr çizgileri tek yolda.
 - **Sisli hava:** Bant başına iki yol (gövde ve kenar). Parçalar birbirine değmiyor; görüntü aynı.
 - **Tamponlar:** Yeniden kullanılıyor, kare başına yeni liste oluşmuyor.
 
 **Kalıcı test:** `test/render_batching_test.dart`, 12 sahneyi gerçek görsellerle eski ve yeni yoldan resme döküp karşılaştırır.
 - **Sahneler:** 9 bölge, açık / rüzgârlı / sisli / yağmurlu hava, menü ve oyun sonu.
-- **Sonuç:** Hepsinde **0 piksel fark**.
+- **Sonuç:** Hepsinde **0 piksel fark**. Test hem yerelde hem Codemagic'teki Mac derlemesinde çalışıyor; atlas birleştirmesinin kapatılması bu testin Mac sonucuna dayanıyor.
 
 **Bilerek birleştirilmeyenler:**
 - **Haliç sabah sisi ve sudaki güneş/ay sütunu:** Bu ikisi kenar yumuşatmalı (anti-alias) boyanıyor. Tek yolda birleştirilince kenar piksellerinde 1–11/255 fark çıktı (Galata, Köprü, Rumeli). Pixel art aynı kalsın diye eski yoldan çiziliyorlar.
 
-**Kare başına çizim çağrısı ve overdraw** (`render_load.txt`):
+**Kare başına çizim çağrısı ve overdraw** (`render_load_final.txt`; atlas kapalı, yalnızca yol birleştirmesi):
 
 | Sahne | Çağrı önce | Çağrı sonra | Overdraw (değişmedi) |
 |---|---|---|---|
 | Menü | 38 | 38 | 2,4× |
-| Haliç, açık | 63 | 45 | 2,7× |
-| Ortaköy, açık + tehlike | 86 | 43 | 3,5× |
-| Ortaköy, rüzgârlı | 146 | 59 | 3,5× |
-| Üsküdar, yağmur | 88 | 47 | 4,3× |
-| Rumeli, sis | 171 | 84 | 3,7–3,9× |
-| Oyun sonu | 52 | 43 | 2,6× |
+| Haliç, açık | 63 | 63 | 2,7× |
+| Ortaköy, açık + tehlike | 86 | 86 | 3,5× |
+| Ortaköy, rüzgârlı | 146 | **102** | 3,5× |
+| Üsküdar, yağmur | 88 | 88 | 4,3× |
+| Rumeli, sis | 171 | **119** | 3,7–3,9× |
+| Oyun sonu | 52 | 52 | 2,6× |
+
+- **Atlas açık olsaydı:** `render_load.txt` (Haliç 45, Ortaköy 43, rüzgâr 59, yağmur 47, sis 84, oyun sonu 43) ve aşağıdaki CPU tablosu atlas birleştirmesi açıkken ölçüldü. Bugünkü kazanç yalnızca rüzgâr ve sis satırlarında geçerli.
 
 - **Overdraw:** Boyanan alan değişmedi; aynı pikseller daha az çağrıyla çiziliyor. Birleşik yolların gerçek boyanan alanı sayaçta görünmediği için yollar alana katılmadı. Bu yüzden sisteki küçük fark ölçüm kaynaklı.
 - **Kalan overdraw:** 2,4–4,3× değeri gökyüzü, uzak plan, kıyı ve su katmanlarının tam ekran üst üste binmesinden geliyor. Azaltmak katmanların opak bölgelerini bilmeyi gerektiriyor; görüntü riskine karşılık ölçülmüş bir kazanç olmadığı için yapılmadı.
@@ -197,7 +201,7 @@
   - uykudayken arka plan
   - uçarken arka plan
   - uykunun Günün Uçuşu parkurunu değiştirmemesi
-- **`test/render_batching_test.dart` (13):** 12 sahnede eski ve yeni yol arasında 0 piksel fark.
+- **`test/render_batching_test.dart` (13):** 12 sahnede eski ve yeni yol arasında 0 piksel fark (yerelde ve Codemagic Mac derlemesinde çalışır).
 - **`test/perf_regression_test.dart` (3):**
   - 10.000 kare uçuş
   - 20 dakika uçuş

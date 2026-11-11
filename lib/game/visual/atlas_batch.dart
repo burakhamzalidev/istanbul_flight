@@ -8,6 +8,11 @@ import 'dart:ui';
 /// piksel piksel aynı sonucu verdiğini bu anahtarla karşılaştırır.
 abstract final class RenderTuning {
   static bool batchDraws = true;
+
+  /// Aynı görselden parçaları drawRawAtlas ile birleştirme. Kapalı: Windows test çizicisinde birebir aynıydı
+  /// ama Codemagic Mac (Metal) çizicisinde kesirli koordinatlarda 292–892 piksel fark verdi (engelli sahneler).
+  /// iPhone da Metal kullandığı için görüntü değişebilir → yalnızca yol birleştirmesi açık (docs/22 §4).
+  static bool batchAtlas = false;
 }
 
 /// Aynı görselden çok parça: tek `drawRawAtlas` çağrısı. Tamponlar yeniden kullanılır (kare başına

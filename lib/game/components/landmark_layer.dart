@@ -236,7 +236,11 @@ class LandmarkLayer extends Component
           h * kArtPx,
         );
         // Phase 2.9: bütün bantlar tek drawRawAtlas (bant başına çağrı yerine)
-        if (RenderTuning.batchDraws && _bands.add(bs, bd)) continue;
+        if (RenderTuning.batchDraws &&
+            RenderTuning.batchAtlas &&
+            _bands.add(bs, bd)) {
+          continue;
+        }
         _bands.flush(canvas, img, p);
         canvas.drawImageRect(img, bs, bd, p);
       }
